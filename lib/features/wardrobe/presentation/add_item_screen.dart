@@ -7,6 +7,7 @@ import 'package:gentleman_os/core/constants/spacing.dart';
 import 'package:gentleman_os/core/services/achievement_service.dart';
 import 'package:gentleman_os/core/services/services_provider.dart';
 import 'package:gentleman_os/core/services/xp_service.dart';
+import 'package:gentleman_os/core/utils/image_storage.dart';
 import 'package:gentleman_os/features/wardrobe/application/wardrobe_providers.dart';
 import 'package:gentleman_os/shared/enums/clothing_category.dart';
 import 'package:gentleman_os/shared/enums/condition.dart';
@@ -289,7 +290,10 @@ class _PhotoPicker extends StatelessWidget {
           maxWidth: 1080,
           imageQuality: 85,
         );
-        if (xfile != null) onPicked?.call(xfile.path);
+        if (xfile == null) return;
+        // Копируем во внутреннее хранилище: путь image_picker временный.
+        final persisted = await persistWardrobeImage(xfile.path);
+        onPicked?.call(persisted);
       },
       child: Container(
         height: 180,

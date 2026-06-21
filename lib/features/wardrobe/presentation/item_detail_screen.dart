@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:gentleman_os/core/ai/router_ai_client.dart';
 import 'package:gentleman_os/core/constants/spacing.dart';
 import 'package:gentleman_os/core/theme/app_colors.dart';
+import 'package:gentleman_os/core/utils/image_storage.dart';
 import 'package:gentleman_os/features/wardrobe/application/clothing_ai_providers.dart';
 import 'package:gentleman_os/features/wardrobe/application/wardrobe_providers.dart';
 import 'package:gentleman_os/shared/models/clothing_item.dart';
@@ -155,6 +156,7 @@ class _ItemBody extends StatelessWidget {
             onPressed: () async {
               Navigator.pop(ctx);
               await ref.read(wardrobeRepositoryProvider).delete(item.id);
+              await deleteWardrobeImage(item.imagePath);
               if (context.mounted) context.pop();
             },
             child: const Text('Удалить'),
