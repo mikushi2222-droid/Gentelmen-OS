@@ -24,14 +24,25 @@ class PurchasesScreen extends ConsumerWidget {
       body: asyncList.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('Ошибка: $e')),
-        data: (items) => items.isEmpty
-            ? const EmptyState(
-                icon: Icons.shopping_bag_outlined,
-                title: 'Список желаний пуст',
-                subtitle:
-                    'Добавьте вещи, которые хотите купить,\nчтобы принимать осознанные решения',
-              )
-            : _WishList(items: items),
+        data: (items) {
+          if (items.isEmpty) {
+            return const EmptyState(
+              icon: Icons.shopping_bag_outlined,
+              title: 'Список желаний пуст',
+              subtitle:
+                  'Добавьте вещи, которые хотите купить,\nчтобы принимать осознанные решения',
+            );
+          }
+          final pendingBudget = items
+              .where((i) => i.status < 2 && i.budget != null)
+              .fold<double>(0, (sum, i) => sum + i.budget!);
+          return Column(
+            children: [
+              if (pendingBudget > 0) _BudgetSummary(total: pendingBudget),
+              Expanded(child: _WishList(items: items)),
+            ],
+          );
+        },
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showAddWishDialog(context, ref),
@@ -46,6 +57,49 @@ class PurchasesScreen extends ConsumerWidget {
       context: context,
       isScrollControlled: true,
       builder: (ctx) => _AddWishSheet(ref: ref),
+    );
+  }
+}
+
+class _BudgetSummary extends StatelessWidget {
+  const _BudgetSummary({required this.total});
+
+  final double total;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+    final fmt = NumberFormat.currency(locale: 'ru', symbol: '₽', decimalDigits: 0);
+
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.fromLTRB(
+        Spacing.screenPadding,
+        Spacing.screenPadding,
+        Spacing.screenPadding,
+        0,
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      decoration: BoxDecoration(
+        color: cs.primaryContainer.withOpacity(0.5),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.account_balance_wallet_outlined,
+              size: 18, color: cs.primary),
+          const SizedBox(width: 8),
+          Text('Планируемые расходы: ', style: tt.bodySmall),
+          Text(
+            fmt.format(total),
+            style: tt.bodySmall?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: cs.primary,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -90,8 +144,12 @@ class _WishCard extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
     final fmt = NumberFormat.currency(locale: 'ru', symbol: '₽', decimalDigits: 0);
-    final status = WishStatus.values[item.status];
     final color = _statusColors[item.status] ?? Colors.grey;
+
+    final now = DateTime.now();
+    final cooldownEnd = item.createdAt.add(const Duration(hours: 48));
+    final inCooldown = item.status == 0 && now.isBefore(cooldownEnd);
+    final hoursLeft = inCooldown ? cooldownEnd.difference(now).inHours + 1 : 0;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
@@ -114,8 +172,25 @@ class _WishCard extends StatelessWidget {
               ClothingCategory.values[item.category].label,
               style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
             ),
-            if (item.reason != null)
-              Text(item.reason!, style: tt.bodySmall),
+            if (item.reason != null) Text(item.reason!, style: tt.bodySmall),
+            if (inCooldown)
+              Padding(
+                padding: const EdgeInsets.only(top: 2),
+                child: Row(
+                  children: [
+                    Icon(Icons.hourglass_bottom,
+                        size: 12, color: Colors.orange.shade700),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Правило 48ч: подождите ещё $hoursLeft ч',
+                      style: tt.labelSmall?.copyWith(
+                        color: Colors.orange.shade700,
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
           ],
         ),
         trailing: Column(
