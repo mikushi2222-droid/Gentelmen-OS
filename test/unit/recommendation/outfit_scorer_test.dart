@@ -6,7 +6,6 @@ import 'package:gentleman_os/shared/enums/fit.dart';
 import 'package:gentleman_os/shared/enums/occasion.dart';
 import 'package:gentleman_os/shared/enums/season.dart';
 import 'package:gentleman_os/shared/models/clothing_item.dart';
-import 'package:gentleman_os/shared/models/outfit.dart';
 import 'package:gentleman_os/shared/models/user_profile.dart';
 
 ClothingItem _item({

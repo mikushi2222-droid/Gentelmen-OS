@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 
+@DataClassName('HabitsData')
 class Habits extends Table {
   TextColumn get id => text()();
   TextColumn get title => text()();
@@ -13,6 +14,7 @@ class Habits extends Table {
   Set<Column> get primaryKey => {id};
 }
 
+@DataClassName('HabitLogsData')
 class HabitLogs extends Table {
   TextColumn get id => text()();
   TextColumn get habitId => text().references(Habits, #id)();

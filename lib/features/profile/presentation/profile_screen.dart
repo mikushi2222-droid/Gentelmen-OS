@@ -10,7 +10,6 @@ class ProfileScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final cs = Theme.of(context).colorScheme;
     final asyncProfile = ref.watch(profileProvider);
 
     return Scaffold(

@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 
+@DataClassName('XpEventsData')
 class XpEvents extends Table {
   TextColumn get id => text()();
   IntColumn get type => integer()(); // XpType.index
@@ -11,6 +12,7 @@ class XpEvents extends Table {
   Set<Column> get primaryKey => {id};
 }
 
+@DataClassName('AchievementsData')
 class Achievements extends Table {
   TextColumn get id => text()();
   TextColumn get code => text().unique()();

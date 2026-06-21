@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 
+@DataClassName('PurchaseWishesData')
 class PurchaseWishes extends Table {
   TextColumn get id => text()();
   TextColumn get itemName => text()();

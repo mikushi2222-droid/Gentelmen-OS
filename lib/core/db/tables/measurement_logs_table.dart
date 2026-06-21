@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 
+@DataClassName('MeasurementLogsData')
 class MeasurementLogs extends Table {
   TextColumn get id => text()();
   DateTimeColumn get date => dateTime()();

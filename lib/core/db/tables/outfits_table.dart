@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 
+@DataClassName('OutfitsData')
 class Outfits extends Table {
   TextColumn get id => text()();
   TextColumn get name => text()();
@@ -17,12 +18,14 @@ class Outfits extends Table {
   Set<Column> get primaryKey => {id};
 }
 
+@DataClassName('OutfitItemsData')
 class OutfitItems extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get outfitId => text().references(Outfits, #id)();
   TextColumn get itemId => text()();
 }
 
+@DataClassName('WearLogsData')
 class WearLogs extends Table {
   TextColumn get id => text()();
   TextColumn get itemId => text()();

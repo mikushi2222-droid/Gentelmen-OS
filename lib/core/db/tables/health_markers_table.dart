@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 
 /// Замеры показателей мужского здоровья (анализы, давление, сон и т.д.).
+@DataClassName('HealthMarkersData')
 class HealthMarkers extends Table {
   TextColumn get id => text()();
   IntColumn get type => integer()(); // HealthMarkerType.index

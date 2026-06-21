@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 
+@DataClassName('UserProfileData')
 class UserProfile extends Table {
   IntColumn get id => integer().withDefault(const Constant(0))();
   RealColumn get height => real().withDefault(const Constant(0))();

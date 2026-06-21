@@ -52,7 +52,6 @@ class _WardrobeSummaryCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final asyncWardrobe = ref.watch(wardrobeListProvider);
-    final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
 
     return asyncWardrobe.when(
@@ -322,7 +321,6 @@ class _QuickActionsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tt = Theme.of(context).textTheme;
-    final cs = Theme.of(context).colorScheme;
 
     return Card(
       child: Padding(

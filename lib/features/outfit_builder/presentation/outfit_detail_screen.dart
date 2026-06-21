@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -70,12 +69,6 @@ class _OutfitBody extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
 
-    // Parse score breakdown if stored as JSON
-    Map<String, dynamic> breakdown = {};
-    try {
-      breakdown = jsonDecode(outfit.scoreBreakdown) as Map<String, dynamic>;
-    } catch (_) {}
-
     return Scaffold(
       appBar: AppBar(
         title: Text(outfit.name),
@@ -125,7 +118,6 @@ class _ScoreCircle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
     final color = score >= 70
         ? const Color(0xFF4CAF50)
         : score >= 40

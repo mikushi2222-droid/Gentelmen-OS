@@ -1,7 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gentleman_os/core/ai/local_ai_advisor.dart';
 import 'package:gentleman_os/shared/enums/clothing_category.dart';
-import 'package:gentleman_os/shared/enums/fit.dart';
 import 'package:gentleman_os/shared/models/clothing_item.dart';
 import 'package:gentleman_os/shared/models/knowledge_article.dart';
 import 'package:gentleman_os/shared/enums/knowledge_category.dart';

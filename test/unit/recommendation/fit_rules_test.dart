@@ -1,9 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gentleman_os/features/outfit_builder/domain/fit_rules.dart';
 import 'package:gentleman_os/shared/enums/clothing_category.dart';
-import 'package:gentleman_os/shared/enums/condition.dart';
 import 'package:gentleman_os/shared/enums/fit.dart';
-import 'package:gentleman_os/shared/enums/season.dart';
 import 'package:gentleman_os/shared/models/clothing_item.dart';
 import 'package:gentleman_os/shared/models/user_profile.dart';
 

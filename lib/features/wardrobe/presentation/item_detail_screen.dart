@@ -211,7 +211,6 @@ class _PhotoAnalysisSheet extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final tt = Theme.of(context).textTheme;
-    final cs = Theme.of(context).colorScheme;
     final async = ref.watch(clothingPhotoAnalysisProvider(item));
 
     return DraggableScrollableSheet(

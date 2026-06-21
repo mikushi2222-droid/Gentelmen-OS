@@ -20,7 +20,7 @@ void main() {
             Occasion.work, DressCode.businessCasual),
         ([_item(ClothingCategory.tShirt), _item(ClothingCategory.jeans)],
             Occasion.formal, DressCode.blackTie),
-        ([], Occasion.everyday, DressCode.casual),
+        (<ClothingItem>[], Occasion.everyday, DressCode.casual),
       ];
       for (final c in cases) {
         final r = occasionScore(c.$1, c.$2, c.$3);
@@ -60,12 +60,6 @@ void main() {
         ),
       ];
       final formal = occasionScore(items, Occasion.business, DressCode.business);
-      final casual = occasionScore(
-        [_item(ClothingCategory.shirt), _item(ClothingCategory.trousers),
-         _item(ClothingCategory.shoes)],
-        Occasion.everyday,
-        DressCode.casual,
-      );
       expect(formal.notes, anyElement(contains('кроссовки')));
     });
 

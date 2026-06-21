@@ -27,7 +27,7 @@ void main() {
         weatherScore([], null, null, Season.all),
         weatherScore(
           [_item(ClothingCategory.shirt)],
-          WeatherCondition.clear,
+          WeatherCondition.sunny,
           20,
           Season.summer,
         ),
