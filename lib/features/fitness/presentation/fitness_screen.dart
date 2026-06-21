@@ -1,9 +1,11 @@
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:gentleman_os/core/constants/spacing.dart';
 import 'package:gentleman_os/core/db/app_database.dart';
+import 'package:gentleman_os/core/theme/app_colors.dart';
 import 'package:gentleman_os/features/fitness/application/fitness_providers.dart';
 
 class FitnessScreen extends ConsumerWidget {
@@ -69,9 +71,17 @@ class FitnessScreen extends ConsumerWidget {
                 asyncAll.when(
                   loading: () => const SizedBox(),
                   error: (_, __) => const SizedBox(),
-                  data: (logs) => logs.isEmpty
-                      ? const SizedBox()
-                      : _HistoryList(logs: logs),
+                  data: (logs) {
+                    if (logs.isEmpty) return const SizedBox();
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _WeightChart(logs: logs),
+                        const SizedBox(height: Spacing.sectionGap),
+                        _HistoryList(logs: logs),
+                      ],
+                    );
+                  },
                 ),
                 const SizedBox(height: Spacing.sectionGap),
                 Text('Навигация', style: tt.titleMedium),
@@ -94,11 +104,155 @@ class FitnessScreen extends ConsumerWidget {
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => context.push('/progress/habits'),
                 ),
+                const SizedBox(height: 80),
               ]),
             ),
           ),
         ],
       ),
+    );
+  }
+}
+
+class _WeightChart extends StatelessWidget {
+  const _WeightChart({required this.logs});
+
+  final List<MeasurementLogsData> logs;
+
+  @override
+  Widget build(BuildContext context) {
+    final tt = Theme.of(context).textTheme;
+    final cs = Theme.of(context).colorScheme;
+
+    final weightLogs = logs
+        .where((l) => l.weight != null)
+        .toList()
+        .reversed
+        .take(10)
+        .toList();
+
+    if (weightLogs.length < 2) return const SizedBox();
+
+    final spots = weightLogs.asMap().entries.map((e) {
+      return FlSpot(e.key.toDouble(), e.value.weight!);
+    }).toList();
+
+    final minY =
+        weightLogs.map((l) => l.weight!).reduce((a, b) => a < b ? a : b) - 2;
+    final maxY =
+        weightLogs.map((l) => l.weight!).reduce((a, b) => a > b ? a : b) + 2;
+
+    final fmt = DateFormat('d.MM', 'ru');
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Динамика веса', style: tt.titleMedium),
+        const SizedBox(height: Spacing.sm),
+        Container(
+          height: 180,
+          padding: const EdgeInsets.fromLTRB(0, 16, 16, 0),
+          decoration: BoxDecoration(
+            color: cs.surfaceContainerLow,
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: LineChart(
+            LineChartData(
+              minY: minY,
+              maxY: maxY,
+              gridData: FlGridData(
+                show: true,
+                drawVerticalLine: false,
+                getDrawingHorizontalLine: (v) => FlLine(
+                  color: cs.outlineVariant.withOpacity(0.4),
+                  strokeWidth: 1,
+                ),
+              ),
+              borderData: FlBorderData(show: false),
+              titlesData: FlTitlesData(
+                leftTitles: AxisTitles(
+                  sideTitles: SideTitles(
+                    showTitles: true,
+                    reservedSize: 42,
+                    getTitlesWidget: (value, meta) => Text(
+                      value.toStringAsFixed(0),
+                      style: tt.labelSmall
+                          ?.copyWith(color: cs.onSurfaceVariant),
+                    ),
+                  ),
+                ),
+                bottomTitles: AxisTitles(
+                  sideTitles: SideTitles(
+                    showTitles: true,
+                    reservedSize: 28,
+                    getTitlesWidget: (value, meta) {
+                      final idx = value.toInt();
+                      if (idx < 0 || idx >= weightLogs.length) {
+                        return const SizedBox();
+                      }
+                      return Padding(
+                        padding: const EdgeInsets.only(top: 6),
+                        child: Text(
+                          fmt.format(weightLogs[idx].date),
+                          style: tt.labelSmall
+                              ?.copyWith(color: cs.onSurfaceVariant),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                rightTitles: const AxisTitles(
+                  sideTitles: SideTitles(showTitles: false),
+                ),
+                topTitles: const AxisTitles(
+                  sideTitles: SideTitles(showTitles: false),
+                ),
+              ),
+              lineBarsData: [
+                LineChartBarData(
+                  spots: spots,
+                  isCurved: true,
+                  curveSmoothness: 0.35,
+                  color: AppColors.gold,
+                  barWidth: 2.5,
+                  dotData: FlDotData(
+                    getDotPainter: (spot, percent, bar, index) =>
+                        FlDotCirclePainter(
+                      radius: 4,
+                      color: AppColors.gold,
+                      strokeWidth: 0,
+                    ),
+                  ),
+                  belowBarData: BarAreaData(
+                    show: true,
+                    gradient: LinearGradient(
+                      colors: [
+                        AppColors.gold.withOpacity(0.25),
+                        AppColors.gold.withOpacity(0.0),
+                      ],
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                    ),
+                  ),
+                ),
+              ],
+              lineTouchData: LineTouchData(
+                touchTooltipData: LineTouchTooltipData(
+                  getTooltipItems: (spots) => spots
+                      .map(
+                        (s) => LineTooltipItem(
+                          '${s.y.toStringAsFixed(1)} кг',
+                          tt.labelSmall?.copyWith(color: AppColors.gold) ??
+                              const TextStyle(),
+                        ),
+                      )
+                      .toList(),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
