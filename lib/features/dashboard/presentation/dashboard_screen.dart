@@ -337,6 +337,11 @@ class _QuickActionsSection extends StatelessWidget {
               route: '/style-advisor',
             ),
             QuickActionButton(
+              icon: Icons.favorite_outline,
+              label: 'Здоровье',
+              route: '/health',
+            ),
+            QuickActionButton(
               icon: Icons.repeat,
               label: 'Привычки',
               route: '/progress/habits',

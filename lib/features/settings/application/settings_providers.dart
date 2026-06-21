@@ -13,6 +13,7 @@ final exportServiceProvider = Provider<ExportService>((ref) {
     habitsDao: ref.watch(habitsDaoProvider),
     rpgDao: ref.watch(rpgDaoProvider),
     purchasesDao: ref.watch(purchasesDaoProvider),
+    healthDao: ref.watch(healthDaoProvider),
   );
 });
 
@@ -30,6 +31,7 @@ final clearAllDataProvider = Provider<Future<void> Function()>((ref) {
       await db.delete(db.xpEvents).go();
       await db.delete(db.purchaseWishes).go();
       await db.delete(db.dailyMissions).go();
+      await db.delete(db.healthMarkers).go();
       // Reset achievements to unlocked=false
       await (db.update(db.achievements)).write(
         AchievementsCompanion(

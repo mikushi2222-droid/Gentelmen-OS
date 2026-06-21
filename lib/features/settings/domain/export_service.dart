@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:gentleman_os/core/db/daos/habits_dao.dart';
+import 'package:gentleman_os/core/db/daos/health_dao.dart';
 import 'package:gentleman_os/core/db/daos/knowledge_dao.dart';
 import 'package:gentleman_os/core/db/daos/measurement_dao.dart';
 import 'package:gentleman_os/core/db/daos/outfit_dao.dart';
@@ -20,6 +21,7 @@ class ExportService {
     required this.habitsDao,
     required this.rpgDao,
     required this.purchasesDao,
+    required this.healthDao,
   });
 
   final ProfileDao profileDao;
@@ -30,6 +32,7 @@ class ExportService {
   final HabitsDao habitsDao;
   final RpgDao rpgDao;
   final PurchasesDao purchasesDao;
+  final HealthDao healthDao;
 
   Future<Map<String, dynamic>> exportAll() async {
     final profile = await profileDao.getProfile();
@@ -39,9 +42,10 @@ class ExportService {
     final xpEvents = await rpgDao.getAllXpEvents();
     final habits = (await habitsDao.watchAll().first);
     final purchases = (await purchasesDao.watchAll().first);
+    final health = await healthDao.getAll();
 
     return {
-      'version': 1,
+      'version': 2,
       'exportedAt': DateTime.now().toIso8601String(),
       'profile': profile == null
           ? null
@@ -124,6 +128,15 @@ class ExportService {
                 'priority': p.priority,
                 'budget': p.budget,
                 'status': p.status,
+              })
+          .toList(),
+      'health': health
+          .map((h) => {
+                'id': h.id,
+                'type': h.type,
+                'value': h.value,
+                'date': h.date.toIso8601String(),
+                'note': h.note,
               })
           .toList(),
     };

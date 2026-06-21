@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 import 'package:gentleman_os/core/db/daos/daily_missions_dao.dart';
 import 'package:gentleman_os/core/db/daos/habits_dao.dart';
+import 'package:gentleman_os/core/db/daos/health_dao.dart';
 import 'package:gentleman_os/core/db/daos/knowledge_dao.dart';
 import 'package:gentleman_os/core/db/daos/measurement_dao.dart';
 import 'package:gentleman_os/core/db/daos/outfit_dao.dart';
@@ -12,6 +13,7 @@ import 'package:gentleman_os/core/db/daos/wardrobe_dao.dart';
 import 'package:gentleman_os/core/db/tables/clothing_items_table.dart';
 import 'package:gentleman_os/core/db/tables/daily_missions_table.dart';
 import 'package:gentleman_os/core/db/tables/habits_table.dart';
+import 'package:gentleman_os/core/db/tables/health_markers_table.dart';
 import 'package:gentleman_os/core/db/tables/knowledge_articles_table.dart';
 import 'package:gentleman_os/core/db/tables/measurement_logs_table.dart';
 import 'package:gentleman_os/core/db/tables/outfits_table.dart';
@@ -36,6 +38,7 @@ part 'app_database.g.dart';
     Achievements,
     PurchaseWishes,
     DailyMissions,
+    HealthMarkers,
   ],
   daos: [
     ProfileDao,
@@ -47,6 +50,7 @@ part 'app_database.g.dart';
     RpgDao,
     PurchasesDao,
     DailyMissionsDao,
+    HealthDao,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -54,7 +58,7 @@ class AppDatabase extends _$AppDatabase {
       : super(executor ?? driftDatabase(name: 'gentleman_os'));
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -68,6 +72,9 @@ class AppDatabase extends _$AppDatabase {
           }
           if (from < 3) {
             await m.addColumn(knowledgeArticles, knowledgeArticles.readAt);
+          }
+          if (from < 4) {
+            await m.createTable(healthMarkers);
           }
         },
       );

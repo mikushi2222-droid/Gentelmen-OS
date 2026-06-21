@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gentleman_os/core/db/app_database.dart';
 import 'package:gentleman_os/core/db/daos/daily_missions_dao.dart';
 import 'package:gentleman_os/core/db/daos/habits_dao.dart';
+import 'package:gentleman_os/core/db/daos/health_dao.dart';
 import 'package:gentleman_os/core/db/daos/knowledge_dao.dart';
 import 'package:gentleman_os/core/db/daos/measurement_dao.dart';
 import 'package:gentleman_os/core/db/daos/outfit_dao.dart';
@@ -48,4 +49,8 @@ final purchasesDaoProvider = Provider<PurchasesDao>(
 
 final dailyMissionsDaoProvider = Provider<DailyMissionsDao>(
   (ref) => ref.watch(appDatabaseProvider).dailyMissionsDao,
+);
+
+final healthDaoProvider = Provider<HealthDao>(
+  (ref) => ref.watch(appDatabaseProvider).healthDao,
 );

@@ -14,6 +14,8 @@ import 'package:gentleman_os/features/profile/presentation/profile_screen.dart';
 import 'package:gentleman_os/features/profile/presentation/edit_profile_screen.dart';
 import 'package:gentleman_os/features/purchases/presentation/purchases_screen.dart';
 import 'package:gentleman_os/features/habits/presentation/habits_screen.dart';
+import 'package:gentleman_os/features/health/presentation/health_screen.dart';
+import 'package:gentleman_os/features/health/presentation/health_marker_detail_screen.dart';
 import 'package:gentleman_os/features/rpg/presentation/rpg_screen.dart';
 import 'package:gentleman_os/features/settings/presentation/settings_screen.dart';
 import 'package:gentleman_os/features/style_advisor/presentation/style_advisor_screen.dart';
@@ -124,6 +126,18 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/style-advisor',
         builder: (c, s) => const StyleAdvisorScreen(),
+      ),
+      GoRoute(
+        path: '/health',
+        builder: (c, s) => const HealthScreen(),
+        routes: [
+          GoRoute(
+            path: 'marker/:typeIndex',
+            builder: (c, s) => HealthMarkerDetailScreen(
+              typeIndex: int.tryParse(s.pathParameters['typeIndex'] ?? '') ?? -1,
+            ),
+          ),
+        ],
       ),
       GoRoute(
         path: '/settings',
