@@ -86,6 +86,12 @@ class _ProfileBody extends StatelessWidget {
           children: [
             _MeasureRow(label: 'Рост', value: _fmt(p?.height ?? 0), unit: 'см'),
             _MeasureRow(label: 'Вес', value: _fmt(p?.weight ?? 0), unit: 'кг'),
+            if (p?.bmi != null)
+              _MeasureRow(
+                label: 'ИМТ',
+                value: p!.bmi!.toStringAsFixed(1),
+                unit: p.bmiCategory,
+              ),
             _MeasureRow(label: 'Талия', value: _fmt(p?.waist ?? 0), unit: 'см'),
             _MeasureRow(label: 'Грудь', value: _fmt(p?.chest ?? 0), unit: 'см'),
             _MeasureRow(label: 'Бёдра', value: _fmt(p?.hips ?? 0), unit: 'см'),

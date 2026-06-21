@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gentleman_os/core/constants/spacing.dart';
 import 'package:gentleman_os/features/settings/application/settings_providers.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -25,6 +26,11 @@ class SettingsScreen extends ConsumerWidget {
             leading: Icon(Icons.upload_outlined, color: cs.primary),
             title: const Text('Экспортировать данные'),
             subtitle: const Text('Сохранить резервную копию (JSON)'),
+            trailing: IconButton(
+              icon: const Icon(Icons.share),
+              tooltip: 'Поделиться',
+              onPressed: () => _exportAndShare(context, ref),
+            ),
             onTap: () => _export(context, ref),
           ),
           const SizedBox(height: Spacing.md),
@@ -92,6 +98,25 @@ class SettingsScreen extends ConsumerWidget {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Ошибка экспорта: $e')),
+        );
+      }
+    }
+  }
+
+  Future<void> _exportAndShare(BuildContext context, WidgetRef ref) async {
+    try {
+      final dir = await getApplicationDocumentsDirectory();
+      final file = await ref.read(exportServiceProvider).exportToFile(dir.path);
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [XFile(file.path)],
+          text: 'Gentleman OS — резервная копия данных',
+        ),
+      );
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Ошибка: $e')),
         );
       }
     }

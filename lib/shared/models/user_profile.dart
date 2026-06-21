@@ -27,6 +27,21 @@ class UserProfileModel with _$UserProfileModel {
 
   bool get isFilled => height > 0 && weight > 0;
 
+  double? get bmi {
+    if (height <= 0 || weight <= 0) return null;
+    final heightM = height / 100.0;
+    return weight / (heightM * heightM);
+  }
+
+  String get bmiCategory {
+    final b = bmi;
+    if (b == null) return '';
+    if (b < 18.5) return 'Недостаток веса';
+    if (b < 25.0) return 'Норма';
+    if (b < 30.0) return 'Избыток веса';
+    return 'Ожирение';
+  }
+
   factory UserProfileModel.fromJson(Map<String, dynamic> json) =>
       _$UserProfileModelFromJson(json);
 }
