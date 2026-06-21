@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gentleman_os/core/ai/ai_advisor_provider.dart';
 import 'package:gentleman_os/core/constants/spacing.dart';
+import 'package:gentleman_os/core/theme/app_colors.dart';
 import 'package:gentleman_os/core/widgets/empty_state.dart';
 import 'package:gentleman_os/features/knowledge/application/knowledge_providers.dart';
 import 'package:gentleman_os/shared/enums/knowledge_category.dart';
@@ -80,8 +82,15 @@ class _KnowledgeScreenState extends ConsumerState<KnowledgeScreen> {
               ),
             ),
           ),
+          if (_category == null)
+            const SliverToBoxAdapter(child: _RecommendedSection()),
           SliverPadding(
-            padding: const EdgeInsets.all(Spacing.screenPadding),
+            padding: const EdgeInsets.fromLTRB(
+              Spacing.screenPadding,
+              0,
+              Spacing.screenPadding,
+              Spacing.screenPadding,
+            ),
             sliver: asyncItems.when(
               loading: () => const SliverFillRemaining(
                 child: Center(child: CircularProgressIndicator()),
@@ -102,6 +111,67 @@ class _KnowledgeScreenState extends ConsumerState<KnowledgeScreen> {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _RecommendedSection extends ConsumerWidget {
+  const _RecommendedSection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final asyncRecs = ref.watch(recommendedArticlesProvider);
+    final tt = Theme.of(context).textTheme;
+
+    return asyncRecs.when(
+      loading: () => const SizedBox(),
+      error: (_, __) => const SizedBox(),
+      data: (articles) {
+        if (articles.isEmpty) return const SizedBox();
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(
+            Spacing.screenPadding,
+            Spacing.sm,
+            Spacing.screenPadding,
+            0,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.lightbulb_outline,
+                      size: 16, color: AppColors.gold),
+                  const SizedBox(width: 6),
+                  Text(
+                    'Рекомендуем прочитать',
+                    style: tt.titleSmall?.copyWith(color: AppColors.gold),
+                  ),
+                ],
+              ),
+              const SizedBox(height: Spacing.sm),
+              ...articles.map(
+                (a) => Card(
+                  margin: const EdgeInsets.only(bottom: 6),
+                  child: ListTile(
+                    dense: true,
+                    leading: CircleAvatar(
+                      backgroundColor: AppColors.gold.withOpacity(0.15),
+                      child: Icon(Icons.auto_awesome,
+                          size: 16, color: AppColors.gold),
+                    ),
+                    title: Text(a.title, style: tt.bodyMedium),
+                    subtitle: Text(a.category.label, style: tt.bodySmall),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => context.push('/knowledge/${a.id}'),
+                  ),
+                ),
+              ),
+              const Divider(height: Spacing.sectionGap),
+            ],
+          ),
+        );
+      },
     );
   }
 }
