@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gentleman_os/core/constants/spacing.dart';
+import 'package:gentleman_os/core/theme/app_colors.dart';
 import 'package:gentleman_os/core/widgets/score_ring.dart';
 import 'package:gentleman_os/features/dashboard/presentation/widgets/mission_tile.dart';
 import 'package:gentleman_os/features/dashboard/presentation/widgets/quick_action_button.dart';
@@ -23,14 +24,31 @@ class DashboardScreen extends ConsumerWidget {
     };
 
     return Scaffold(
-      backgroundColor: cs.surface,
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
             expandedHeight: 0,
             floating: true,
             snap: true,
-            title: Text(greeting, style: tt.headlineSmall),
+            leading: Padding(
+              padding: const EdgeInsets.all(8),
+              child: _GentlemanCrest(size: 36),
+            ),
+            title: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'GENTLEMAN OS',
+                  style: tt.labelSmall?.copyWith(
+                    color: AppColors.gold,
+                    letterSpacing: 2,
+                    fontSize: 10,
+                  ),
+                ),
+                Text(greeting, style: tt.titleMedium),
+              ],
+            ),
             actions: [
               IconButton(
                 tooltip: 'Профиль',
@@ -49,6 +67,8 @@ class DashboardScreen extends ConsumerWidget {
             sliver: SliverList(
               delegate: SliverChildListDelegate([
                 _GentlemanScoreCard(),
+                const SizedBox(height: Spacing.md),
+                _ColorPaletteHint(),
                 const SizedBox(height: Spacing.sectionGap),
                 _DailyMissionsSection(),
                 const SizedBox(height: Spacing.sectionGap),
@@ -63,48 +83,152 @@ class DashboardScreen extends ConsumerWidget {
   }
 }
 
+/// Герб/логотип из макета
+class _GentlemanCrest extends StatelessWidget {
+  const _GentlemanCrest({required this.size});
+
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: AppColors.gold.withOpacity(0.15),
+        shape: BoxShape.circle,
+        border: Border.all(color: AppColors.gold, width: 1),
+      ),
+      child: Icon(
+        Icons.shield_outlined,
+        color: AppColors.gold,
+        size: size * 0.55,
+      ),
+    );
+  }
+}
+
+/// Блок Gentleman Score из макета (732, круговой ring, золото)
 class _GentlemanScoreCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
 
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(Spacing.cardPadding),
-        child: Row(
-          children: [
-            ScoreRing(
-              score: 72,
-              size: 100,
-              label: 'SCORE',
-              color: cs.primary,
-            ),
-            const SizedBox(width: Spacing.lg),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Gentleman Score', style: tt.titleMedium),
-                  const SizedBox(height: 4),
-                  Text(
-                    '↑ +5 за неделю',
-                    style: tt.bodySmall?.copyWith(color: cs.primary),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    'Стиль · Форма · Дисциплина',
-                    style: tt.bodySmall?.copyWith(
-                      color: cs.onSurfaceVariant,
-                      letterSpacing: 0.5,
+    return Container(
+      decoration: BoxDecoration(
+        color: cs.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.gold.withOpacity(0.3), width: 0.5),
+      ),
+      padding: const EdgeInsets.all(Spacing.cardPadding),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              // Большой score из макета
+              ScoreRing(
+                score: 73.2,
+                size: 110,
+                strokeWidth: 8,
+                label: 'SCORE',
+                color: AppColors.gold,
+              ),
+              const SizedBox(width: Spacing.lg),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Gentleman\nScore',
+                      style: tt.headlineSmall?.copyWith(
+                        color: AppColors.textPrimary,
+                        height: 1.2,
+                      ),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Icon(Icons.trending_up,
+                            color: AppColors.success, size: 16),
+                        const SizedBox(width: 4),
+                        Text(
+                          '+5 за неделю',
+                          style: tt.bodySmall?.copyWith(
+                            color: AppColors.success,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    // Сегодняшняя рекомендация
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: AppColors.gold.withOpacity(0.12),
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(
+                            color: AppColors.gold.withOpacity(0.3)),
+                      ),
+                      child: Text(
+                        'Образ дня готов',
+                        style: tt.labelSmall?.copyWith(
+                          color: AppColors.gold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Подсказка цветовой палитры — из левой панели макета
+class _ColorPaletteHint extends StatelessWidget {
+  static const _colors = [
+    (color: Color(0xFF1A1A1A), label: 'Фон'),
+    (color: AppColors.gold, label: 'Акцент'),
+    (color: Color(0xFF9E9E9E), label: 'Текст'),
+    (color: Color(0xFF4A5568), label: 'Slate'),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final tt = Theme.of(context).textTheme;
+    final cs = Theme.of(context).colorScheme;
+
+    return Row(
+      children: [
+        Text(
+          'ПАЛИТРА',
+          style: tt.labelSmall?.copyWith(
+            color: AppColors.textSecondary,
+            letterSpacing: 1.5,
+          ),
+        ),
+        const SizedBox(width: Spacing.md),
+        ..._colors.map(
+          (c) => Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: Container(
+              width: 24,
+              height: 24,
+              decoration: BoxDecoration(
+                color: c.color,
+                shape: BoxShape.circle,
+                border: Border.all(color: cs.outline, width: 0.5),
               ),
             ),
-          ],
+          ),
         ),
-      ),
+      ],
     );
   }
 }
@@ -121,10 +245,15 @@ class _DailyMissionsSection extends StatelessWidget {
           children: [
             Text('Задачи дня', style: tt.titleMedium),
             const Spacer(),
-            Text(
-              '2/3',
-              style: tt.bodySmall?.copyWith(
-                color: Theme.of(context).colorScheme.primary,
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: AppColors.gold.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                '2 / 3',
+                style: tt.labelSmall?.copyWith(color: AppColors.gold),
               ),
             ),
           ],
@@ -182,8 +311,8 @@ class _QuickActionsSection extends StatelessWidget {
               route: '/outfits',
             ),
             QuickActionButton(
-              icon: Icons.add_circle_outline,
-              label: 'Образ',
+              icon: Icons.auto_awesome,
+              label: 'Подобрать',
               route: '/outfits/build',
             ),
             QuickActionButton(

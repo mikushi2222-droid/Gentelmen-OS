@@ -6,16 +6,22 @@ abstract final class AppTheme {
   static ThemeData dark() => _buildTheme(Brightness.dark);
 
   static ThemeData _buildTheme(Brightness brightness) {
-    final colorScheme = ColorScheme.fromSeed(
-      seedColor: AppColors.seed,
-      brightness: brightness,
-    );
+    // Тёмная тема строится по макету вручную (не из seed),
+    // чтобы точно воспроизвести цветовую схему дизайнера.
+    final colorScheme = brightness == Brightness.dark
+        ? _darkColorScheme()
+        : ColorScheme.fromSeed(
+            seedColor: AppColors.seed,
+            brightness: brightness,
+          );
 
     return ThemeData(
       useMaterial3: true,
       colorScheme: colorScheme,
       brightness: brightness,
-      scaffoldBackgroundColor: colorScheme.surface,
+      scaffoldBackgroundColor: brightness == Brightness.dark
+          ? AppColors.background
+          : colorScheme.surface,
       appBarTheme: AppBarTheme(
         backgroundColor: colorScheme.surface,
         foregroundColor: colorScheme.onSurface,
@@ -69,6 +75,37 @@ abstract final class AppTheme {
       textTheme: _buildTextTheme(colorScheme),
     );
   }
+
+  static ColorScheme _darkColorScheme() => const ColorScheme(
+        brightness: Brightness.dark,
+        primary: AppColors.gold,
+        onPrimary: Color(0xFF1A1A1A),
+        primaryContainer: Color(0xFF2E2710),
+        onPrimaryContainer: AppColors.goldLight,
+        secondary: Color(0xFF9E9E9E),
+        onSecondary: Color(0xFF1A1A1A),
+        secondaryContainer: Color(0xFF2E2E2E),
+        onSecondaryContainer: AppColors.textPrimary,
+        error: AppColors.error,
+        onError: AppColors.textPrimary,
+        errorContainer: Color(0xFF4A1010),
+        onErrorContainer: Color(0xFFFFB4AB),
+        surface: AppColors.surface,
+        onSurface: AppColors.textPrimary,
+        surfaceContainerLowest: AppColors.background,
+        surfaceContainerLow: AppColors.surface,
+        surfaceContainer: AppColors.surfaceVariant,
+        surfaceContainerHigh: AppColors.surfaceHigh,
+        surfaceContainerHighest: Color(0xFF3A3A3A),
+        onSurfaceVariant: AppColors.textSecondary,
+        outline: AppColors.outline,
+        outlineVariant: AppColors.outlineVariant,
+        shadow: Colors.black,
+        scrim: Colors.black,
+        inverseSurface: AppColors.textPrimary,
+        onInverseSurface: AppColors.background,
+        inversePrimary: AppColors.goldDark,
+      );
 
   static TextTheme _buildTextTheme(ColorScheme cs) => TextTheme(
         displayLarge: TextStyle(

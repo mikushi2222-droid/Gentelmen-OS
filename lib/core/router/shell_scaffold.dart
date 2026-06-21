@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gentleman_os/core/theme/app_colors.dart';
 
 class ShellScaffold extends StatelessWidget {
   const ShellScaffold({required this.child, super.key});
@@ -24,11 +25,14 @@ class ShellScaffold extends StatelessWidget {
       bottomNavigationBar: NavigationBar(
         selectedIndex: currentIndex,
         onDestinationSelected: (i) => context.go(_tabs[i].path),
+        backgroundColor: AppColors.surface,
+        indicatorColor: AppColors.gold.withOpacity(0.2),
+        labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
         destinations: _tabs
             .map(
               (t) => NavigationDestination(
-                icon: Icon(t.icon),
-                selectedIcon: Icon(t.active),
+                icon: Icon(t.icon, color: AppColors.textSecondary),
+                selectedIcon: Icon(t.active, color: AppColors.gold),
                 label: t.label,
               ),
             )
