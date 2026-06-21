@@ -133,7 +133,7 @@ class _ScoreCircle extends StatelessWidget {
 
     return CircleAvatar(
       radius: 36,
-      backgroundColor: color.withOpacity(0.15),
+      backgroundColor: color.withValues(alpha: 0.15),
       child: Text(
         score.toStringAsFixed(0),
         style: TextStyle(

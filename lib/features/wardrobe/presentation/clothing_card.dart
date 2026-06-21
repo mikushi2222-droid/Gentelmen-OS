@@ -60,7 +60,7 @@ class ClothingCard extends StatelessWidget {
                     Text(
                       item.brand!,
                       style: tt.bodySmall?.copyWith(
-                        color: AppColors.gold.withOpacity(0.7),
+                        color: AppColors.gold.withValues(alpha: 0.7),
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -121,7 +121,7 @@ class _WearBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
-        color: AppColors.gold.withOpacity(0.15),
+        color: AppColors.gold.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Text(

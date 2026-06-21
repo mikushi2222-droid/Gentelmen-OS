@@ -48,19 +48,19 @@ class MascotAvatar extends StatelessWidget {
         shape: BoxShape.circle,
         gradient: RadialGradient(
           colors: [
-            AppColors.gold.withOpacity(glow),
-            AppColors.background.withOpacity(0.0),
+            AppColors.gold.withValues(alpha: glow),
+            AppColors.background.withValues(alpha: 0.0),
           ],
           radius: 0.85,
         ),
         border: Border.all(
-          color: AppColors.gold.withOpacity(mood == MascotMood.proud ? 1.0 : 0.6),
+          color: AppColors.gold.withValues(alpha: mood == MascotMood.proud ? 1.0 : 0.6),
           width: 1,
         ),
       ),
       child: CustomPaint(
         painter: _MascotSilhouettePainter(
-          color: AppColors.gold.withOpacity(
+          color: AppColors.gold.withValues(alpha: 
             mood == MascotMood.proud ? 0.95 : 0.8,
           ),
         ),

@@ -18,7 +18,6 @@ class DashboardScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
     final hour = DateTime.now().hour;
 
@@ -107,7 +106,7 @@ class _GentlemanScoreCard extends ConsumerWidget {
       decoration: BoxDecoration(
         color: cs.surfaceContainerLow,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.gold.withOpacity(0.3), width: 0.5),
+        border: Border.all(color: AppColors.gold.withValues(alpha: 0.3), width: 0.5),
       ),
       padding: const EdgeInsets.all(Spacing.cardPadding),
       child: Column(
@@ -151,10 +150,10 @@ class _GentlemanScoreCard extends ConsumerWidget {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: AppColors.gold.withOpacity(0.12),
+                        color: AppColors.gold.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(6),
                         border: Border.all(
-                            color: AppColors.gold.withOpacity(0.3)),
+                            color: AppColors.gold.withValues(alpha: 0.3)),
                       ),
                       child: Text(
                         score >= 70
@@ -248,7 +247,7 @@ class _DailyMissionsSection extends ConsumerWidget {
                   padding: const EdgeInsets.symmetric(
                       horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: AppColors.gold.withOpacity(0.15),
+                    color: AppColors.gold.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(

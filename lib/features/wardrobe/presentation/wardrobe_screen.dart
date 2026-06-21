@@ -205,10 +205,10 @@ class _WardrobeStatsPanel extends ConsumerWidget {
                       return Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: AppColors.gold.withOpacity(0.08),
+                          color: AppColors.gold.withValues(alpha: 0.08),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                              color: AppColors.gold.withOpacity(0.25)),
+                              color: AppColors.gold.withValues(alpha: 0.25)),
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,

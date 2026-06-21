@@ -6,7 +6,8 @@ build/
 .flutter-plugins-dependencies
 .pub-cache/
 .pub/
-pubspec.lock
+# pubspec.lock НЕ игнорируем: это приложение — lock коммитится для
+# воспроизводимых сборок (добавить после `flutter pub get`).
 
 # Сгенерированный код (создаётся build_runner в CI/локально)
 *.g.dart

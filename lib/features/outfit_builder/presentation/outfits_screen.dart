@@ -85,7 +85,7 @@ class _OutfitCard extends ConsumerWidget {
       margin: const EdgeInsets.only(bottom: 8),
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor: _scoreColor(score).withOpacity(0.2),
+          backgroundColor: _scoreColor(score).withValues(alpha: 0.2),
           child: Text(
             score.toStringAsFixed(0),
             style: TextStyle(
