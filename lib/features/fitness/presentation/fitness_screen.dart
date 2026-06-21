@@ -78,6 +78,8 @@ class FitnessScreen extends ConsumerWidget {
                       children: [
                         _WeightChart(logs: logs),
                         const SizedBox(height: Spacing.sectionGap),
+                        _WaistChart(logs: logs),
+                        const SizedBox(height: Spacing.sectionGap),
                         _HistoryList(logs: logs),
                       ],
                     );
@@ -243,6 +245,141 @@ class _WeightChart extends StatelessWidget {
                         (s) => LineTooltipItem(
                           '${s.y.toStringAsFixed(1)} кг',
                           tt.labelSmall?.copyWith(color: AppColors.gold) ??
+                              const TextStyle(),
+                        ),
+                      )
+                      .toList(),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _WaistChart extends StatelessWidget {
+  const _WaistChart({required this.logs});
+
+  final List<MeasurementLogsData> logs;
+
+  @override
+  Widget build(BuildContext context) {
+    final tt = Theme.of(context).textTheme;
+    final cs = Theme.of(context).colorScheme;
+
+    final waistLogs = logs
+        .where((l) => l.waist != null)
+        .toList()
+        .reversed
+        .take(10)
+        .toList();
+
+    if (waistLogs.length < 2) return const SizedBox();
+
+    final spots = waistLogs.asMap().entries
+        .map((e) => FlSpot(e.key.toDouble(), e.value.waist!))
+        .toList();
+
+    final minY = waistLogs.map((l) => l.waist!).reduce((a, b) => a < b ? a : b) - 2;
+    final maxY = waistLogs.map((l) => l.waist!).reduce((a, b) => a > b ? a : b) + 2;
+
+    final fmt = DateFormat('d.MM', 'ru');
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Динамика талии', style: tt.titleMedium),
+        const SizedBox(height: Spacing.sm),
+        Container(
+          height: 160,
+          padding: const EdgeInsets.fromLTRB(0, 16, 16, 0),
+          decoration: BoxDecoration(
+            color: cs.surfaceContainerLow,
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: LineChart(
+            LineChartData(
+              minY: minY,
+              maxY: maxY,
+              gridData: FlGridData(
+                show: true,
+                drawVerticalLine: false,
+                getDrawingHorizontalLine: (v) => FlLine(
+                  color: cs.outlineVariant.withOpacity(0.4),
+                  strokeWidth: 1,
+                ),
+              ),
+              borderData: FlBorderData(show: false),
+              titlesData: FlTitlesData(
+                leftTitles: AxisTitles(
+                  sideTitles: SideTitles(
+                    showTitles: true,
+                    reservedSize: 42,
+                    getTitlesWidget: (value, meta) => Text(
+                      value.toStringAsFixed(0),
+                      style: tt.labelSmall?.copyWith(color: cs.onSurfaceVariant),
+                    ),
+                  ),
+                ),
+                bottomTitles: AxisTitles(
+                  sideTitles: SideTitles(
+                    showTitles: true,
+                    reservedSize: 28,
+                    getTitlesWidget: (value, meta) {
+                      final idx = value.toInt();
+                      if (idx < 0 || idx >= waistLogs.length) {
+                        return const SizedBox();
+                      }
+                      return Padding(
+                        padding: const EdgeInsets.only(top: 6),
+                        child: Text(
+                          fmt.format(waistLogs[idx].date),
+                          style: tt.labelSmall?.copyWith(color: cs.onSurfaceVariant),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+              ),
+              lineBarsData: [
+                LineChartBarData(
+                  spots: spots,
+                  isCurved: true,
+                  curveSmoothness: 0.35,
+                  color: AppColors.success,
+                  barWidth: 2.5,
+                  dotData: FlDotData(
+                    getDotPainter: (spot, percent, bar, index) =>
+                        FlDotCirclePainter(
+                      radius: 4,
+                      color: AppColors.success,
+                      strokeWidth: 0,
+                    ),
+                  ),
+                  belowBarData: BarAreaData(
+                    show: true,
+                    gradient: LinearGradient(
+                      colors: [
+                        AppColors.success.withOpacity(0.2),
+                        AppColors.success.withOpacity(0.0),
+                      ],
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                    ),
+                  ),
+                ),
+              ],
+              lineTouchData: LineTouchData(
+                touchTooltipData: LineTouchTooltipData(
+                  getTooltipItems: (spots) => spots
+                      .map(
+                        (s) => LineTooltipItem(
+                          '${s.y.toStringAsFixed(0)} см',
+                          tt.labelSmall?.copyWith(color: AppColors.success) ??
                               const TextStyle(),
                         ),
                       )

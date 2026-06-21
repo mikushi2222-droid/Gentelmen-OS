@@ -352,6 +352,16 @@ class _QuickActionsSection extends StatelessWidget {
               label: 'Покупки',
               route: '/purchases',
             ),
+            QuickActionButton(
+              icon: Icons.lightbulb_outline,
+              label: 'Советник',
+              route: '/style-advisor',
+            ),
+            QuickActionButton(
+              icon: Icons.repeat,
+              label: 'Привычки',
+              route: '/progress/habits',
+            ),
           ],
         ),
       ],
