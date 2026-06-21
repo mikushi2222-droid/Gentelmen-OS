@@ -88,6 +88,12 @@ class FitnessScreen extends ConsumerWidget {
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => context.push('/progress/add-measurement'),
                 ),
+                ListTile(
+                  leading: Icon(Icons.repeat, color: cs.primary),
+                  title: const Text('Привычки'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => context.push('/progress/habits'),
+                ),
               ]),
             ),
           ),

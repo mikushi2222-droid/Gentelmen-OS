@@ -13,6 +13,7 @@ import 'package:gentleman_os/features/outfit_builder/presentation/outfit_detail_
 import 'package:gentleman_os/features/profile/presentation/profile_screen.dart';
 import 'package:gentleman_os/features/profile/presentation/edit_profile_screen.dart';
 import 'package:gentleman_os/features/purchases/presentation/purchases_screen.dart';
+import 'package:gentleman_os/features/habits/presentation/habits_screen.dart';
 import 'package:gentleman_os/features/rpg/presentation/rpg_screen.dart';
 import 'package:gentleman_os/features/settings/presentation/settings_screen.dart';
 import 'package:gentleman_os/features/wardrobe/presentation/wardrobe_screen.dart';
@@ -95,6 +96,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: 'rpg',
                 builder: (c, s) => const RpgScreen(),
+              ),
+              GoRoute(
+                path: 'habits',
+                builder: (c, s) => const HabitsScreen(),
               ),
             ],
           ),
