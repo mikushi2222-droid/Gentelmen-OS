@@ -8,7 +8,7 @@ part 'outfit.freezed.dart';
 part 'outfit.g.dart';
 
 @freezed
-class OutfitScore with _$OutfitScore {
+abstract class OutfitScore with _$OutfitScore {
   const factory OutfitScore({
     @Default(0) double fitScore,
     @Default(0) double colorScore,
@@ -34,7 +34,7 @@ class OutfitScore with _$OutfitScore {
 }
 
 @freezed
-class OutfitModel with _$OutfitModel {
+abstract class OutfitModel with _$OutfitModel {
   const factory OutfitModel({
     required String id,
     required String name,

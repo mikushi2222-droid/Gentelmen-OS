@@ -107,9 +107,11 @@ class SettingsScreen extends ConsumerWidget {
     try {
       final dir = await getApplicationDocumentsDirectory();
       final file = await ref.read(exportServiceProvider).exportToFile(dir.path);
-      await Share.shareXFiles(
-        [XFile(file.path)],
-        text: 'Gentleman OS — резервная копия данных',
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [XFile(file.path)],
+          text: 'Gentleman OS — резервная копия данных',
+        ),
       );
     } catch (e) {
       if (context.mounted) {

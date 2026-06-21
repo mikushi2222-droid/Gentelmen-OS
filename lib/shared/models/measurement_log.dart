@@ -4,7 +4,7 @@ part 'measurement_log.freezed.dart';
 part 'measurement_log.g.dart';
 
 @freezed
-class MeasurementLog with _$MeasurementLog {
+abstract class MeasurementLog with _$MeasurementLog {
   const factory MeasurementLog({
     required String id,
     required DateTime date,

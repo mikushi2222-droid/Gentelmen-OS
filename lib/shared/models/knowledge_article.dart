@@ -5,7 +5,7 @@ part 'knowledge_article.freezed.dart';
 part 'knowledge_article.g.dart';
 
 @freezed
-class KnowledgeArticle with _$KnowledgeArticle {
+abstract class KnowledgeArticle with _$KnowledgeArticle {
   const factory KnowledgeArticle({
     required String id,
     required String title,

@@ -4,7 +4,7 @@ part 'user_profile.freezed.dart';
 part 'user_profile.g.dart';
 
 @freezed
-class UserProfileModel with _$UserProfileModel {
+abstract class UserProfileModel with _$UserProfileModel {
   const factory UserProfileModel({
     @Default(0) double height,
     @Default(0) double weight,
