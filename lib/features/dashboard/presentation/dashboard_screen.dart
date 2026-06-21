@@ -2,11 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gentleman_os/core/constants/spacing.dart';
+import 'package:gentleman_os/core/db/app_database.dart';
+import 'package:gentleman_os/core/db/database_provider.dart';
+import 'package:gentleman_os/core/services/services_provider.dart';
 import 'package:gentleman_os/core/theme/app_colors.dart';
 import 'package:gentleman_os/core/widgets/score_ring.dart';
 import 'package:gentleman_os/features/dashboard/application/dashboard_providers.dart';
 import 'package:gentleman_os/features/dashboard/presentation/widgets/mission_tile.dart';
 import 'package:gentleman_os/features/dashboard/presentation/widgets/quick_action_button.dart';
+import 'package:gentleman_os/shared/enums/xp_type.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -238,52 +242,65 @@ class _ColorPaletteHint extends StatelessWidget {
   }
 }
 
-class _DailyMissionsSection extends StatelessWidget {
+class _DailyMissionsSection extends ConsumerWidget {
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final tt = Theme.of(context).textTheme;
+    final asyncMissions = ref.watch(dailyMissionsProvider);
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
+    return asyncMissions.when(
+      loading: () => const SizedBox(
+        height: 120,
+        child: Center(child: CircularProgressIndicator()),
+      ),
+      error: (e, _) => const SizedBox.shrink(),
+      data: (missions) {
+        final completed = missions.where((m) => m.completed).length;
+        final total = missions.length;
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Задачи дня', style: tt.titleMedium),
-            const Spacer(),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: AppColors.gold.withOpacity(0.15),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Text(
-                '2 / 3',
-                style: tt.labelSmall?.copyWith(color: AppColors.gold),
+            Row(
+              children: [
+                Text('Задачи дня', style: tt.titleMedium),
+                const Spacer(),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: AppColors.gold.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    '$completed / $total',
+                    style: tt.labelSmall?.copyWith(color: AppColors.gold),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: Spacing.sm),
+            ...missions.map(
+              (m) => MissionTile(
+                title: m.title,
+                xpReward: m.xpReward,
+                completed: m.completed,
+                xpTypeIndex: m.xpType,
+                onTap: () => _completeMission(ref, m),
               ),
             ),
           ],
-        ),
-        const SizedBox(height: Spacing.sm),
-        const MissionTile(
-          title: 'Записать замеры',
-          xpReward: 15,
-          completed: true,
-          xpType: 'fitness',
-        ),
-        const MissionTile(
-          title: 'Собрать образ на сегодня',
-          xpReward: 15,
-          completed: true,
-          xpType: 'style',
-        ),
-        const MissionTile(
-          title: 'Прочитать одну статью',
-          xpReward: 10,
-          completed: false,
-          xpType: 'reading',
-        ),
-      ],
+        );
+      },
     );
+  }
+
+  Future<void> _completeMission(WidgetRef ref, DailyMissionsData m) async {
+    await ref.read(dailyMissionsDaoProvider).complete(m.id);
+    final xpType = XpType.values[m.xpType.clamp(0, XpType.values.length - 1)];
+    await ref
+        .read(xpServiceProvider)
+        .award(xpType, m.xpReward, 'Миссия: ${m.title}');
   }
 }
 

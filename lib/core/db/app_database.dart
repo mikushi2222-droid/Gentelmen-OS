@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
+import 'package:gentleman_os/core/db/daos/daily_missions_dao.dart';
 import 'package:gentleman_os/core/db/daos/habits_dao.dart';
 import 'package:gentleman_os/core/db/daos/knowledge_dao.dart';
 import 'package:gentleman_os/core/db/daos/measurement_dao.dart';
@@ -45,6 +46,7 @@ part 'app_database.g.dart';
     HabitsDao,
     RpgDao,
     PurchasesDao,
+    DailyMissionsDao,
   ],
 )
 class AppDatabase extends _$AppDatabase {

@@ -1,8 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gentleman_os/core/db/app_database.dart';
 import 'package:gentleman_os/core/db/database_provider.dart';
+import 'package:gentleman_os/features/dashboard/domain/mission_generator.dart';
 import 'package:gentleman_os/features/rpg/application/rpg_providers.dart';
-import 'package:gentleman_os/features/wardrobe/application/wardrobe_providers.dart';
 import 'package:gentleman_os/features/rpg/domain/level_calculator.dart';
+import 'package:gentleman_os/features/wardrobe/application/wardrobe_providers.dart';
 import 'package:gentleman_os/shared/enums/xp_type.dart';
 
 final wardrobeCountProvider = Provider<AsyncValue<int>>((ref) {
@@ -36,4 +38,37 @@ final gentlemanScoreProvider = FutureProvider<double>((ref) async {
     habitsTotal: habits.length,
     articlesReadLast7d: 0,
   );
+});
+
+/// Ensures today's missions exist in DB, then streams them.
+final dailyMissionsProvider =
+    StreamProvider<List<DailyMissionsData>>((ref) async* {
+  final dao = ref.watch(dailyMissionsDaoProvider);
+  final measurementDao = ref.watch(measurementDaoProvider);
+  final wardrobeCount = ref.watch(wardrobeCountProvider).valueOrNull ?? 0;
+
+  final today = DateTime.now();
+
+  // Seed today's missions if DB has none yet
+  final existing = await dao.getForDate(today);
+  if (existing.isEmpty) {
+    final latest = await measurementDao.getLatest();
+    final hasMeasurementToday = latest != null &&
+        latest.date.year == today.year &&
+        latest.date.month == today.month &&
+        latest.date.day == today.day;
+
+    final missions = generateDailyMissions(
+      date: today,
+      hasMeasurementToday: hasMeasurementToday,
+      hasOutfitToday: false,
+      wardrobeCount: wardrobeCount,
+      articlesRead: 0,
+    );
+    for (final m in missions) {
+      await dao.upsertMission(m);
+    }
+  }
+
+  yield* dao.watchForDate(today);
 });
