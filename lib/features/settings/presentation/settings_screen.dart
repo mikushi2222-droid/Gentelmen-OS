@@ -129,6 +129,7 @@ class SettingsScreen extends ConsumerWidget {
         title: const Text('Очистить все данные?'),
         content: const Text(
           'Это удалит весь гардероб, образы, замеры и историю. '
+          'Знания и достижения будут сохранены. '
           'Действие необратимо. Сделайте экспорт перед очисткой.',
         ),
         actions: [
@@ -140,7 +141,23 @@ class SettingsScreen extends ConsumerWidget {
             style: FilledButton.styleFrom(
               backgroundColor: Theme.of(ctx).colorScheme.error,
             ),
-            onPressed: () => Navigator.pop(ctx),
+            onPressed: () async {
+              Navigator.pop(ctx);
+              try {
+                await ref.read(clearAllDataProvider)();
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Данные очищены')),
+                  );
+                }
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Ошибка: $e')),
+                  );
+                }
+              }
+            },
             child: const Text('Очистить'),
           ),
         ],

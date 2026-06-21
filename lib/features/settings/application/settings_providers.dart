@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gentleman_os/core/db/app_database.dart';
 import 'package:gentleman_os/core/db/database_provider.dart';
 import 'package:gentleman_os/features/settings/domain/export_service.dart';
 
@@ -13,4 +14,29 @@ final exportServiceProvider = Provider<ExportService>((ref) {
     rpgDao: ref.watch(rpgDaoProvider),
     purchasesDao: ref.watch(purchasesDaoProvider),
   );
+});
+
+final clearAllDataProvider = Provider<Future<void> Function()>((ref) {
+  final db = ref.watch(appDatabaseProvider);
+  return () async {
+    await db.transaction(() async {
+      await db.delete(db.clothingItems).go();
+      await db.delete(db.outfits).go();
+      await db.delete(db.outfitItems).go();
+      await db.delete(db.wearLogs).go();
+      await db.delete(db.measurementLogs).go();
+      await db.delete(db.habits).go();
+      await db.delete(db.habitLogs).go();
+      await db.delete(db.xpEvents).go();
+      await db.delete(db.purchaseWishes).go();
+      await db.delete(db.dailyMissions).go();
+      // Reset achievements to unlocked=false
+      await (db.update(db.achievements)).write(
+        AchievementsCompanion(
+          unlocked: const Value(false),
+          unlockedAt: const Value(null),
+        ),
+      );
+    });
+  };
 });
