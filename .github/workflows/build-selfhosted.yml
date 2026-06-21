@@ -1,0 +1,39 @@
+name: Build APK (self-hosted)
+
+# Запуск только вручную. Требует зарегистрированного self-hosted раннера
+# с метками [self-hosted] и установленными Flutter 3.44+ и Android SDK.
+# См. docs/15-ci-and-build.md, раздел 3.
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build debug APK on self-hosted
+    runs-on: [self-hosted]
+    timeout-minutes: 40
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Flutter version
+        run: flutter --version
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Generate code
+        run: dart run build_runner build --delete-conflicting-outputs
+
+      - name: Build debug APK
+        run: flutter build apk --debug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: gentleman-os-debug-${{ github.sha }}
+          path: build/app/outputs/flutter-apk/app-debug.apk
+          retention-days: 14

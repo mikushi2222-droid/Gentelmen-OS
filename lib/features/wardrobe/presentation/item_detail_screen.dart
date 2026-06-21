@@ -4,8 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:gentleman_os/core/ai/router_ai_client.dart';
 import 'package:gentleman_os/core/constants/spacing.dart';
 import 'package:gentleman_os/core/theme/app_colors.dart';
+import 'package:gentleman_os/features/wardrobe/application/clothing_ai_providers.dart';
 import 'package:gentleman_os/features/wardrobe/application/wardrobe_providers.dart';
 import 'package:gentleman_os/shared/models/clothing_item.dart';
 
@@ -116,8 +118,25 @@ class _ItemBody extends StatelessWidget {
             icon: const Icon(Icons.add_circle_outline),
             label: const Text('Отметить носку'),
           ),
+          if (item.imagePath != null) ...[
+            const SizedBox(height: Spacing.sm),
+            FilledButton.tonalIcon(
+              onPressed: () => _showPhotoAnalysis(context, item),
+              icon: const Icon(Icons.auto_awesome),
+              label: const Text('ИИ-анализ фото'),
+            ),
+          ],
         ],
       ),
+    );
+  }
+
+  void _showPhotoAnalysis(BuildContext context, ClothingItem item) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (ctx) => _PhotoAnalysisSheet(item: item),
     );
   }
 
@@ -172,6 +191,71 @@ class _HeroImage extends StatelessWidget {
       ),
       child: Center(
         child: Icon(Icons.checkroom, size: 96, color: cs.outlineVariant),
+      ),
+    );
+  }
+}
+
+class _PhotoAnalysisSheet extends ConsumerWidget {
+  const _PhotoAnalysisSheet({required this.item});
+
+  final ClothingItem item;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final tt = Theme.of(context).textTheme;
+    final cs = Theme.of(context).colorScheme;
+    final async = ref.watch(clothingPhotoAnalysisProvider(item));
+
+    return DraggableScrollableSheet(
+      expand: false,
+      initialChildSize: 0.6,
+      minChildSize: 0.3,
+      maxChildSize: 0.9,
+      builder: (ctx, controller) => ListView(
+        controller: controller,
+        padding: const EdgeInsets.fromLTRB(
+          Spacing.screenPadding,
+          0,
+          Spacing.screenPadding,
+          Spacing.screenPadding,
+        ),
+        children: [
+          Row(
+            children: [
+              Icon(Icons.auto_awesome, size: 18, color: AppColors.gold),
+              const SizedBox(width: 8),
+              Text('ИИ-анализ фото',
+                  style: tt.titleMedium?.copyWith(color: AppColors.gold)),
+              const Spacer(),
+              IconButton(
+                icon: const Icon(Icons.refresh),
+                tooltip: 'Повторить',
+                onPressed: () =>
+                    ref.invalidate(clothingPhotoAnalysisProvider(item)),
+              ),
+            ],
+          ),
+          const SizedBox(height: Spacing.sm),
+          async.when(
+            loading: () => const Padding(
+              padding: EdgeInsets.all(32),
+              child: Center(child: CircularProgressIndicator()),
+            ),
+            error: (e, _) => Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.warning.withOpacity(0.12),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                e is RouterAiException ? e.message : '$e',
+                style: tt.bodyMedium?.copyWith(color: AppColors.warning),
+              ),
+            ),
+            data: (text) => Text(text, style: tt.bodyMedium),
+          ),
+        ],
       ),
     );
   }
