@@ -1,0 +1,21 @@
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  exclude:
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"
+  plugins:
+    - custom_lint
+
+linter:
+  rules:
+    - always_use_package_imports
+    - avoid_print
+    - avoid_unnecessary_containers
+    - prefer_const_constructors
+    - prefer_const_declarations
+    - prefer_final_fields
+    - require_trailing_commas
+    - sort_child_properties_last
+    - use_colored_box
+    - use_decorated_box
