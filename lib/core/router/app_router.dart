@@ -18,6 +18,7 @@ import 'package:gentleman_os/features/health/presentation/health_screen.dart';
 import 'package:gentleman_os/features/health/presentation/health_marker_detail_screen.dart';
 import 'package:gentleman_os/features/rpg/presentation/rpg_screen.dart';
 import 'package:gentleman_os/features/settings/presentation/settings_screen.dart';
+import 'package:gentleman_os/features/settings/presentation/log_screen.dart';
 import 'package:gentleman_os/features/style_advisor/presentation/style_advisor_screen.dart';
 import 'package:gentleman_os/features/wardrobe/presentation/wardrobe_screen.dart';
 import 'package:gentleman_os/features/wardrobe/presentation/item_detail_screen.dart';
@@ -142,6 +143,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/settings',
         builder: (c, s) => const SettingsScreen(),
+        routes: [
+          GoRoute(
+            path: 'logs',
+            builder: (c, s) => const LogScreen(),
+          ),
+        ],
       ),
     ],
   );

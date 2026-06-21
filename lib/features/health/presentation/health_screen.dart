@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:uuid/uuid.dart';
+import 'package:gentleman_os/core/ai/router_ai_client.dart';
 import 'package:gentleman_os/core/constants/spacing.dart';
 import 'package:gentleman_os/core/db/app_database.dart';
 import 'package:gentleman_os/core/db/database_provider.dart';
@@ -21,7 +22,16 @@ class HealthScreen extends ConsumerWidget {
     final asyncIndex = ref.watch(healthIndexProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Мужское здоровье')),
+      appBar: AppBar(
+        title: const Text('Мужское здоровье'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.auto_awesome),
+            tooltip: 'ИИ-анализ показателей',
+            onPressed: () => _showAiAnalysis(context),
+          ),
+        ],
+      ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showAddSheet(context, ref),
         icon: const Icon(Icons.add),
@@ -68,6 +78,83 @@ class HealthScreen extends ConsumerWidget {
       context: context,
       isScrollControlled: true,
       builder: (ctx) => _AddMarkerSheet(ref: ref),
+    );
+  }
+
+  void _showAiAnalysis(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (ctx) => const _AiAnalysisSheet(),
+    );
+  }
+}
+
+/// Лист с ИИ-разбором показателей (RouterAI).
+class _AiAnalysisSheet extends ConsumerWidget {
+  const _AiAnalysisSheet();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final tt = Theme.of(context).textTheme;
+    final cs = Theme.of(context).colorScheme;
+    final async = ref.watch(healthAiAnalysisProvider);
+
+    return DraggableScrollableSheet(
+      expand: false,
+      initialChildSize: 0.6,
+      minChildSize: 0.3,
+      maxChildSize: 0.9,
+      builder: (ctx, scrollController) => ListView(
+        controller: scrollController,
+        padding: const EdgeInsets.fromLTRB(
+          Spacing.screenPadding,
+          0,
+          Spacing.screenPadding,
+          Spacing.screenPadding,
+        ),
+        children: [
+          Row(
+            children: [
+              Icon(Icons.auto_awesome, size: 18, color: AppColors.gold),
+              const SizedBox(width: 8),
+              Text('ИИ-анализ показателей',
+                  style: tt.titleMedium?.copyWith(color: AppColors.gold)),
+              const Spacer(),
+              IconButton(
+                icon: const Icon(Icons.refresh),
+                tooltip: 'Повторить',
+                onPressed: () => ref.invalidate(healthAiAnalysisProvider),
+              ),
+            ],
+          ),
+          const SizedBox(height: Spacing.sm),
+          async.when(
+            loading: () => const Padding(
+              padding: EdgeInsets.all(32),
+              child: Center(child: CircularProgressIndicator()),
+            ),
+            error: (e, _) => Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.warning.withOpacity(0.12),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                e is RouterAiException ? e.message : '$e',
+                style: tt.bodyMedium?.copyWith(color: AppColors.warning),
+              ),
+            ),
+            data: (text) => Text(text, style: tt.bodyMedium),
+          ),
+          const SizedBox(height: Spacing.md),
+          Text(
+            'Не является медицинской рекомендацией. Консультируйтесь с врачом.',
+            style: tt.labelSmall?.copyWith(color: cs.onSurfaceVariant),
+          ),
+        ],
+      ),
     );
   }
 }

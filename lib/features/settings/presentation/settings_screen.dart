@@ -2,6 +2,9 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:gentleman_os/core/ai/ai_advisor_provider.dart';
+import 'package:gentleman_os/core/ai/router_ai_config.dart';
 import 'package:gentleman_os/core/constants/spacing.dart';
 import 'package:gentleman_os/features/settings/application/settings_providers.dart';
 import 'package:path_provider/path_provider.dart';
@@ -32,6 +35,35 @@ class SettingsScreen extends ConsumerWidget {
               onPressed: () => _exportAndShare(context, ref),
             ),
             onTap: () => _export(context, ref),
+          ),
+          const SizedBox(height: Spacing.md),
+          Text('ИИ-советник', style: tt.titleSmall),
+          const Divider(height: 16),
+          Consumer(
+            builder: (context, ref, _) {
+              final enabled = ref.watch(aiCloudEnabledProvider);
+              return ListTile(
+                leading: Icon(
+                  enabled ? Icons.cloud_done_outlined : Icons.cloud_off_outlined,
+                  color: enabled ? cs.primary : cs.onSurfaceVariant,
+                ),
+                title: const Text('RouterAI (облачный ИИ)'),
+                subtitle: Text(
+                  enabled
+                      ? 'Подключён · анализ стиля и здоровья через ИИ'
+                      : 'Не подключён · работает оффлайн-движок',
+                ),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => _showAiKeyDialog(context, ref),
+              );
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.bug_report_outlined, color: cs.onSurfaceVariant),
+            title: const Text('Журнал отладки'),
+            subtitle: const Text('Логи приложения и запросов к ИИ'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push('/settings/logs'),
           ),
           const SizedBox(height: Spacing.md),
           Text('Философия', style: tt.titleSmall),
@@ -120,6 +152,72 @@ class SettingsScreen extends ConsumerWidget {
         );
       }
     }
+  }
+
+  void _showAiKeyDialog(BuildContext context, WidgetRef ref) {
+    final cfg = ref.read(routerAiConfigProvider).valueOrNull;
+    final keyCtrl = TextEditingController(text: cfg?.apiKey ?? '');
+    var model = cfg?.model ?? RouterAiConfig.defaultModel;
+
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setState) => AlertDialog(
+          title: const Text('RouterAI'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Ключ хранится только на устройстве (secure storage) и '
+                  'используется для анализа стиля и здоровья.',
+                  style: TextStyle(fontSize: 12),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: keyCtrl,
+                  obscureText: true,
+                  decoration: const InputDecoration(
+                    labelText: 'API-ключ',
+                    hintText: 'sk-...',
+                  ),
+                ),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<String>(
+                  value: model,
+                  isExpanded: true,
+                  decoration: const InputDecoration(labelText: 'Модель'),
+                  items: RouterAiConfig.availableModels
+                      .map((m) => DropdownMenuItem(value: m, child: Text(m)))
+                      .toList(),
+                  onChanged: (v) => setState(() => model = v ?? model),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () async {
+                await ref.read(routerAiSettingsProvider).clear();
+                if (ctx.mounted) Navigator.pop(ctx);
+              },
+              child: const Text('Удалить ключ'),
+            ),
+            FilledButton(
+              onPressed: () async {
+                await ref.read(routerAiSettingsProvider).save(
+                      apiKey: keyCtrl.text,
+                      model: model,
+                    );
+                if (ctx.mounted) Navigator.pop(ctx);
+              },
+              child: const Text('Сохранить'),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   void _confirmClear(BuildContext context, WidgetRef ref) {
