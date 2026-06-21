@@ -1,11 +1,19 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gentleman_os/core/constants/spacing.dart';
+import 'package:gentleman_os/core/db/database_provider.dart';
+import 'package:gentleman_os/core/theme/app_colors.dart';
 import 'package:gentleman_os/core/widgets/score_ring.dart';
+import 'package:gentleman_os/features/outfit_builder/application/outfit_providers.dart';
+import 'package:gentleman_os/features/outfit_builder/domain/outfit_generator.dart';
+import 'package:gentleman_os/shared/enums/clothing_category.dart';
 import 'package:gentleman_os/shared/enums/dress_code.dart';
 import 'package:gentleman_os/shared/enums/occasion.dart';
 import 'package:gentleman_os/shared/enums/season.dart';
 import 'package:gentleman_os/shared/enums/weather_condition.dart';
+import 'package:gentleman_os/shared/models/clothing_item.dart';
 
 class OutfitBuilderScreen extends ConsumerStatefulWidget {
   const OutfitBuilderScreen({super.key});
@@ -15,22 +23,22 @@ class OutfitBuilderScreen extends ConsumerStatefulWidget {
       _OutfitBuilderScreenState();
 }
 
-class _OutfitBuilderScreenState
-    extends ConsumerState<OutfitBuilderScreen> {
+class _OutfitBuilderScreenState extends ConsumerState<OutfitBuilderScreen> {
   Occasion _occasion = Occasion.everyday;
   DressCode _dressCode = DressCode.casual;
   Season _season = Season.all;
   WeatherCondition? _weather;
-  int? _temperatureC;
-  bool _generated = false;
+  OutfitParams? _params;
 
   @override
   Widget build(BuildContext context) {
-    final tt = Theme.of(context).textTheme;
-
     return Scaffold(
       appBar: AppBar(title: const Text('Подобрать образ')),
-      body: _generated ? _ResultView(onReset: () => setState(() => _generated = false))
+      body: _params != null
+          ? _ResultView(
+              params: _params!,
+              onReset: () => setState(() => _params = null),
+            )
           : _FormView(
               occasion: _occasion,
               dressCode: _dressCode,
@@ -40,7 +48,14 @@ class _OutfitBuilderScreenState
               onDressCodeChanged: (v) => setState(() => _dressCode = v),
               onSeasonChanged: (v) => setState(() => _season = v),
               onWeatherChanged: (v) => setState(() => _weather = v),
-              onGenerate: () => setState(() => _generated = true),
+              onGenerate: () => setState(
+                () => _params = OutfitParams(
+                  occasion: _occasion,
+                  dressCode: _dressCode,
+                  season: _season,
+                  weather: _weather,
+                ),
+              ),
             ),
     );
   }
@@ -117,83 +132,298 @@ class _FormView extends StatelessWidget {
   }
 }
 
-class _ResultView extends StatelessWidget {
-  const _ResultView({required this.onReset});
+class _ResultView extends ConsumerWidget {
+  const _ResultView({required this.params, required this.onReset});
 
+  final OutfitParams params;
   final VoidCallback onReset;
 
   @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
+  Widget build(BuildContext context, WidgetRef ref) {
     final tt = Theme.of(context).textTheme;
+    final cs = Theme.of(context).colorScheme;
+    final asyncSuggestions = ref.watch(outfitSuggestionsProvider(params));
 
-    return ListView(
-      padding: const EdgeInsets.all(Spacing.screenPadding),
-      children: [
-        Text('Подобранные образы', style: tt.titleMedium),
-        const SizedBox(height: Spacing.md),
-        // TODO: реальные результаты из OutfitGenerator
-        _SuggestionCard(index: 1, score: 87),
-        _SuggestionCard(index: 2, score: 74),
-        _SuggestionCard(index: 3, score: 62),
-        const SizedBox(height: Spacing.lg),
-        OutlinedButton.icon(
-          onPressed: onReset,
-          icon: const Icon(Icons.refresh),
-          label: const Text('Изменить параметры'),
+    return asyncSuggestions.when(
+      loading: () => const Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: 16),
+            Text('Подбираем образы...'),
+          ],
         ),
-      ],
+      ),
+      error: (e, _) => Center(child: Text('Ошибка: $e')),
+      data: (suggestions) {
+        if (suggestions.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.checkroom_outlined, size: 64, color: cs.outline),
+                const SizedBox(height: 16),
+                Text(
+                  'Образы не найдены',
+                  style: tt.headlineSmall,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Добавьте больше вещей в гардероб:\nнужны верхние и нижние части одежды',
+                  style: tt.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 24),
+                OutlinedButton.icon(
+                  onPressed: onReset,
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('Изменить параметры'),
+                ),
+              ],
+            ),
+          );
+        }
+
+        return ListView(
+          padding: const EdgeInsets.all(Spacing.screenPadding),
+          children: [
+            Text('Подобранные образы', style: tt.titleMedium),
+            const SizedBox(height: Spacing.md),
+            ...suggestions.asMap().entries.map(
+              (e) => _SuggestionCard(
+                suggestion: e.value,
+                index: e.key + 1,
+                params: params,
+              ),
+            ),
+            const SizedBox(height: Spacing.lg),
+            OutlinedButton.icon(
+              onPressed: onReset,
+              icon: const Icon(Icons.refresh),
+              label: const Text('Изменить параметры'),
+            ),
+          ],
+        );
+      },
     );
   }
 }
 
-class _SuggestionCard extends StatelessWidget {
-  const _SuggestionCard({required this.index, required this.score});
+class _SuggestionCard extends ConsumerWidget {
+  const _SuggestionCard({
+    required this.suggestion,
+    required this.index,
+    required this.params,
+  });
 
+  final OutfitSuggestion suggestion;
   final int index;
-  final double score;
+  final OutfitParams params;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
+    final score = suggestion.score.totalScaled;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: Padding(
         padding: const EdgeInsets.all(Spacing.cardPadding),
-        child: Row(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            ScoreRing(score: score, size: 72, strokeWidth: 6, label: 'SCORE'),
-            const SizedBox(width: Spacing.md),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Вариант $index', style: tt.titleSmall),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Нажмите для подробностей',
-                    style: tt.bodySmall?.copyWith(
-                      color: cs.onSurfaceVariant,
-                    ),
+            Row(
+              children: [
+                ScoreRing(
+                  score: score,
+                  size: 72,
+                  strokeWidth: 6,
+                  label: 'SCORE',
+                  color: _scoreColor(score),
+                ),
+                const SizedBox(width: Spacing.md),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Вариант $index', style: tt.titleSmall),
+                      const SizedBox(height: 4),
+                      Text(
+                        '${suggestion.items.length} предметов',
+                        style: tt.bodySmall?.copyWith(
+                          color: cs.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+                FilledButton(
+                  onPressed: () => _saveDialog(context, ref),
+                  style: FilledButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 8),
+                    minimumSize: Size.zero,
+                  ),
+                  child: const Text('Сохранить'),
+                ),
+              ],
             ),
-            FilledButton(
-              onPressed: () {},
-              style: FilledButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                minimumSize: Size.zero,
+            const SizedBox(height: Spacing.sm),
+            _ItemsRow(items: suggestion.items),
+            if (suggestion.score.explanation.isNotEmpty) ...[
+              const SizedBox(height: Spacing.sm),
+              ExpansionTile(
+                title: Text('Объяснение',
+                    style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant)),
+                tilePadding: EdgeInsets.zero,
+                childrenPadding: EdgeInsets.zero,
+                children: suggestion.score.explanation
+                    .map(
+                      (e) => Padding(
+                        padding: const EdgeInsets.only(bottom: 4),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('• ',
+                                style: tt.bodySmall
+                                    ?.copyWith(color: cs.onSurfaceVariant)),
+                            Expanded(
+                              child: Text(e,
+                                  style: tt.bodySmall?.copyWith(
+                                      color: cs.onSurfaceVariant)),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                    .toList(),
               ),
-              child: const Text('Сохранить'),
-            ),
+            ],
           ],
         ),
       ),
     );
   }
+
+  Color _scoreColor(double score) {
+    if (score >= 70) return AppColors.success;
+    if (score >= 40) return AppColors.warning;
+    return AppColors.error;
+  }
+
+  void _saveDialog(BuildContext context, WidgetRef ref) {
+    final ctrl = TextEditingController(text: 'Образ $index');
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Сохранить образ'),
+        content: TextField(
+          controller: ctrl,
+          decoration: const InputDecoration(labelText: 'Название'),
+          autofocus: true,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Отмена'),
+          ),
+          FilledButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              await saveOutfitSuggestion(
+                suggestion: suggestion,
+                name: ctrl.text.trim().isEmpty ? 'Образ $index' : ctrl.text.trim(),
+                params: params,
+                dao: ref.read(outfitDaoProvider),
+              );
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Образ сохранён')),
+                );
+              }
+            },
+            child: const Text('Сохранить'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ItemsRow extends StatelessWidget {
+  const _ItemsRow({required this.items});
+
+  final List<ClothingItem> items;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
+    return SizedBox(
+      height: 80,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: items.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 8),
+        itemBuilder: (ctx, i) {
+          final item = items[i];
+          return Column(
+            children: [
+              Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  color: cs.surfaceContainerLow,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: cs.outlineVariant),
+                ),
+                clipBehavior: Clip.antiAlias,
+                child: item.imagePath != null &&
+                        File(item.imagePath!).existsSync()
+                    ? Image.file(File(item.imagePath!), fit: BoxFit.cover)
+                    : Icon(
+                        _categoryIcon(item.category),
+                        color: cs.outline,
+                        size: 28,
+                      ),
+              ),
+              const SizedBox(height: 4),
+              SizedBox(
+                width: 56,
+                child: Text(
+                  item.category.label,
+                  style: tt.labelSmall?.copyWith(color: cs.onSurfaceVariant),
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  IconData _categoryIcon(ClothingCategory c) => switch (c) {
+        ClothingCategory.shirt ||
+        ClothingCategory.tshirt ||
+        ClothingCategory.polo =>
+          Icons.dry_cleaning,
+        ClothingCategory.trousers ||
+        ClothingCategory.jeans ||
+        ClothingCategory.shorts =>
+          Icons.straighten,
+        ClothingCategory.shoes => Icons.do_not_step,
+        ClothingCategory.jacket ||
+        ClothingCategory.coat ||
+        ClothingCategory.blazer =>
+          Icons.checkroom,
+        _ => Icons.checkroom_outlined,
+      };
 }
 
 class _EnumSelector<T extends Enum> extends StatelessWidget {
