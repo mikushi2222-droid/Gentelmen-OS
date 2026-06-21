@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gentleman_os/core/constants/spacing.dart';
 import 'package:gentleman_os/core/db/database_provider.dart';
+import 'package:gentleman_os/core/services/achievement_service.dart';
+import 'package:gentleman_os/core/services/services_provider.dart';
 import 'package:gentleman_os/core/services/xp_service.dart';
 import 'package:gentleman_os/core/theme/app_colors.dart';
 import 'package:gentleman_os/core/widgets/score_ring.dart';
@@ -340,6 +342,9 @@ class _SuggestionCard extends ConsumerWidget {
                 dao: ref.read(outfitDaoProvider),
                 xpService: ref.read(xpServiceProvider),
               );
+              await ref
+                  .read(achievementServiceProvider)
+                  .checkAfterOutfitSave();
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Образ сохранён')),

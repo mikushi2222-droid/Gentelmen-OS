@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:gentleman_os/core/constants/spacing.dart';
+import 'package:gentleman_os/core/services/achievement_service.dart';
+import 'package:gentleman_os/core/services/services_provider.dart';
 import 'package:gentleman_os/core/services/xp_service.dart';
 import 'package:gentleman_os/features/wardrobe/application/wardrobe_providers.dart';
 import 'package:gentleman_os/shared/enums/clothing_category.dart';
@@ -259,6 +261,7 @@ class _AddItemScreenState extends ConsumerState<AddItemScreen> {
     if (_original == null) {
       // Only award XP for new items, not edits
       await ref.read(xpServiceProvider).wardrobeItemAdded();
+      await ref.read(achievementServiceProvider).checkAfterWardrobeAdd();
     }
 
     if (mounted) {

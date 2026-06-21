@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gentleman_os/core/constants/spacing.dart';
+import 'package:gentleman_os/core/services/achievement_service.dart';
+import 'package:gentleman_os/core/services/services_provider.dart';
+import 'package:gentleman_os/core/services/xp_service.dart';
 import 'package:gentleman_os/features/knowledge/application/knowledge_providers.dart';
 import 'package:gentleman_os/shared/models/knowledge_article.dart';
 
@@ -35,11 +38,34 @@ class ArticleScreen extends ConsumerWidget {
   }
 }
 
-class _ArticleBody extends StatelessWidget {
+class _ArticleBody extends StatefulWidget {
   const _ArticleBody({required this.article, required this.ref});
 
   final KnowledgeArticle article;
   final WidgetRef ref;
+
+  @override
+  State<_ArticleBody> createState() => _ArticleBodyState();
+}
+
+class _ArticleBodyState extends State<_ArticleBody> {
+  bool _xpAwarded = false;
+
+  KnowledgeArticle get article => widget.article;
+  WidgetRef get ref => widget.ref;
+
+  @override
+  void initState() {
+    super.initState();
+    // Award XP once when article is opened
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!_xpAwarded) {
+        _xpAwarded = true;
+        await ref.read(xpServiceProvider).articleRead();
+        await ref.read(achievementServiceProvider).checkAfterArticleRead();
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
