@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:gentleman_os/core/ai/ai_advisor_provider.dart';
 import 'package:gentleman_os/core/ai/router_ai_config.dart';
 import 'package:gentleman_os/core/constants/spacing.dart';
+import 'package:gentleman_os/core/theme/theme_mode_provider.dart';
 import 'package:gentleman_os/features/settings/application/settings_providers.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -35,6 +36,37 @@ class SettingsScreen extends ConsumerWidget {
               onPressed: () => _exportAndShare(context, ref),
             ),
             onTap: () => _export(context, ref),
+          ),
+          const SizedBox(height: Spacing.md),
+          Text('Оформление', style: tt.titleSmall),
+          const Divider(height: 16),
+          Consumer(
+            builder: (context, ref, _) {
+              final mode = ref.watch(themeModeProvider);
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: SegmentedButton<ThemeMode>(
+                  segments: const [
+                    ButtonSegment(
+                      value: ThemeMode.dark,
+                      label: Text('Тёмная'),
+                    ),
+                    ButtonSegment(
+                      value: ThemeMode.light,
+                      label: Text('Светлая'),
+                    ),
+                    ButtonSegment(
+                      value: ThemeMode.system,
+                      label: Text('Система'),
+                    ),
+                  ],
+                  selected: {mode},
+                  showSelectedIcon: false,
+                  onSelectionChanged: (s) =>
+                      ref.read(themeModeProvider.notifier).set(s.first),
+                ),
+              );
+            },
           ),
           const SizedBox(height: Spacing.md),
           Text('ИИ-советник', style: tt.titleSmall),
