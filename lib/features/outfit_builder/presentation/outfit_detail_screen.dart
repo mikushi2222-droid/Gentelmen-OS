@@ -45,7 +45,8 @@ class OutfitDetailScreen extends ConsumerWidget {
         appBar: AppBar(title: const Text('Ошибка')),
         body: Center(child: Text('$e')),
       ),
-      data: ((outfit, items)) {
+      data: (data) {
+        final (outfit, items) = data;
         if (outfit == null) {
           return Scaffold(
             appBar: AppBar(title: const Text('Образ')),
