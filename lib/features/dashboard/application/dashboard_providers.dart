@@ -20,9 +20,11 @@ final gentlemanScoreProvider = FutureProvider<double>((ref) async {
 
   int styleXp = 0;
   int fitnessXp = 0;
+  int readingActions = 0;
   for (final e in recentEvents) {
     if (e.type == XpType.style.index) styleXp += e.amount;
     if (e.type == XpType.fitness.index) fitnessXp += e.amount;
+    if (e.type == XpType.reading.index) readingActions++;
   }
 
   final habits = await habitsDao.watchAll().first;
@@ -36,7 +38,7 @@ final gentlemanScoreProvider = FutureProvider<double>((ref) async {
     fitnessXpLast7d: fitnessXp,
     habitsCompleted: completedToday,
     habitsTotal: habits.length,
-    articlesReadLast7d: 0,
+    articlesReadLast7d: readingActions,
   );
 });
 
@@ -45,25 +47,32 @@ final dailyMissionsProvider =
     StreamProvider<List<DailyMissionsData>>((ref) async* {
   final dao = ref.watch(dailyMissionsDaoProvider);
   final measurementDao = ref.watch(measurementDaoProvider);
+  final knowledgeDao = ref.watch(knowledgeDaoProvider);
+  final outfitDao = ref.watch(outfitDaoProvider);
   final wardrobeCount = ref.watch(wardrobeCountProvider).valueOrNull ?? 0;
 
   final today = DateTime.now();
+  final startOfDay = DateTime(today.year, today.month, today.day);
 
   // Seed today's missions if DB has none yet
   final existing = await dao.getForDate(today);
   if (existing.isEmpty) {
     final latest = await measurementDao.getLatest();
-    final hasMeasurementToday = latest != null &&
-        latest.date.year == today.year &&
-        latest.date.month == today.month &&
-        latest.date.day == today.day;
+    final hasMeasurementToday =
+        latest != null && !latest.date.isBefore(startOfDay);
+
+    final outfits = await outfitDao.watchAll().first;
+    final hasOutfitToday =
+        outfits.any((o) => !o.createdAt.isBefore(startOfDay));
+
+    final articlesReadToday = await knowledgeDao.countReadSince(startOfDay);
 
     final missions = generateDailyMissions(
       date: today,
       hasMeasurementToday: hasMeasurementToday,
-      hasOutfitToday: false,
+      hasOutfitToday: hasOutfitToday,
       wardrobeCount: wardrobeCount,
-      articlesRead: 0,
+      articlesRead: articlesReadToday,
     );
     for (final m in missions) {
       await dao.upsertMission(m);
