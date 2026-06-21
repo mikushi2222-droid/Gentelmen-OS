@@ -17,8 +17,10 @@ Flutter (Android). Оно объединяет:
 - генератор образов (outfit builder);
 - личную базу знаний по стилю и этикету;
 - трекер веса, талии и привычек;
+- **модуль мужского здоровья** (анализы, индекс, ИИ-разбор);
 - RPG-слой мотивации (уровни, XP, навыки, ачивки);
-- советник по покупкам.
+- советник по покупкам;
+- **опциональный облачный ИИ-советник** (RouterAI) поверх оффлайн-ядра.
 
 ## Принципы
 
@@ -43,25 +45,41 @@ Flutter (Android). Оно объединяет:
 | [docs/08-test-plan.md](docs/08-test-plan.md) | План тестирования |
 | [docs/09-folder-structure.md](docs/09-folder-structure.md) | Структура каталогов проекта |
 | [docs/10-seed-content.md](docs/10-seed-content.md) | Сидовый контент и стартовые данные |
+| [docs/11-agent-build-prompt.md](docs/11-agent-build-prompt.md) | Промпт для кодирующего агента |
+| [docs/12-production-plan.md](docs/12-production-plan.md) | Производственный план до релиза 1.0 |
+| [docs/13-packages-spec.md](docs/13-packages-spec.md) | Спецификация пакетов (версии июнь 2026 + ссылки) |
+| [docs/14-ai-integration.md](docs/14-ai-integration.md) | Интеграция RouterAI и логирование |
 
-## Технологический стек (v1)
+## Технологический стек (актуально, июнь 2026)
 
-| Слой | Технология |
-|------|-----------|
-| UI | Flutter + Material 3 |
-| Язык | Dart |
-| Состояние / DI | Riverpod |
-| Навигация | go_router (+ go_router_builder для типизированных маршрутов) |
-| Локальная БД | Drift (SQLite) |
-| Модели | freezed |
-| Сериализация | json_serializable |
-| Безопасное хранилище | flutter_secure_storage (только для секретов) |
-| Кодогенерация | build_runner |
-| Графики | fl_chart |
-| Изображения | image_picker, cached image widgets |
+| Слой | Технология | Версия |
+|------|-----------|--------|
+| Среда | Flutter / Dart | 3.44 / 3.9+ |
+| UI | Flutter + Material 3 | — |
+| Состояние / DI | flutter_riverpod | ^3.3.2 |
+| Навигация | go_router | ^17.3.0 |
+| Локальная БД | drift (SQLite) | ^2.34.0 |
+| Модели | freezed | ^3.2.5 |
+| Сериализация | json_serializable | ^6.14.0 |
+| Безопасное хранилище | flutter_secure_storage | ^10.3.1 |
+| Графики | fl_chart | ^1.2.0 |
+| Markdown | flutter_markdown_plus | ^1.0.7 |
+| HTTP / ИИ | http + RouterAI | ^1.6.0 |
+
+> Полная спецификация версий и ссылки на документацию: [docs/13-packages-spec.md](docs/13-packages-spec.md).
+
+## Сборка
+
+```bash
+flutter pub get
+dart run build_runner build --delete-conflicting-outputs
+flutter analyze --no-fatal-infos
+flutter test --coverage
+flutter build apk --debug   # build/app/outputs/flutter-apk/app-debug.apk
+```
 
 ## Статус
 
-Это **планировочная ветка**. Здесь нет исполняемого кода — только проектная
-документация, по которой можно запускать кодирующего агента или вести разработку
-вручную. Реализация ведётся поэтапно согласно [docs/07-roadmap.md](docs/07-roadmap.md).
+Реализованы Milestones 1–10 + модули **мужского здоровья**, **аниме-маскота** и
+**ИИ-советника** (RouterAI). Дальнейший план — [docs/12-production-plan.md](docs/12-production-plan.md).
+Реализация ведётся поэтапно согласно [docs/07-roadmap.md](docs/07-roadmap.md).
