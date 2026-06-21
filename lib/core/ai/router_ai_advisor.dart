@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:gentleman_os/core/ai/ai_advisor.dart';
 import 'package:gentleman_os/core/ai/router_ai_client.dart';
+import 'package:gentleman_os/core/ai/router_ai_config.dart';
 import 'package:gentleman_os/core/ai/style_advice.dart';
 import 'package:gentleman_os/core/utils/app_logger.dart';
 import 'package:gentleman_os/shared/models/clothing_item.dart';
@@ -49,7 +50,9 @@ $inventory
           {
             'role': 'system',
             'content':
-                'Ты — лаконичный мужской стилист в духе классической элегантности. Отвечай только валидным JSON на русском языке.',
+                'Ты — лаконичный мужской стилист в духе классической элегантности. '
+                    '${RouterAiConfig.stylePhilosophy} '
+                    'Отвечай только валидным JSON на русском языке.',
           },
           {'role': 'user', 'content': userPrompt},
         ],

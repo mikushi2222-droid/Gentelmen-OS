@@ -29,6 +29,18 @@ class RouterAiConfig {
 
   bool get isConfigured => apiKey != null && apiKey!.trim().isNotEmpty;
 
+  /// Философская база советов по стилю — ориентир для ИИ-промптов.
+  /// Bernhard Roetzel («Der Gentleman»), G. Bruce Boyer («True Style»),
+  /// Alan Flusser («Dressing the Man»).
+  static const String stylePhilosophy =
+      'Опирайся на принципы классических авторитетов мужского стиля: '
+      'Бернхард Ройцель (Roetzel, «Der Gentleman») — качество, сдержанность, '
+      'вневременная классика; Алан Флассер (Flusser, «Dressing the Man») — '
+      'посадка, пропорции и гармония цвета с типом внешности; '
+      'Дж. Брюс Бойер (Boyer, «True Style») — индивидуальность, фактуры тканей '
+      'и непринуждённая элегантность. Цени постоянство стиля над модой, '
+      'правильную посадку и качество над количеством.';
+
   RouterAiConfig copyWith({String? apiKey, String? model}) => RouterAiConfig(
         apiKey: apiKey ?? this.apiKey,
         model: model ?? this.model,

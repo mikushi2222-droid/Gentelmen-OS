@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gentleman_os/core/ai/ai_advisor_provider.dart';
 import 'package:gentleman_os/core/ai/router_ai_client.dart';
+import 'package:gentleman_os/core/ai/router_ai_config.dart';
 import 'package:gentleman_os/core/utils/app_logger.dart';
 import 'package:gentleman_os/shared/models/clothing_item.dart';
 
@@ -33,7 +34,8 @@ final clothingPhotoAnalysisProvider =
   log.i('ClothingAI', 'Анализ фото вещи "${item.name}" (${bytes.length} байт)');
 
   final prompt = '''
-Ты — мужской стилист. Проанализируй вещь на фото: ${item.category.label}${item.color != null ? ', заявленный цвет ${item.color}' : ''}${item.material != null ? ', материал ${item.material}' : ''}.
+Ты — мужской стилист. ${RouterAiConfig.stylePhilosophy}
+Проанализируй вещь на фото: ${item.category.label}${item.color != null ? ', заявленный цвет ${item.color}' : ''}${item.material != null ? ', материал ${item.material}' : ''}.
 Оцени по фото: фасон и посадку, качество/фактуру ткани, цвет, универсальность.
 Подскажи: с чем сочетать, для каких поводов подходит, чего избегать.
 Дай 3–5 кратких практичных совета на русском.''';
