@@ -15,8 +15,13 @@ class KnowledgeArticle with _$KnowledgeArticle {
     String? sourceRef,
     @Default(false) bool favorite,
     @Default(false) bool bookmarked,
+    DateTime? readAt,
     required DateTime createdAt,
   }) = _KnowledgeArticle;
+
+  const KnowledgeArticle._();
+
+  bool get isRead => readAt != null;
 
   factory KnowledgeArticle.fromJson(Map<String, dynamic> json) =>
       _$KnowledgeArticleFromJson(json);

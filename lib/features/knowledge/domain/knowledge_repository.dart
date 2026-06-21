@@ -9,4 +9,5 @@ abstract interface class KnowledgeRepository {
   Future<List<KnowledgeArticle>> search(String query);
   Future<void> toggleFavorite(String id, bool value);
   Future<void> toggleBookmark(String id, bool value);
+  Future<void> markAsRead(String id);
 }

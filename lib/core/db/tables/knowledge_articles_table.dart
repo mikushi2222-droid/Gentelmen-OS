@@ -9,6 +9,7 @@ class KnowledgeArticles extends Table {
   TextColumn get sourceRef => text().nullable()();
   BoolColumn get favorite => boolean().withDefault(const Constant(false))();
   BoolColumn get bookmarked => boolean().withDefault(const Constant(false))();
+  DateTimeColumn get readAt => dateTime().nullable()();
   DateTimeColumn get createdAt => dateTime()();
 
   @override

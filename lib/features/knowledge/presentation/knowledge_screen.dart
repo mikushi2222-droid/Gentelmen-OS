@@ -304,7 +304,23 @@ class _ArticleCard extends StatelessWidget {
           ),
         ),
         title: Text(article.title, style: tt.bodyMedium),
-        subtitle: Text(article.category.label, style: tt.bodySmall),
+        subtitle: Row(
+          children: [
+            Text(article.category.label, style: tt.bodySmall),
+            if (article.isRead) ...[
+              const SizedBox(width: 6),
+              Icon(Icons.check_circle,
+                  size: 12, color: cs.primary.withOpacity(0.7)),
+              const SizedBox(width: 2),
+              Text(
+                'Прочитано',
+                style: tt.labelSmall?.copyWith(
+                  color: cs.primary.withOpacity(0.7),
+                ),
+              ),
+            ],
+          ],
+        ),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [

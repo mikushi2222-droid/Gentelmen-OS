@@ -42,4 +42,7 @@ class KnowledgeRepositoryImpl implements KnowledgeRepository {
   @override
   Future<void> toggleBookmark(String id, bool value) =>
       _dao.toggleBookmark(id, value);
+
+  @override
+  Future<void> markAsRead(String id) => _dao.markAsRead(id);
 }

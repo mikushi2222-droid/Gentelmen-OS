@@ -62,6 +62,7 @@ class _ArticleBodyState extends State<_ArticleBody> {
       if (!_xpAwarded) {
         _xpAwarded = true;
         await ref.read(xpServiceProvider).articleRead();
+        await ref.read(knowledgeRepositoryProvider).markAsRead(article.id);
         await ref.read(achievementServiceProvider).checkAfterArticleRead();
       }
     });

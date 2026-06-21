@@ -16,6 +16,7 @@ extension KnowledgeArticleRowMapper on KnowledgeArticlesData {
         sourceRef: sourceRef,
         favorite: favorite,
         bookmarked: bookmarked,
+        readAt: readAt,
         createdAt: createdAt,
       );
 }

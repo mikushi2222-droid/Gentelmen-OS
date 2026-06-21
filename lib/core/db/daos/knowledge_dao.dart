@@ -52,4 +52,14 @@ class KnowledgeDao extends DatabaseAccessor<AppDatabase>
   Future<void> toggleBookmark(String id, bool value) =>
       (update(knowledgeArticles)..where((t) => t.id.equals(id)))
           .write(KnowledgeArticlesCompanion(bookmarked: Value(value)));
+
+  Future<void> markAsRead(String id) =>
+      (update(knowledgeArticles)..where((t) => t.id.equals(id))).write(
+        KnowledgeArticlesCompanion(readAt: Value(DateTime.now())),
+      );
+
+  Future<int> countRead() async {
+    final all = await select(knowledgeArticles).get();
+    return all.where((a) => a.readAt != null).length;
+  }
 }
