@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gentleman_os/core/constants/spacing.dart';
+import 'package:gentleman_os/core/widgets/empty_state.dart';
+import 'package:gentleman_os/features/knowledge/application/knowledge_providers.dart';
 import 'package:gentleman_os/shared/enums/knowledge_category.dart';
+import 'package:gentleman_os/shared/models/knowledge_article.dart';
 
 class KnowledgeScreen extends ConsumerStatefulWidget {
   const KnowledgeScreen({super.key});
@@ -13,25 +16,48 @@ class KnowledgeScreen extends ConsumerStatefulWidget {
 
 class _KnowledgeScreenState extends ConsumerState<KnowledgeScreen> {
   KnowledgeCategory? _category;
+  bool _searching = false;
+  String _query = '';
+  final _searchCtrl = TextEditingController();
 
-  static const _seedArticles = [
-    (id: 'fit-blazer', title: 'Как должен сидеть пиджак', category: KnowledgeCategory.suits),
-    (id: 'collar-types', title: 'Типы воротников: какой вам подходит', category: KnowledgeCategory.style),
-    (id: 'fabrics-guide', title: 'Какие ткани выбирать', category: KnowledgeCategory.fabrics),
-    (id: 'what-not-to-buy', title: 'Что не покупать', category: KnowledgeCategory.style),
-    (id: 'color-combo', title: 'Как сочетать цвета', category: KnowledgeCategory.style),
-    (id: 'look-expensive', title: 'Выглядеть дороже без дорогих вещей', category: KnowledgeCategory.style),
-    (id: 'large-fit-trousers', title: 'Посадка брюк для крупной фигуры', category: KnowledgeCategory.style),
-    (id: 'grooming-basics', title: 'Базовый груминг', category: KnowledgeCategory.grooming),
-    (id: 'etiquette-basics', title: 'Этикет: базовые правила', category: KnowledgeCategory.etiquette),
-    (id: 'discipline-habits', title: 'Дисциплина и привычки', category: KnowledgeCategory.discipline),
-  ];
+  @override
+  void dispose() {
+    _searchCtrl.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final filtered = _category == null
-        ? _seedArticles
-        : _seedArticles.where((a) => a.category == _category).toList();
+    final cs = Theme.of(context).colorScheme;
+
+    if (_searching) {
+      return Scaffold(
+        appBar: AppBar(
+          title: TextField(
+            controller: _searchCtrl,
+            autofocus: true,
+            decoration: const InputDecoration(
+              hintText: 'Поиск статей...',
+              border: InputBorder.none,
+            ),
+            onChanged: (v) => setState(() => _query = v),
+          ),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () => setState(() {
+              _searching = false;
+              _query = '';
+              _searchCtrl.clear();
+            }),
+          ),
+        ),
+        body: _SearchResults(query: _query),
+      );
+    }
+
+    final asyncItems = _category == null
+        ? ref.watch(knowledgeListProvider)
+        : ref.watch(knowledgeByCategoryProvider(_category!));
 
     return Scaffold(
       body: CustomScrollView(
@@ -40,6 +66,12 @@ class _KnowledgeScreenState extends ConsumerState<KnowledgeScreen> {
             floating: true,
             snap: true,
             title: const Text('База знаний'),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.search),
+                onPressed: () => setState(() => _searching = true),
+              ),
+            ],
             bottom: PreferredSize(
               preferredSize: const Size.fromHeight(56),
               child: _CategoryFilter(
@@ -50,21 +82,72 @@ class _KnowledgeScreenState extends ConsumerState<KnowledgeScreen> {
           ),
           SliverPadding(
             padding: const EdgeInsets.all(Spacing.screenPadding),
-            sliver: SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (ctx, i) {
-                  final a = filtered[i];
-                  return _ArticleCard(
-                    title: a.title,
-                    category: a.category,
-                    onTap: () => ctx.push('/knowledge/${a.id}'),
-                  );
-                },
-                childCount: filtered.length,
+            sliver: asyncItems.when(
+              loading: () => const SliverFillRemaining(
+                child: Center(child: CircularProgressIndicator()),
               ),
+              error: (e, _) => SliverFillRemaining(
+                child: Center(child: Text('Ошибка: $e')),
+              ),
+              data: (articles) => articles.isEmpty
+                  ? const SliverFillRemaining(
+                      child: EmptyState(
+                        icon: Icons.menu_book_outlined,
+                        title: 'Нет статей',
+                        subtitle: 'В этой категории пока нет статей',
+                      ),
+                    )
+                  : _ArticleList(articles: articles),
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _SearchResults extends ConsumerWidget {
+  const _SearchResults({required this.query});
+
+  final String query;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    if (query.isEmpty) {
+      return const Center(
+        child: Text('Введите поисковый запрос'),
+      );
+    }
+
+    final asyncResults = ref.watch(knowledgeSearchProvider(query));
+    return asyncResults.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, _) => Center(child: Text('Ошибка: $e')),
+      data: (articles) {
+        if (articles.isEmpty) {
+          return Center(child: Text('По запросу «$query» ничего не найдено'));
+        }
+        return ListView.builder(
+          padding: const EdgeInsets.all(Spacing.screenPadding),
+          itemCount: articles.length,
+          itemBuilder: (ctx, i) => _ArticleCard(article: articles[i]),
+        );
+      },
+    );
+  }
+}
+
+class _ArticleList extends StatelessWidget {
+  const _ArticleList({required this.articles});
+
+  final List<KnowledgeArticle> articles;
+
+  @override
+  Widget build(BuildContext context) {
+    return SliverList(
+      delegate: SliverChildBuilderDelegate(
+        (ctx, i) => _ArticleCard(article: articles[i]),
+        childCount: articles.length,
       ),
     );
   }
@@ -128,15 +211,9 @@ class _Chip extends StatelessWidget {
 }
 
 class _ArticleCard extends StatelessWidget {
-  const _ArticleCard({
-    required this.title,
-    required this.category,
-    this.onTap,
-  });
+  const _ArticleCard({required this.article});
 
-  final String title;
-  final KnowledgeCategory category;
-  final VoidCallback? onTap;
+  final KnowledgeArticle article;
 
   @override
   Widget build(BuildContext context) {
@@ -147,13 +224,26 @@ class _ArticleCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 8),
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor: cs.primaryContainer,
-          child: Icon(Icons.menu_book, color: cs.onPrimaryContainer, size: 20),
+          backgroundColor: article.favorite
+              ? cs.primaryContainer
+              : cs.surfaceContainerLow,
+          child: Icon(
+            article.favorite ? Icons.favorite : Icons.menu_book,
+            color: article.favorite ? cs.primary : cs.onSurfaceVariant,
+            size: 20,
+          ),
         ),
-        title: Text(title, style: tt.bodyMedium),
-        subtitle: Text(category.label, style: tt.bodySmall),
-        trailing: const Icon(Icons.chevron_right),
-        onTap: onTap,
+        title: Text(article.title, style: tt.bodyMedium),
+        subtitle: Text(article.category.label, style: tt.bodySmall),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (article.bookmarked)
+              Icon(Icons.bookmark, size: 16, color: cs.primary),
+            const Icon(Icons.chevron_right),
+          ],
+        ),
+        onTap: () => context.push('/knowledge/${article.id}'),
       ),
     );
   }

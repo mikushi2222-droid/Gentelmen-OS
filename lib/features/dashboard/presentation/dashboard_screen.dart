@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:gentleman_os/core/constants/spacing.dart';
 import 'package:gentleman_os/core/theme/app_colors.dart';
 import 'package:gentleman_os/core/widgets/score_ring.dart';
+import 'package:gentleman_os/features/dashboard/application/dashboard_providers.dart';
 import 'package:gentleman_os/features/dashboard/presentation/widgets/mission_tile.dart';
 import 'package:gentleman_os/features/dashboard/presentation/widgets/quick_action_button.dart';
 
@@ -109,11 +110,15 @@ class _GentlemanCrest extends StatelessWidget {
 }
 
 /// Блок Gentleman Score из макета (732, круговой ring, золото)
-class _GentlemanScoreCard extends StatelessWidget {
+class _GentlemanScoreCard extends ConsumerWidget {
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
+    final asyncScore = ref.watch(gentlemanScoreProvider);
+    final asyncCount = ref.watch(wardrobeCountProvider);
+    final score = asyncScore.valueOrNull ?? 0.0;
+    final wardrobeCount = asyncCount.valueOrNull ?? 0;
 
     return Container(
       decoration: BoxDecoration(
@@ -127,9 +132,8 @@ class _GentlemanScoreCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              // Большой score из макета
               ScoreRing(
-                score: 73.2,
+                score: score,
                 size: 110,
                 strokeWidth: 8,
                 label: 'SCORE',
@@ -150,19 +154,16 @@ class _GentlemanScoreCard extends StatelessWidget {
                     const SizedBox(height: 8),
                     Row(
                       children: [
-                        Icon(Icons.trending_up,
-                            color: AppColors.success, size: 16),
+                        Icon(Icons.checkroom_outlined,
+                            color: cs.primary, size: 16),
                         const SizedBox(width: 4),
                         Text(
-                          '+5 за неделю',
-                          style: tt.bodySmall?.copyWith(
-                            color: AppColors.success,
-                          ),
+                          '$wardrobeCount вещей',
+                          style: tt.bodySmall?.copyWith(color: cs.primary),
                         ),
                       ],
                     ),
                     const SizedBox(height: 12),
-                    // Сегодняшняя рекомендация
                     Container(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 8, vertical: 4),
@@ -173,7 +174,11 @@ class _GentlemanScoreCard extends StatelessWidget {
                             color: AppColors.gold.withOpacity(0.3)),
                       ),
                       child: Text(
-                        'Образ дня готов',
+                        score >= 70
+                            ? 'Отличный прогресс'
+                            : score >= 40
+                                ? 'Хороший старт'
+                                : 'Добавьте активности',
                         style: tt.labelSmall?.copyWith(
                           color: AppColors.gold,
                         ),

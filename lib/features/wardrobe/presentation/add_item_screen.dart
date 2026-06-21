@@ -1,10 +1,16 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:gentleman_os/core/constants/spacing.dart';
+import 'package:gentleman_os/features/wardrobe/application/wardrobe_providers.dart';
 import 'package:gentleman_os/shared/enums/clothing_category.dart';
 import 'package:gentleman_os/shared/enums/condition.dart';
 import 'package:gentleman_os/shared/enums/fit.dart';
 import 'package:gentleman_os/shared/enums/season.dart';
+import 'package:gentleman_os/shared/models/clothing_item.dart';
+import 'package:uuid/uuid.dart';
 
 class AddItemScreen extends ConsumerStatefulWidget {
   const AddItemScreen({this.itemId, super.key});
@@ -30,8 +36,43 @@ class _AddItemScreenState extends ConsumerState<AddItemScreen> {
   Fit _fit = Fit.regular;
   Condition _condition = Condition.brandNew;
   int? _rating;
+  String? _imagePath;
+  bool _saving = false;
 
+  ClothingItem? _original;
   bool get _isEdit => widget.itemId != null;
+
+  @override
+  void initState() {
+    super.initState();
+    if (_isEdit) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _loadItem());
+    }
+  }
+
+  Future<void> _loadItem() async {
+    final item = await ref
+        .read(wardrobeRepositoryProvider)
+        .getById(widget.itemId!);
+    if (item != null && mounted) {
+      setState(() {
+        _original = item;
+        _nameCtrl.text = item.name;
+        _brandCtrl.text = item.brand ?? '';
+        _sizeCtrl.text = item.size ?? '';
+        _colorCtrl.text = item.color ?? '';
+        _materialCtrl.text = item.material ?? '';
+        _priceCtrl.text = item.price?.toStringAsFixed(0) ?? '';
+        _notesCtrl.text = item.notes ?? '';
+        _category = item.category;
+        _season = item.season;
+        _fit = item.fit;
+        _condition = item.condition;
+        _rating = item.rating;
+        _imagePath = item.imagePath;
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -58,7 +99,10 @@ class _AddItemScreenState extends ConsumerState<AddItemScreen> {
         child: ListView(
           padding: const EdgeInsets.all(Spacing.screenPadding),
           children: [
-            _PhotoPicker(),
+            _PhotoPicker(
+              imagePath: _imagePath,
+              onPicked: (path) => setState(() => _imagePath = path),
+            ),
             const SizedBox(height: Spacing.lg),
             Text('Основные', style: tt.titleSmall),
             const SizedBox(height: Spacing.sm),
@@ -168,8 +212,14 @@ class _AddItemScreenState extends ConsumerState<AddItemScreen> {
             ),
             const SizedBox(height: Spacing.xl),
             FilledButton(
-              onPressed: _save,
-              child: Text(_isEdit ? 'Сохранить изменения' : 'Добавить в гардероб'),
+              onPressed: _saving ? null : _save,
+              child: _saving
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : Text(_isEdit ? 'Сохранить изменения' : 'Добавить в гардероб'),
             ),
             const SizedBox(height: Spacing.lg),
           ],
@@ -178,21 +228,59 @@ class _AddItemScreenState extends ConsumerState<AddItemScreen> {
     );
   }
 
-  void _save() {
+  Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
-    // TODO: сохранить через WardrobeRepository
-    Navigator.of(context).pop();
+    setState(() => _saving = true);
+
+    final now = DateTime.now();
+    final item = ClothingItem(
+      id: _original?.id ?? const Uuid().v4(),
+      name: _nameCtrl.text.trim(),
+      category: _category,
+      brand: _brandCtrl.text.trim().isEmpty ? null : _brandCtrl.text.trim(),
+      size: _sizeCtrl.text.trim().isEmpty ? null : _sizeCtrl.text.trim(),
+      color: _colorCtrl.text.trim().isEmpty ? null : _colorCtrl.text.trim(),
+      material: _materialCtrl.text.trim().isEmpty ? null : _materialCtrl.text.trim(),
+      season: _season,
+      fit: _fit,
+      price: double.tryParse(_priceCtrl.text.replaceAll(',', '.')),
+      imagePath: _imagePath,
+      notes: _notesCtrl.text.trim().isEmpty ? null : _notesCtrl.text.trim(),
+      condition: _condition,
+      rating: _rating,
+      wearCount: _original?.wearCount ?? 0,
+      isAvailable: _original?.isAvailable ?? true,
+      createdAt: _original?.createdAt ?? now,
+    );
+
+    await ref.read(wardrobeRepositoryProvider).save(item);
+
+    if (mounted) {
+      setState(() => _saving = false);
+      Navigator.of(context).pop();
+    }
   }
 }
 
 class _PhotoPicker extends StatelessWidget {
+  const _PhotoPicker({this.imagePath, this.onPicked});
+
+  final String? imagePath;
+  final ValueChanged<String>? onPicked;
+
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
 
     return GestureDetector(
-      onTap: () {
-        // TODO: image_picker
+      onTap: () async {
+        final picker = ImagePicker();
+        final xfile = await picker.pickImage(
+          source: ImageSource.gallery,
+          maxWidth: 1080,
+          imageQuality: 85,
+        );
+        if (xfile != null) onPicked?.call(xfile.path);
       },
       child: Container(
         height: 180,
@@ -201,16 +289,19 @@ class _PhotoPicker extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: cs.outlineVariant),
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.add_photo_alternate_outlined,
-                size: 48, color: cs.outline),
-            const SizedBox(height: 8),
-            Text('Добавить фото',
-                style: TextStyle(color: cs.onSurfaceVariant)),
-          ],
-        ),
+        clipBehavior: Clip.antiAlias,
+        child: imagePath != null
+            ? Image.file(File(imagePath!), fit: BoxFit.cover)
+            : Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.add_photo_alternate_outlined,
+                      size: 48, color: cs.outline),
+                  const SizedBox(height: 8),
+                  Text('Добавить фото',
+                      style: TextStyle(color: cs.onSurfaceVariant)),
+                ],
+              ),
       ),
     );
   }

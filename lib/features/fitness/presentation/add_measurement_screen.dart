@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:drift/drift.dart' show Value;
 import 'package:gentleman_os/core/constants/spacing.dart';
+import 'package:gentleman_os/core/db/app_database.dart';
+import 'package:gentleman_os/core/db/database_provider.dart';
+import 'package:uuid/uuid.dart';
 
 class AddMeasurementScreen extends ConsumerStatefulWidget {
   const AddMeasurementScreen({super.key});
@@ -10,13 +14,13 @@ class AddMeasurementScreen extends ConsumerStatefulWidget {
       _AddMeasurementScreenState();
 }
 
-class _AddMeasurementScreenState
-    extends ConsumerState<AddMeasurementScreen> {
+class _AddMeasurementScreenState extends ConsumerState<AddMeasurementScreen> {
   final _weightCtrl = TextEditingController();
   final _waistCtrl = TextEditingController();
   final _chestCtrl = TextEditingController();
   final _hipsCtrl = TextEditingController();
   final _notesCtrl = TextEditingController();
+  bool _saving = false;
 
   @override
   void dispose() {
@@ -31,6 +35,7 @@ class _AddMeasurementScreenState
   @override
   Widget build(BuildContext context) {
     final tt = Theme.of(context).textTheme;
+    final now = DateTime.now();
 
     return Scaffold(
       appBar: AppBar(title: const Text('Добавить замер')),
@@ -38,7 +43,7 @@ class _AddMeasurementScreenState
         padding: const EdgeInsets.all(Spacing.screenPadding),
         children: [
           Text(
-            'Дата: ${DateTime.now().day}.${DateTime.now().month}.${DateTime.now().year}',
+            'Дата: ${now.day}.${now.month}.${now.year}',
             style: tt.bodySmall,
           ),
           const SizedBox(height: Spacing.md),
@@ -54,17 +59,56 @@ class _AddMeasurementScreenState
           ),
           const SizedBox(height: Spacing.xl),
           FilledButton(
-            onPressed: _save,
-            child: const Text('Сохранить замер'),
+            onPressed: _saving ? null : _save,
+            child: _saving
+                ? const SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Text('Сохранить замер'),
           ),
         ],
       ),
     );
   }
 
-  void _save() {
-    // TODO: MeasurementRepository.add(...)
-    Navigator.of(context).pop();
+  double? _parse(TextEditingController c) =>
+      c.text.isEmpty ? null : double.tryParse(c.text.replaceAll(',', '.'));
+
+  Future<void> _save() async {
+    final weight = _parse(_weightCtrl);
+    final waist = _parse(_waistCtrl);
+    final chest = _parse(_chestCtrl);
+    final hips = _parse(_hipsCtrl);
+
+    if (weight == null && waist == null && chest == null && hips == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Введите хотя бы один замер')),
+      );
+      return;
+    }
+
+    setState(() => _saving = true);
+
+    await ref.read(measurementDaoProvider).insert(
+          MeasurementLogsCompanion(
+            id: Value(const Uuid().v4()),
+            date: Value(DateTime.now()),
+            weight: Value(weight),
+            waist: Value(waist),
+            chest: Value(chest),
+            hips: Value(hips),
+            notes: Value(
+              _notesCtrl.text.trim().isEmpty ? null : _notesCtrl.text.trim(),
+            ),
+          ),
+        );
+
+    if (mounted) {
+      setState(() => _saving = false);
+      Navigator.of(context).pop();
+    }
   }
 }
 

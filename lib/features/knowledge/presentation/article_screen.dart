@@ -1,124 +1,121 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gentleman_os/core/constants/spacing.dart';
+import 'package:gentleman_os/features/knowledge/application/knowledge_providers.dart';
+import 'package:gentleman_os/shared/models/knowledge_article.dart';
 
-class ArticleScreen extends StatelessWidget {
+class ArticleScreen extends ConsumerWidget {
   const ArticleScreen({required this.articleId, super.key});
 
   final String articleId;
 
   @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final asyncArticle = ref.watch(knowledgeArticleProvider(articleId));
+
+    return asyncArticle.when(
+      loading: () => const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      ),
+      error: (e, _) => Scaffold(
+        appBar: AppBar(title: const Text('Ошибка')),
+        body: Center(child: Text('$e')),
+      ),
+      data: (article) {
+        if (article == null) {
+          return Scaffold(
+            appBar: AppBar(title: const Text('Статья')),
+            body: const Center(child: Text('Статья не найдена')),
+          );
+        }
+        return _ArticleBody(article: article, ref: ref);
+      },
+    );
+  }
+}
+
+class _ArticleBody extends StatelessWidget {
+  const _ArticleBody({required this.article, required this.ref});
+
+  final KnowledgeArticle article;
+  final WidgetRef ref;
+
+  @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-
-    // TODO: загружать из KnowledgeRepository
-    final content = _sampleContent(articleId);
+    final repo = ref.read(knowledgeRepositoryProvider);
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(content.title),
+        title: Text(article.title),
         actions: [
           IconButton(
-            icon: const Icon(Icons.bookmark_outline),
+            icon: Icon(
+              article.bookmarked ? Icons.bookmark : Icons.bookmark_outline,
+              color: article.bookmarked ? cs.primary : null,
+            ),
             tooltip: 'Закладка',
-            onPressed: () {},
+            onPressed: () =>
+                repo.toggleBookmark(article.id, !article.bookmarked),
           ),
           IconButton(
-            icon: const Icon(Icons.favorite_outline),
+            icon: Icon(
+              article.favorite ? Icons.favorite : Icons.favorite_outline,
+              color: article.favorite ? cs.error : null,
+            ),
             tooltip: 'В избранное',
-            onPressed: () {},
+            onPressed: () =>
+                repo.toggleFavorite(article.id, !article.favorite),
           ),
         ],
       ),
-      body: Markdown(
-        data: content.body,
-        padding: const EdgeInsets.all(Spacing.screenPadding),
-        styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
-          p: Theme.of(context).textTheme.bodyMedium,
-          h1: Theme.of(context).textTheme.headlineMedium,
-          h2: Theme.of(context).textTheme.headlineSmall,
-          h3: Theme.of(context).textTheme.titleLarge,
-          blockquoteDecoration: BoxDecoration(
-            color: cs.surfaceContainerLow,
-            border: Border(
-              left: BorderSide(color: cs.primary, width: 3),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (article.tags.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                Spacing.screenPadding,
+                Spacing.sm,
+                Spacing.screenPadding,
+                0,
+              ),
+              child: Wrap(
+                spacing: 6,
+                children: article.tags
+                    .map(
+                      (t) => Chip(
+                        label: Text(t),
+                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        visualDensity: VisualDensity.compact,
+                        labelStyle: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    )
+                    .toList(),
+              ),
+            ),
+          Expanded(
+            child: Markdown(
+              data: article.contentMarkdown,
+              padding: const EdgeInsets.all(Spacing.screenPadding),
+              styleSheet:
+                  MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
+                p: Theme.of(context).textTheme.bodyMedium,
+                h1: Theme.of(context).textTheme.headlineMedium,
+                h2: Theme.of(context).textTheme.headlineSmall,
+                h3: Theme.of(context).textTheme.titleLarge,
+                blockquoteDecoration: BoxDecoration(
+                  color: cs.surfaceContainerLow,
+                  border: Border(
+                    left: BorderSide(color: cs.primary, width: 3),
+                  ),
+                ),
+              ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }
-
-  _ArticleContent _sampleContent(String id) => switch (id) {
-        'fit-blazer' => const _ArticleContent(
-            title: 'Как должен сидеть пиджак',
-            body: '''
-# Как должен сидеть пиджак
-
-Правильная посадка пиджака — основа делового и классического образа.
-
-## Плечи
-
-Шов между плечом и рукавом должен заканчиваться **там, где заканчивается ваше плечо** — не раньше и не позже. Свисающий шов — признак чужого пиджака.
-
-## Длина рукава
-
-Из-под рукава должно быть видно **1–1.5 см манжеты рубашки**. Это показывает, что под пиджаком есть рубашка с правильной посадкой.
-
-## Прилегание в груди
-
-Пиджак должен застёгиваться **без заломов «X»** на пуговице. Если ткань расходится веером — пиджак мал. Если болтается — велик.
-
-## Длина
-
-Классическая длина — **до середины ладони** при опущенных руках. Короче — спортивнее. Длиннее — серьёзнее.
-
-## Для крупной фигуры
-
-> Выбирайте пиджаки с **умеренно широкими лацканами** и **структурированными плечами**. Это визуально создаёт ширину плеч и уравновешивает объём в талии.
-
-Избегайте слишком узких лацканов — они акцентируют объём корпуса.
-''',
-          ),
-        'large-fit-trousers' => const _ArticleContent(
-            title: 'Посадка брюк для крупной фигуры',
-            body: '''
-# Посадка брюк для крупной фигуры
-
-## Главное правило
-
-Средняя или **высокая посадка** — ваш лучший выбор. Она визуально удлиняет ноги и не давит на живот.
-
-## Что избегать
-
-- Низкая посадка: «провисает», визуально укорачивает фигуру.
-- Slim fit: обтягивающие брюки подчёркивают объём бёдер и живота.
-
-## Что выбирать
-
-- **Regular Fit** или **Straight Fit** с небольшим запасом в бедре.
-- Хлопок плотного плетения (Chino Twill) или шерстяная смесь.
-- Тёмные нейтральные цвета: navy, серый, антрацит.
-
-## Бренды
-
-Meyer Roma, Club of Comfort Garvey — специально созданы для комфортного ношения при большом объёме бедра и талии.
-
-## Ателье
-
-После покупки отдайте брюки в ателье: попросите усилить шаговый шов и поставить ластовицу. Это увеличит срок жизни брюк в 2–3 раза.
-''',
-          ),
-        _ => _ArticleContent(
-            title: 'Статья $id',
-            body: '# $id\n\nСодержимое статьи загружается...',
-          ),
-      };
-}
-
-class _ArticleContent {
-  const _ArticleContent({required this.title, required this.body});
-
-  final String title;
-  final String body;
 }

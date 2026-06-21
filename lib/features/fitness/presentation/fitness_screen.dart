@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import 'package:gentleman_os/core/constants/spacing.dart';
+import 'package:gentleman_os/core/db/app_database.dart';
+import 'package:gentleman_os/features/fitness/application/fitness_providers.dart';
 
 class FitnessScreen extends ConsumerWidget {
   const FitnessScreen({super.key});
@@ -10,6 +13,8 @@ class FitnessScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
+    final asyncLatest = ref.watch(latestMeasurementProvider);
+    final asyncAll = ref.watch(measurementListProvider);
 
     return Scaffold(
       body: CustomScrollView(
@@ -23,20 +28,50 @@ class FitnessScreen extends ConsumerWidget {
             padding: const EdgeInsets.all(Spacing.screenPadding),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
-                _MetricCard(
-                  label: 'Вес',
-                  value: '—',
-                  unit: 'кг',
-                  icon: Icons.monitor_weight_outlined,
-                  trend: null,
+                asyncLatest.when(
+                  loading: () => const LinearProgressIndicator(),
+                  error: (_, __) => const SizedBox(),
+                  data: (latest) => Column(
+                    children: [
+                      _MetricCard(
+                        label: 'Вес',
+                        value: latest?.weight != null
+                            ? latest!.weight!.toStringAsFixed(1)
+                            : '—',
+                        unit: 'кг',
+                        icon: Icons.monitor_weight_outlined,
+                        trend: null,
+                      ),
+                      const SizedBox(height: Spacing.sm),
+                      _MetricCard(
+                        label: 'Талия',
+                        value: latest?.waist != null
+                            ? latest!.waist!.toStringAsFixed(0)
+                            : '—',
+                        unit: 'см',
+                        icon: Icons.straighten,
+                        trend: null,
+                      ),
+                      const SizedBox(height: Spacing.sm),
+                      _MetricCard(
+                        label: 'Грудь',
+                        value: latest?.chest != null
+                            ? latest!.chest!.toStringAsFixed(0)
+                            : '—',
+                        unit: 'см',
+                        icon: Icons.fitness_center,
+                        trend: null,
+                      ),
+                    ],
+                  ),
                 ),
-                const SizedBox(height: Spacing.sm),
-                _MetricCard(
-                  label: 'Талия',
-                  value: '—',
-                  unit: 'см',
-                  icon: Icons.straighten,
-                  trend: null,
+                const SizedBox(height: Spacing.sectionGap),
+                asyncAll.when(
+                  loading: () => const SizedBox(),
+                  error: (_, __) => const SizedBox(),
+                  data: (logs) => logs.isEmpty
+                      ? const SizedBox()
+                      : _HistoryList(logs: logs),
                 ),
                 const SizedBox(height: Spacing.sectionGap),
                 Text('Навигация', style: tt.titleMedium),
@@ -58,6 +93,39 @@ class FitnessScreen extends ConsumerWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _HistoryList extends StatelessWidget {
+  const _HistoryList({required this.logs});
+
+  final List<MeasurementLogsData> logs;
+
+  @override
+  Widget build(BuildContext context) {
+    final tt = Theme.of(context).textTheme;
+    final fmt = DateFormat('dd MMM yyyy', 'ru');
+    final shown = logs.take(5).toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('История замеров', style: tt.titleMedium),
+        const SizedBox(height: Spacing.sm),
+        ...shown.map(
+          (log) => ListTile(
+            dense: true,
+            title: Text(fmt.format(log.date)),
+            subtitle: Text(
+              [
+                if (log.weight != null) '${log.weight!.toStringAsFixed(1)} кг',
+                if (log.waist != null) 'талия ${log.waist!.toStringAsFixed(0)} см',
+              ].join(' • '),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

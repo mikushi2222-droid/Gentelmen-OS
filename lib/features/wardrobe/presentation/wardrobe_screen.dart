@@ -3,7 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gentleman_os/core/constants/spacing.dart';
 import 'package:gentleman_os/core/widgets/empty_state.dart';
+import 'package:gentleman_os/features/wardrobe/application/wardrobe_providers.dart';
+import 'package:gentleman_os/features/wardrobe/presentation/clothing_card.dart';
 import 'package:gentleman_os/shared/enums/clothing_category.dart';
+import 'package:gentleman_os/shared/models/clothing_item.dart';
 
 class WardrobeScreen extends ConsumerStatefulWidget {
   const WardrobeScreen({super.key});
@@ -17,8 +20,6 @@ class _WardrobeScreenState extends ConsumerState<WardrobeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-
     return Scaffold(
       body: CustomScrollView(
         slivers: [
@@ -37,7 +38,7 @@ class _WardrobeScreenState extends ConsumerState<WardrobeScreen> {
           ),
           SliverPadding(
             padding: const EdgeInsets.all(Spacing.screenPadding),
-            sliver: const _WardrobeGrid(),
+            sliver: _WardrobeGrid(category: _selectedCategory),
           ),
         ],
       ),
@@ -111,14 +112,35 @@ class _Chip extends StatelessWidget {
 }
 
 class _WardrobeGrid extends ConsumerWidget {
-  const _WardrobeGrid();
+  const _WardrobeGrid({this.category});
+
+  final ClothingCategory? category;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // TODO: подключить WardrobeRepository через провайдер
-    // Заглушка — пустой гардероб
-    const items = <dynamic>[];
+    final asyncItems = category == null
+        ? ref.watch(wardrobeListProvider)
+        : ref.watch(wardrobeByCategoryProvider(category!));
 
+    return asyncItems.when(
+      loading: () => const SliverFillRemaining(
+        child: Center(child: CircularProgressIndicator()),
+      ),
+      error: (e, _) => SliverFillRemaining(
+        child: Center(child: Text('Ошибка: $e')),
+      ),
+      data: (items) => _ItemsGrid(items: items),
+    );
+  }
+}
+
+class _ItemsGrid extends StatelessWidget {
+  const _ItemsGrid({required this.items});
+
+  final List<ClothingItem> items;
+
+  @override
+  Widget build(BuildContext context) {
     if (items.isEmpty) {
       return SliverFillRemaining(
         child: EmptyState(
@@ -139,14 +161,14 @@ class _WardrobeGrid extends ConsumerWidget {
 
     return SliverGrid(
       delegate: SliverChildBuilderDelegate(
-        (ctx, i) => const SizedBox(), // TODO: ClothingCard
+        (ctx, i) => ClothingCard(item: items[i]),
         childCount: items.length,
       ),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         crossAxisSpacing: 12,
         mainAxisSpacing: 12,
-        childAspectRatio: 0.75,
+        childAspectRatio: 0.72,
       ),
     );
   }
