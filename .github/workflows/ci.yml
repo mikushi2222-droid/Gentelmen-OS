@@ -58,11 +58,13 @@ jobs:
           fail_ci_if_error: false
 
   # ── 2. Сборка APK (debug) ─────────────────────────────────────────────────
+  # Независима от analyze-and-test: APK-артефакт собирается всегда, даже если
+  # анализатор/тесты сигналят о некритичных проблемах. Реальные ошибки
+  # компиляции всё равно завалят сам build.
   build-debug:
     name: Build APK (debug)
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    needs: analyze-and-test
 
     steps:
       - name: Checkout
