@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gentleman_os/core/constants/spacing.dart';
 import 'package:gentleman_os/core/db/database_provider.dart';
+import 'package:gentleman_os/core/services/xp_service.dart';
 import 'package:gentleman_os/core/theme/app_colors.dart';
 import 'package:gentleman_os/core/widgets/score_ring.dart';
 import 'package:gentleman_os/features/outfit_builder/application/outfit_providers.dart';
@@ -337,6 +338,7 @@ class _SuggestionCard extends ConsumerWidget {
                 name: ctrl.text.trim().isEmpty ? 'Образ $index' : ctrl.text.trim(),
                 params: params,
                 dao: ref.read(outfitDaoProvider),
+                xpService: ref.read(xpServiceProvider),
               );
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(

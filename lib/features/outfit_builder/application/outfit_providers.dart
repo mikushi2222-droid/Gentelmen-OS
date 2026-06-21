@@ -2,6 +2,7 @@ import 'package:drift/drift.dart' show Value;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gentleman_os/core/db/app_database.dart';
 import 'package:gentleman_os/core/db/database_provider.dart';
+import 'package:gentleman_os/core/services/xp_service.dart';
 import 'package:gentleman_os/features/outfit_builder/domain/outfit_generator.dart';
 import 'package:gentleman_os/features/profile/application/profile_providers.dart';
 import 'package:gentleman_os/features/wardrobe/application/wardrobe_providers.dart';
@@ -57,6 +58,7 @@ Future<void> saveOutfitSuggestion({
   required String name,
   required OutfitParams params,
   required OutfitDao dao,
+  XpService? xpService,
 }) async {
   final id = const Uuid().v4();
   final score = suggestion.score;
@@ -75,4 +77,5 @@ Future<void> saveOutfitSuggestion({
     ),
     suggestion.items.map((i) => i.id).toList(),
   );
+  await xpService?.outfitSaved();
 }

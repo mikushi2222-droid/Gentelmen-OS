@@ -1,6 +1,10 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gentleman_os/core/constants/spacing.dart';
+import 'package:gentleman_os/features/settings/application/settings_providers.dart';
+import 'package:path_provider/path_provider.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -21,41 +25,79 @@ class SettingsScreen extends ConsumerWidget {
             leading: Icon(Icons.upload_outlined, color: cs.primary),
             title: const Text('Экспортировать данные'),
             subtitle: const Text('Сохранить резервную копию (JSON)'),
-            onTap: () {
-              // TODO: ExportUseCase
-            },
+            onTap: () => _export(context, ref),
           ),
-          ListTile(
-            leading: Icon(Icons.download_outlined, color: cs.primary),
-            title: const Text('Импортировать данные'),
-            subtitle: const Text('Восстановить из резервной копии'),
-            onTap: () {
-              // TODO: ImportUseCase
-            },
+          const SizedBox(height: Spacing.md),
+          Text('Философия', style: tt.titleSmall),
+          const Divider(height: 16),
+          _QuoteCard(
+            text:
+                'Джентльмен — это человек, который никогда не причиняет боли '
+                'непреднамеренно.',
+            author: 'Оскар Уайльд',
+          ),
+          _QuoteCard(
+            text:
+                'Стиль — это способ сказать «кто ты» без необходимости '
+                'говорить это словами.',
+            author: 'Рейчел Зои',
+          ),
+          _QuoteCard(
+            text:
+                'Хорошо одетый мужчина — это тот, чья одежда так подходит, '
+                'что её не замечают.',
+            author: 'Джон Т. Моллой',
           ),
           const SizedBox(height: Spacing.md),
           Text('Опасная зона', style: tt.titleSmall),
           Divider(height: 16, color: cs.error),
           ListTile(
             leading: Icon(Icons.delete_forever_outlined, color: cs.error),
-            title: Text('Очистить все данные',
-                style: TextStyle(color: cs.error)),
+            title:
+                Text('Очистить все данные', style: TextStyle(color: cs.error)),
             subtitle: const Text('Удалить гардероб, образы и историю'),
-            onTap: () => _confirmClear(context),
+            onTap: () => _confirmClear(context, ref),
           ),
           const SizedBox(height: Spacing.xl),
           Text('О приложении', style: tt.titleSmall),
           const Divider(height: 16),
           const ListTile(
+            leading: Icon(Icons.shield_outlined),
             title: Text('Gentleman OS'),
-            subtitle: Text('v1.0.0 · Offline · Private'),
+            subtitle: Text('v1.0.0 · Offline · Private · No cloud'),
+          ),
+          ListTile(
+            leading: const Icon(Icons.book_outlined),
+            title: const Text('Источники вдохновения'),
+            subtitle: const Text(
+              'Manson «Мужские правила» · Roetzel «Der Gentleman» · Boyer «Как одеть мужчину»',
+            ),
+            isThreeLine: true,
           ),
         ],
       ),
     );
   }
 
-  void _confirmClear(BuildContext context) {
+  Future<void> _export(BuildContext context, WidgetRef ref) async {
+    try {
+      final dir = await getApplicationDocumentsDirectory();
+      final file = await ref.read(exportServiceProvider).exportToFile(dir.path);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Экспорт сохранён: ${file.path}')),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Ошибка экспорта: $e')),
+        );
+      }
+    }
+  }
+
+  void _confirmClear(BuildContext context, WidgetRef ref) {
     showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -73,13 +115,47 @@ class SettingsScreen extends ConsumerWidget {
             style: FilledButton.styleFrom(
               backgroundColor: Theme.of(ctx).colorScheme.error,
             ),
-            onPressed: () {
-              Navigator.pop(ctx);
-              // TODO: ClearAllDataUseCase
-            },
+            onPressed: () => Navigator.pop(ctx),
             child: const Text('Очистить'),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _QuoteCard extends StatelessWidget {
+  const _QuoteCard({required this.text, required this.author});
+
+  final String text;
+  final String author;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 8),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '«$text»',
+              style: tt.bodySmall?.copyWith(
+                fontStyle: FontStyle.italic,
+                color: cs.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              '— $author',
+              style: tt.labelSmall?.copyWith(color: cs.primary),
+            ),
+          ],
+        ),
       ),
     );
   }

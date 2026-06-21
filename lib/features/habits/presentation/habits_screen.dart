@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gentleman_os/core/constants/spacing.dart';
 import 'package:gentleman_os/core/db/app_database.dart';
 import 'package:gentleman_os/core/db/database_provider.dart';
+import 'package:gentleman_os/core/services/xp_service.dart';
 import 'package:gentleman_os/core/theme/app_colors.dart';
 import 'package:gentleman_os/core/widgets/empty_state.dart';
 import 'package:gentleman_os/features/habits/application/habits_providers.dart';
@@ -113,6 +114,7 @@ class _HabitTile extends ConsumerWidget {
               await ref
                   .read(habitsDaoProvider)
                   .updateStreak(habit.id, streak);
+              await ref.read(xpServiceProvider).habitCompleted(habit.title);
             }
           },
           child: CircleAvatar(
