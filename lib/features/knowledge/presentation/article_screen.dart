@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gentleman_os/core/constants/spacing.dart';
-import 'package:gentleman_os/core/services/achievement_service.dart';
 import 'package:gentleman_os/core/services/services_provider.dart';
 import 'package:gentleman_os/core/services/xp_service.dart';
 import 'package:gentleman_os/features/knowledge/application/knowledge_providers.dart';

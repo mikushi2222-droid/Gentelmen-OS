@@ -14,7 +14,7 @@ final _outfitDetailProvider =
   (ref, outfitId) async {
     final dao = ref.watch(outfitDaoProvider);
     final outfit = await dao.getById(outfitId);
-    if (outfit == null) return (null, []);
+    if (outfit == null) return (null, <ClothingItem>[]);
 
     final itemRows = await dao.getItemsForOutfit(outfitId);
     final wardrobeRepo = ref.watch(wardrobeRepositoryProvider);

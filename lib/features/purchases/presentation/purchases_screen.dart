@@ -6,7 +6,6 @@ import 'package:gentleman_os/core/constants/spacing.dart';
 import 'package:gentleman_os/core/db/app_database.dart';
 import 'package:gentleman_os/core/db/database_provider.dart';
 import 'package:gentleman_os/core/services/services_provider.dart';
-import 'package:gentleman_os/core/theme/app_colors.dart';
 import 'package:gentleman_os/core/widgets/empty_state.dart';
 import 'package:gentleman_os/features/purchases/application/purchases_providers.dart';
 import 'package:gentleman_os/shared/enums/clothing_category.dart';

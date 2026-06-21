@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart' show Value;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gentleman_os/core/db/app_database.dart';
+import 'package:gentleman_os/core/db/daos/outfit_dao.dart';
 import 'package:gentleman_os/core/db/database_provider.dart';
 import 'package:gentleman_os/core/services/xp_service.dart';
 import 'package:gentleman_os/features/outfit_builder/domain/outfit_generator.dart';

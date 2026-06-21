@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart' show Value;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gentleman_os/core/db/app_database.dart';
+import 'package:gentleman_os/core/db/daos/rpg_dao.dart';
 import 'package:gentleman_os/core/db/database_provider.dart';
 import 'package:gentleman_os/shared/enums/xp_type.dart';
 import 'package:uuid/uuid.dart';

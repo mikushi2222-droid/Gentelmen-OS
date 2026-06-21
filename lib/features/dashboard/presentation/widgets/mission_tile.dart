@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:gentleman_os/core/theme/app_colors.dart';
-import 'package:gentleman_os/shared/enums/xp_type.dart';
 
 class MissionTile extends StatelessWidget {
   const MissionTile({

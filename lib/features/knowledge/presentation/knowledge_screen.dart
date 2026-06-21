@@ -30,8 +30,6 @@ class _KnowledgeScreenState extends ConsumerState<KnowledgeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-
     if (_searching) {
       return Scaffold(
         appBar: AppBar(

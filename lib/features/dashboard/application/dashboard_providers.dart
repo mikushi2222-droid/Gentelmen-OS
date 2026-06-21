@@ -2,7 +2,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gentleman_os/core/db/app_database.dart';
 import 'package:gentleman_os/core/db/database_provider.dart';
 import 'package:gentleman_os/features/dashboard/domain/mission_generator.dart';
-import 'package:gentleman_os/features/rpg/application/rpg_providers.dart';
 import 'package:gentleman_os/features/rpg/domain/level_calculator.dart';
 import 'package:gentleman_os/features/wardrobe/application/wardrobe_providers.dart';
 import 'package:gentleman_os/shared/enums/xp_type.dart';
@@ -48,7 +47,7 @@ final dailyMissionsProvider =
   final measurementDao = ref.watch(measurementDaoProvider);
   final knowledgeDao = ref.watch(knowledgeDaoProvider);
   final outfitDao = ref.watch(outfitDaoProvider);
-  final wardrobeCount = ref.watch(wardrobeCountProvider).valueOrNull ?? 0;
+  final wardrobeCount = ref.watch(wardrobeCountProvider).value ?? 0;
 
   final today = DateTime.now();
   final startOfDay = DateTime(today.year, today.month, today.day);

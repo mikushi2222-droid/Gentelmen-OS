@@ -426,12 +426,10 @@ class _ItemsRow extends StatelessWidget {
 
   IconData _categoryIcon(ClothingCategory c) => switch (c) {
         ClothingCategory.shirt ||
-        ClothingCategory.tshirt ||
+        ClothingCategory.tShirt ||
         ClothingCategory.polo =>
           Icons.dry_cleaning,
-        ClothingCategory.trousers ||
-        ClothingCategory.jeans ||
-        ClothingCategory.shorts =>
+        ClothingCategory.trousers || ClothingCategory.jeans =>
           Icons.straighten,
         ClothingCategory.shoes => Icons.do_not_step,
         ClothingCategory.jacket ||

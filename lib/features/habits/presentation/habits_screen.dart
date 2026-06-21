@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gentleman_os/core/constants/spacing.dart';
 import 'package:gentleman_os/core/db/app_database.dart';
 import 'package:gentleman_os/core/db/database_provider.dart';
-import 'package:gentleman_os/core/services/achievement_service.dart';
 import 'package:gentleman_os/core/services/services_provider.dart';
 import 'package:gentleman_os/core/services/xp_service.dart';
 import 'package:gentleman_os/core/theme/app_colors.dart';
@@ -61,7 +60,6 @@ class _HabitsList extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
 
     return ListView(
@@ -95,7 +93,7 @@ class _HabitTile extends ConsumerWidget {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
     final asyncCompleted = ref.watch(habitCompletedTodayProvider(habit.id));
-    final isCompleted = asyncCompleted.valueOrNull ?? false;
+    final isCompleted = asyncCompleted.value ?? false;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 8),

@@ -1,7 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gentleman_os/core/db/database_provider.dart';
 import 'package:gentleman_os/core/services/achievement_service.dart';
-import 'package:gentleman_os/core/services/xp_service.dart';
 
 export 'package:gentleman_os/core/services/xp_service.dart';
 export 'package:gentleman_os/core/services/achievement_service.dart';

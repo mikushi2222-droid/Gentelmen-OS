@@ -12,7 +12,7 @@ import 'package:gentleman_os/shared/models/knowledge_article.dart';
 
 /// HTTP-клиент RouterAI — есть только если задан API-ключ.
 final routerAiClientProvider = Provider<RouterAiClient?>((ref) {
-  final cfg = ref.watch(routerAiConfigProvider).valueOrNull;
+  final cfg = ref.watch(routerAiConfigProvider).value;
   if (cfg == null || !cfg.isConfigured) return null;
   final client = RouterAiClient(cfg);
   ref.onDispose(client.close);

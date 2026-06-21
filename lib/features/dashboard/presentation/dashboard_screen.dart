@@ -28,7 +28,7 @@ class DashboardScreen extends ConsumerWidget {
       _ => 'Добрый вечер',
     };
 
-    final score = ref.watch(gentlemanScoreProvider).valueOrNull ?? 0.0;
+    final score = ref.watch(gentlemanScoreProvider).value ?? 0.0;
     final mood = moodFromScore(score);
 
     return Scaffold(
@@ -99,8 +99,8 @@ class _GentlemanScoreCard extends ConsumerWidget {
     final tt = Theme.of(context).textTheme;
     final asyncScore = ref.watch(gentlemanScoreProvider);
     final asyncCount = ref.watch(wardrobeCountProvider);
-    final score = asyncScore.valueOrNull ?? 0.0;
-    final wardrobeCount = asyncCount.valueOrNull ?? 0;
+    final score = asyncScore.value ?? 0.0;
+    final wardrobeCount = asyncCount.value ?? 0;
 
     return Container(
       decoration: BoxDecoration(

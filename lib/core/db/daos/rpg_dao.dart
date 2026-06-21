@@ -24,7 +24,7 @@ class RpgDao extends DatabaseAccessor<AppDatabase> with _$RpgDaoMixin {
 
   Future<int> getTotalXp() async {
     final events = await getAllXpEvents();
-    return events.fold(0, (sum, e) => sum + e.amount);
+    return events.fold<int>(0, (sum, e) => sum + e.amount);
   }
 
   Future<Map<int, int>> getXpByType() async {
