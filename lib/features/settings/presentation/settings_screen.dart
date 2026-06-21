@@ -154,12 +154,15 @@ class SettingsScreen extends ConsumerWidget {
     }
   }
 
-  void _showAiKeyDialog(BuildContext context, WidgetRef ref) {
-    final cfg = ref.read(routerAiConfigProvider).valueOrNull;
-    final keyCtrl = TextEditingController(text: cfg?.apiKey ?? '');
-    var model = cfg?.model ?? RouterAiConfig.defaultModel;
+  Future<void> _showAiKeyDialog(BuildContext context, WidgetRef ref) async {
+    // Читаем конфиг через .future: valueOrNull мог быть null, если
+    // FutureProvider ещё не разрезолвился — и поле ключа было бы пустым.
+    final cfg = await ref.read(routerAiConfigProvider.future);
+    if (!context.mounted) return;
+    final keyCtrl = TextEditingController(text: cfg.apiKey ?? '');
+    var model = cfg.model;
 
-    showDialog<void>(
+    await showDialog<void>(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setState) => AlertDialog(
@@ -218,6 +221,7 @@ class SettingsScreen extends ConsumerWidget {
         ),
       ),
     );
+    keyCtrl.dispose();
   }
 
   void _confirmClear(BuildContext context, WidgetRef ref) {

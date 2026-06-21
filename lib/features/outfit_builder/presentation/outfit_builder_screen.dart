@@ -334,10 +334,12 @@ class _SuggestionCard extends ConsumerWidget {
           ),
           FilledButton(
             onPressed: () async {
+              final name =
+                  ctrl.text.trim().isEmpty ? 'Образ $index' : ctrl.text.trim();
               Navigator.pop(ctx);
               await saveOutfitSuggestion(
                 suggestion: suggestion,
-                name: ctrl.text.trim().isEmpty ? 'Образ $index' : ctrl.text.trim(),
+                name: name,
                 params: params,
                 dao: ref.read(outfitDaoProvider),
                 xpService: ref.read(xpServiceProvider),
@@ -355,7 +357,7 @@ class _SuggestionCard extends ConsumerWidget {
           ),
         ],
       ),
-    );
+    ).whenComplete(ctrl.dispose);
   }
 }
 

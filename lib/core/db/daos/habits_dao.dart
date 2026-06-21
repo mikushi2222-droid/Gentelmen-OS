@@ -64,14 +64,18 @@ class HabitsDao extends DatabaseAccessor<AppDatabase> with _$HabitsDaoMixin {
         .toList()
       ..sort((a, b) => b.compareTo(a));
 
+    // Календарный предыдущий день: DateTime(...-1) корректно переносит месяц/год
+    // и не страдает от переходов на летнее время (в отличие от subtract(days:1)).
+    DateTime prevDay(DateTime d) => DateTime(d.year, d.month, d.day - 1);
+
     var streak = 0;
-    var expected = DateTime.now();
-    expected = DateTime(expected.year, expected.month, expected.day);
+    final now = DateTime.now();
+    var expected = DateTime(now.year, now.month, now.day);
 
     for (final date in dates) {
-      if (date == expected || date == expected.subtract(const Duration(days: 1))) {
+      if (date == expected || date == prevDay(expected)) {
         streak++;
-        expected = date.subtract(const Duration(days: 1));
+        expected = prevDay(date);
       } else {
         break;
       }
