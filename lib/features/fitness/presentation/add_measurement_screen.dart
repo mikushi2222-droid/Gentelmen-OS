@@ -4,7 +4,7 @@ import 'package:drift/drift.dart' show Value;
 import 'package:gentleman_os/core/constants/spacing.dart';
 import 'package:gentleman_os/core/db/app_database.dart';
 import 'package:gentleman_os/core/db/database_provider.dart';
-import 'package:gentleman_os/core/services/xp_service.dart';
+import 'package:gentleman_os/core/services/services_provider.dart';
 import 'package:uuid/uuid.dart';
 
 class AddMeasurementScreen extends ConsumerStatefulWidget {
@@ -107,6 +107,7 @@ class _AddMeasurementScreenState extends ConsumerState<AddMeasurementScreen> {
         );
 
     await ref.read(xpServiceProvider).measurementLogged();
+    await ref.read(achievementServiceProvider).checkAfterMeasurement();
 
     if (mounted) {
       setState(() => _saving = false);

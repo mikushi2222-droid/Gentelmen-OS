@@ -17,6 +17,8 @@ class PurchasesDao extends DatabaseAccessor<AppDatabase>
             ]))
           .watch();
 
+  Future<List<PurchaseWishesData>> getAll() => select(purchaseWishes).get();
+
   Future<void> upsert(PurchaseWishesCompanion wish) =>
       into(purchaseWishes).insertOnConflictUpdate(wish);
 

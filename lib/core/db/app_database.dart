@@ -20,6 +20,7 @@ import 'package:gentleman_os/core/db/tables/outfits_table.dart';
 import 'package:gentleman_os/core/db/tables/purchase_wishes_table.dart';
 import 'package:gentleman_os/core/db/tables/rpg_table.dart';
 import 'package:gentleman_os/core/db/tables/user_profile_table.dart';
+import 'package:gentleman_os/core/services/achievement_catalog.dart';
 
 part 'app_database.g.dart';
 
@@ -95,23 +96,8 @@ class AppDatabase extends _$AppDatabase {
   }
 
   Future<void> _seedAchievements() async {
-    const data = [
-      ('first_item', 'Первая вещь', 'Добавил первую вещь в гардероб'),
-      ('first_outfit', 'Первый образ', 'Собрал первый образ'),
-      ('wardrobe_10', 'Гардероб×10', 'Добавил 10 вещей в гардероб'),
-      ('wardrobe_25', 'Гардероб×25', 'Добавил 25 вещей в гардероб'),
-      ('streak_7', 'Неделя', 'Активен 7 дней подряд'),
-      ('streak_30', 'Месяц', 'Активен 30 дней подряд'),
-      ('bookworm_5', 'Читатель', 'Прочитал 5 статей'),
-      ('bookworm_10', 'Книжник', 'Прочитал 10 статей'),
-      ('budget_master', 'Бюджет под контролем', 'Закрыл 5 покупок в бюджете'),
-      ('level_5', 'Уровень 5', 'Достиг 5-го уровня'),
-      ('level_10', 'Уровень 10', 'Достиг 10-го уровня'),
-      ('measure_logged', 'Первый замер', 'Записал первые параметры'),
-      ('outfit_rated', 'Оценщик', 'Оценил образ после носки'),
-    ];
-
-    for (final (code, title, desc) in data) {
+    // Источник правды — [Achv.all]; те же коды использует AchievementService.
+    for (final (code, title, desc) in Achv.all) {
       await into(achievements).insert(
         AchievementsCompanion.insert(
           id: code,

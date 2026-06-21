@@ -5,6 +5,7 @@ import 'package:drift/drift.dart' show Value;
 import 'package:gentleman_os/core/constants/spacing.dart';
 import 'package:gentleman_os/core/db/app_database.dart';
 import 'package:gentleman_os/core/db/database_provider.dart';
+import 'package:gentleman_os/core/services/services_provider.dart';
 import 'package:gentleman_os/core/theme/app_colors.dart';
 import 'package:gentleman_os/core/widgets/empty_state.dart';
 import 'package:gentleman_os/features/purchases/application/purchases_providers.dart';
@@ -236,9 +237,14 @@ class _WishCard extends StatelessWidget {
                       ? Icons.radio_button_checked
                       : Icons.radio_button_off,
                 ),
-                onTap: () {
-                  ref.read(purchasesDaoProvider).updateStatus(item.id, s.index);
-                  Navigator.pop(ctx);
+                onTap: () async {
+                  await ref
+                      .read(purchasesDaoProvider)
+                      .updateStatus(item.id, s.index);
+                  await ref
+                      .read(achievementServiceProvider)
+                      .checkAfterPurchaseStatusChange();
+                  if (ctx.mounted) Navigator.pop(ctx);
                 },
               ),
             ),

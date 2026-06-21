@@ -13,5 +13,7 @@ final achievementServiceProvider = Provider<AchievementService>((ref) {
     outfitDao: ref.watch(outfitDaoProvider),
     knowledgeDao: ref.watch(knowledgeDaoProvider),
     habitsDao: ref.watch(habitsDaoProvider),
+    measurementDao: ref.watch(measurementDaoProvider),
+    purchasesDao: ref.watch(purchasesDaoProvider),
   );
 });
