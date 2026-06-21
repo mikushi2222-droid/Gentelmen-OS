@@ -39,6 +39,21 @@ class HabitsDao extends DatabaseAccessor<AppDatabase> with _$HabitsDaoMixin {
     return logs.isNotEmpty;
   }
 
+  /// Множество id привычек, отмеченных выполненными за день [day].
+  /// Один запрос вместо N вызовов [isCompletedToday] (устраняет N+1).
+  Future<Set<String>> completedHabitIdsOn(DateTime day) async {
+    final start = DateTime(day.year, day.month, day.day);
+    final end = start.add(const Duration(days: 1));
+    final logs = await (select(habitLogs)
+          ..where(
+            (t) =>
+                t.date.isBiggerOrEqualValue(start) &
+                t.date.isSmallerThanValue(end),
+          ))
+        .get();
+    return logs.map((l) => l.habitId).toSet();
+  }
+
   Future<int> computeStreak(String habitId) async {
     final logs = await getLogsForHabit(habitId);
     if (logs.isEmpty) return 0;

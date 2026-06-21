@@ -86,10 +86,14 @@ class _ItemImage extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
 
     if (imagePath != null) {
-      final file = File(imagePath!);
-      return file.existsSync()
-          ? Image.file(file, fit: BoxFit.cover, width: double.infinity)
-          : _Placeholder(cs: cs);
+      // Без existsSync(): синхронный I/O на каждый кадр скролла даёт джанк.
+      // Отсутствующий файл обрабатывается errorBuilder'ом.
+      return Image.file(
+        File(imagePath!),
+        fit: BoxFit.cover,
+        width: double.infinity,
+        errorBuilder: (_, __, ___) => _Placeholder(cs: cs),
+      );
     }
     return _Placeholder(cs: cs);
   }

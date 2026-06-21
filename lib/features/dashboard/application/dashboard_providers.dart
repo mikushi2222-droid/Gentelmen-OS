@@ -28,10 +28,9 @@ final gentlemanScoreProvider = FutureProvider<double>((ref) async {
   }
 
   final habits = await habitsDao.watchAll().first;
-  var completedToday = 0;
-  for (final h in habits) {
-    if (await habitsDao.isCompletedToday(h.id)) completedToday++;
-  }
+  final completedIds = await habitsDao.completedHabitIdsOn(DateTime.now());
+  final completedToday =
+      habits.where((h) => completedIds.contains(h.id)).length;
 
   return computeGentlemanScore(
     styleXpLast7d: styleXp,

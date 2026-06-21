@@ -176,16 +176,7 @@ class _HeroImage extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
 
-    if (imagePath != null) {
-      final file = File(imagePath!);
-      if (file.existsSync()) {
-        return ClipRRect(
-          borderRadius: BorderRadius.circular(16),
-          child: Image.file(file, height: 280, width: double.infinity, fit: BoxFit.cover),
-        );
-      }
-    }
-    return Container(
+    final placeholder = Container(
       height: 280,
       decoration: BoxDecoration(
         color: cs.surfaceContainerLow,
@@ -195,6 +186,20 @@ class _HeroImage extends StatelessWidget {
         child: Icon(Icons.checkroom, size: 96, color: cs.outlineVariant),
       ),
     );
+
+    if (imagePath != null) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: Image.file(
+          File(imagePath!),
+          height: 280,
+          width: double.infinity,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => placeholder,
+        ),
+      );
+    }
+    return placeholder;
   }
 }
 

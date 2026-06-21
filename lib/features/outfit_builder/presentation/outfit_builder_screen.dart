@@ -388,9 +388,16 @@ class _ItemsRow extends StatelessWidget {
                   border: Border.all(color: cs.outlineVariant),
                 ),
                 clipBehavior: Clip.antiAlias,
-                child: item.imagePath != null &&
-                        File(item.imagePath!).existsSync()
-                    ? Image.file(File(item.imagePath!), fit: BoxFit.cover)
+                child: item.imagePath != null
+                    ? Image.file(
+                        File(item.imagePath!),
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => Icon(
+                          _categoryIcon(item.category),
+                          color: cs.outline,
+                          size: 28,
+                        ),
+                      )
                     : Icon(
                         _categoryIcon(item.category),
                         color: cs.outline,

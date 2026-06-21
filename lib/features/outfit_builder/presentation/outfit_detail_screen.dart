@@ -166,8 +166,13 @@ class _ItemRow extends StatelessWidget {
           borderRadius: BorderRadius.circular(8),
         ),
         clipBehavior: Clip.antiAlias,
-        child: item.imagePath != null && File(item.imagePath!).existsSync()
-            ? Image.file(File(item.imagePath!), fit: BoxFit.cover)
+        child: item.imagePath != null
+            ? Image.file(
+                File(item.imagePath!),
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) =>
+                    Icon(Icons.checkroom_outlined, color: cs.outline),
+              )
             : Icon(Icons.checkroom_outlined, color: cs.outline),
       ),
       title: Text(item.name, style: tt.bodyMedium),
