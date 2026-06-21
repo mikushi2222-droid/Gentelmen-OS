@@ -6,6 +6,7 @@ import 'package:gentleman_os/core/db/app_database.dart';
 import 'package:gentleman_os/core/db/database_provider.dart';
 import 'package:gentleman_os/core/services/services_provider.dart';
 import 'package:gentleman_os/core/theme/app_colors.dart';
+import 'package:gentleman_os/core/widgets/mascot_avatar.dart';
 import 'package:gentleman_os/core/widgets/score_ring.dart';
 import 'package:gentleman_os/features/dashboard/application/dashboard_providers.dart';
 import 'package:gentleman_os/features/dashboard/presentation/widgets/mission_tile.dart';
@@ -28,6 +29,9 @@ class DashboardScreen extends ConsumerWidget {
       _ => 'Добрый вечер',
     };
 
+    final score = ref.watch(gentlemanScoreProvider).valueOrNull ?? 0.0;
+    final mood = moodFromScore(score);
+
     return Scaffold(
       body: CustomScrollView(
         slivers: [
@@ -37,7 +41,7 @@ class DashboardScreen extends ConsumerWidget {
             snap: true,
             leading: Padding(
               padding: const EdgeInsets.all(8),
-              child: _GentlemanCrest(size: 36),
+              child: MascotAvatar(size: 36, mood: mood),
             ),
             title: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -83,31 +87,6 @@ class DashboardScreen extends ConsumerWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-/// Герб/логотип из макета
-class _GentlemanCrest extends StatelessWidget {
-  const _GentlemanCrest({required this.size});
-
-  final double size;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        color: AppColors.gold.withOpacity(0.15),
-        shape: BoxShape.circle,
-        border: Border.all(color: AppColors.gold, width: 1),
-      ),
-      child: Icon(
-        Icons.shield_outlined,
-        color: AppColors.gold,
-        size: size * 0.55,
       ),
     );
   }
