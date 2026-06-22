@@ -3,6 +3,36 @@
 Flutter официально рекомендует: unit-тесты для логики, widget-тесты для UI,
 golden-тесты для визуала. План построен на этом.
 
+## 0. Текущее состояние (июнь 2026)
+
+Что **реально есть** в репозитории:
+
+```
+test/unit/
+├── ai/local_ai_advisor_test.dart
+├── dashboard/mission_generator_test.dart
+├── health/health_marker_test.dart
+├── mascot/mascot_avatar_test.dart
+├── outfit/{color_harmony,occasion_rules,outfit_generator,weather_rules}_test.dart
+├── profile/user_profile_test.dart
+├── recommendation/{fit_rules,outfit_scorer}_test.dart
+├── rpg/level_calculator_test.dart           // computeLevel + computeGentlemanScore
+└── wardrobe/{clothing_item,wear_forecast}_test.dart
+test/widget/
+├── core/score_ring_test.dart
+├── dashboard/dashboard_screen_test.dart      // smoke + provider overrides
+└── wardrobe/{clothing_card,wardrobe_screen}_test.dart
+```
+
+Ещё **не реализовано** (бэклог качества, см. [12-production-plan.md](12-production-plan.md)):
+golden-тесты, миграционные тесты (`v1→v6`), `integration_test/`, тесты
+репозиториев на in-memory Drift, виджет-тесты `PurchasesScreen` / `OutfitDetailScreen`.
+
+> Все тесты требуют прогнанного `build_runner` (генерация `.g.dart`/`.freezed.dart`)
+> — эти файлы в `.gitignore` и в CI/локально генерируются перед `flutter test`.
+
+Разделы ниже — целевой план (к чему стремимся), а не текущее покрытие.
+
 ## 1. Пирамида тестов
 
 ```

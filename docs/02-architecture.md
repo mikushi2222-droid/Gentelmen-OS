@@ -119,21 +119,32 @@ appDatabaseProvider (Drift)
 
 ## 12. Кросс-слойные сервисы (core)
 
+Фактическая структура (проверено против кода, июнь 2026):
+
 | Модуль | Назначение |
 |--------|-----------|
-| `core/theme/` | тема, цвета, типографика |
-| `core/router/` | конфигурация go_router |
-| `core/db/` | AppDatabase, миграции, конвертеры |
-| `core/widgets/` | общие виджеты (карточки, чипы, пустые состояния) |
-| `core/utils/` | форматтеры, расширения, хелперы |
-| `core/constants/` | константы, ключи, enum-словари |
-| `core/result/` | типобезопасный `Result`/`Either` для ошибок |
+| `core/theme/` | `app_theme.dart`, `app_colors.dart` (Material 3, тёмная тема) |
+| `core/router/` | `app_router.dart` (go_router + ShellRoute), `shell_scaffold.dart` |
+| `core/db/` | `AppDatabase` (Drift), `tables/`, `daos/`, миграции (inline в `app_database.dart`) |
+| `core/widgets/` | `async_value_widget.dart`, `empty_state.dart`, `mascot_avatar.dart` |
+| `core/utils/` | `app_logger.dart` (кольцевой буфер логов), `date_utils.dart` |
+| `core/services/` | `xp_service.dart`, `achievement_service.dart`, `services_provider.dart` |
+| `core/ai/` | ИИ-слой: порт `AiAdvisor`, `LocalAiAdvisor`, `RouterAiClient` (см. [14-ai-integration.md](14-ai-integration.md)) |
+
+> Константы scoring/XP и enum-словари живут рядом с потребляющей логикой
+> (`features/*/domain/`, `shared/enums/`), а не в выделенном `core/constants/`.
 
 ## 13. Обработка ошибок
 
-- Доменные операции возвращают `Result<T, Failure>` (или throw → ловится в
-  контроллере), без утечки исключений Drift в UI.
-- UI отображает дружелюбные состояния (loading / empty / error / data).
+- Фактически (июнь 2026): доменные/репозиторные операции бросают исключения,
+  которые ловятся на уровне провайдеров через `AsyncValue` (Riverpod
+  `FutureProvider`/`StreamProvider` сами оборачивают ошибку в `AsyncError`).
+  Выделенного `Result<T, Failure>`-типа в коде нет — это сознательное упрощение
+  для одиночного приложения.
+- ИИ-слой нормализует сетевые ошибки в `RouterAiException` с человекочитаемым
+  сообщением; облачные сбои тихо откатываются на оффлайн-движок.
+- UI отображает дружелюбные состояния через `AsyncValueWidget`
+  (loading / empty / error / data).
 
 ## 14. Экспорт / импорт
 

@@ -2,39 +2,44 @@
 
 ## 1. Карта навигации (go_router)
 
-Корневой `ShellRoute` с нижней навигацией на 5 основных разделов; остальные —
-вложенные/модальные маршруты.
+Фактическая карта маршрутов (проверено против `core/router/app_router.dart`,
+июнь 2026). `initialLocation: '/dashboard'`. Корневой `ShellRoute` (с
+`ShellScaffold` + нижняя навигация) оборачивает 5 основных разделов; детальные
+и второстепенные экраны живут **вне** shell (открываются на весь экран).
 
 ```
-/
-├── /dashboard                         (ShellRoute tab 1) — Dashboard
-├── /wardrobe                          (ShellRoute tab 2) — список гардероба
-│    ├── /wardrobe/add                 — добавить вещь
+ShellRoute (нижняя навигация, 5 табов)
+├── /dashboard                         — Dashboard
+├── /wardrobe                          — список гардероба
+│    ├── /wardrobe/add                 — добавить вещь (extra: name, category)
 │    └── /wardrobe/:itemId             — карточка вещи
-│         └── /wardrobe/:itemId/edit   — редактировать
-├── /outfits                           (ShellRoute tab 3) — образы
-│    ├── /outfits/build                — outfit builder (входные параметры → подборки)
-│    ├── /outfits/:outfitId            — детали образа
-│    └── /outfits/:outfitId/rate       — оценить после носки
-├── /knowledge                         (ShellRoute tab 4) — база знаний
-│    ├── /knowledge/:articleId         — статья (Markdown)
-│    └── /knowledge/search             — поиск
-├── /progress                          (ShellRoute tab 5) — прогресс (fitness + RPG)
-│    ├── /progress/measurements        — замеры и графики
-│    ├── /progress/measurements/add    — добавить замер
-│    ├── /progress/rpg                 — RPG-экран (уровень, навыки, ачивки)
-│    └── /progress/habits              — привычки
-├── /profile                           — профиль (из Dashboard/Settings)
+│         └── /wardrobe/:itemId/edit   — редактировать (тот же AddItemScreen)
+├── /outfits                           — список образов
+│    ├── /outfits/build                — outfit builder (параметры → подборки)
+│    └── /outfits/:outfitId            — детали образа
+│         └── /outfits/:outfitId/rate  — оценить после носки (1–5★ + заметка)
+├── /knowledge                         — база знаний (поиск inline в AppBar)
+│    └── /knowledge/:articleId         — статья (Markdown)
+└── /progress                          — Fitness-экран (замеры, графики, тренды)
+     ├── /progress/add-measurement     — добавить замер
+     ├── /progress/rpg                 — RPG (уровень, навыки, ачивки)
+     └── /progress/habits              — привычки (7-дневный calendar strip)
+
+Вне ShellRoute (full-screen):
+├── /profile                           — профиль
 │    └── /profile/edit                 — редактировать профиль
-├── /purchases                         — советник по покупкам
-│    └── /purchases/add                — добавить желаемое
-└── /settings                          — настройки
-     ├── /settings/export              — экспорт
-     ├── /settings/import              — импорт
-     └── /settings/backup              — резервная копия / очистка
+├── /purchases                         — советник по покупкам (5 табов по статусу)
+├── /style-advisor                     — ИИ-советник по стилю/гардеробу
+├── /health                            — мужское здоровье (16 маркеров, индекс)
+│    └── /health/marker/:typeIndex     — деталь маркера (график динамики, ИИ-разбор)
+└── /settings                          — настройки (тема, экспорт, очистка)
+     └── /settings/logs                — журнал отладки
 ```
 
-Типобезопасные маршруты — через `go_router_builder` (`@TypedGoRoute`).
+> ⚠️ Расхождение с планом: `go_router_builder` (`@TypedGoRoute`) подключён как
+> dev-зависимость, но маршруты сейчас объявлены **императивно** в
+> `app_router.dart`, без type-safe генерации. Экспорт/импорт — действия внутри
+> `/settings` (диалоги/`share_plus`), а не отдельные маршруты.
 
 ## 2. Список экранов и их содержимое
 
@@ -96,18 +101,18 @@
 - теги, кнопки избранное/закладка;
 - источник (sourceRef).
 
-### 2.11 Progress (`/progress`)
-- сводка: вес, талия, тренд;
-- быстрые ссылки на Measurements, RPG, Habits.
+### 2.11 Progress / Fitness (`/progress`)
+- замеры (вес, талия, грудь, плечи) с тренд-дельтами (↑↓);
+- графики fl_chart по метрикам;
+- FAB «добавить замер» (`/progress/add-measurement`);
+- быстрые ссылки на RPG (`/progress/rpg`) и привычки (`/progress/habits`).
 
-### 2.12 Measurements (`/progress/measurements`)
-- графики (вес, талия, грудь) по периодам;
-- история записей;
-- FAB «добавить замер».
+> Отдельного экрана `/progress/measurements` нет — корневой `/progress` **и есть**
+> экран замеров (`FitnessScreen`).
 
 ### 2.13 RPG (`/progress/rpg`)
 - уровень и прогресс-бар XP;
-- навыки (style, fitness, etiquette, reading, career, finance) с уровнями;
+- навыки (style, fitness, etiquette, reading, career, finance, health) с уровнями;
 - достижения (разблокированные/закрытые);
 - стрики.
 
@@ -123,12 +128,32 @@
 
 ### 2.16 Settings (`/settings`)
 - тема (тёмная по умолчанию);
-- экспорт / импорт;
-- резервная копия;
+- экспорт (JSON через `share_plus`);
 - очистка данных;
+- ИИ-советник: ввод ключа RouterAI, выбор модели;
+- журнал отладки (`/settings/logs`);
 - о приложении.
 
+### 2.17 Health — Мужское здоровье (`/health`)
+- 16 маркеров (тестостерон, ПСА, витамин D, ферритин, холестерин и др.);
+- цветовой статус (норма/внимание/риск), референсные диапазоны;
+- индекс здоровья [0–100];
+- кнопка ✨ — ИИ-разбор маркеров (RouterAI + веб-поиск);
+- деталь маркера (`/health/marker/:typeIndex`) — график динамики;
+- дисклеймер «не является медицинской рекомендацией».
+- Подробнее: [14-ai-integration.md](14-ai-integration.md) §5.
+
+### 2.18 Style Advisor (`/style-advisor`)
+- ИИ-советник по гардеробу (`styleAdviceProvider`): summary + предложения;
+- работает на оффлайн-правилах без ключа, на LLM — с ключом RouterAI.
+
 ## 3. Список UI-компонентов (переиспользуемые)
+
+> Таблица ниже — **концептуальная** карта ролей. В коде реально выделены как
+> переиспользуемые: `MissionTile`, `QuickActionButton`, `ClothingCard`,
+> `MascotAvatar`, `EmptyState`, `AsyncValueWidget` (loading/empty/error/data в
+> одном виджете). Остальные роли реализованы инлайн в экранах, без отдельных
+> классов.
 
 | Компонент | Где используется |
 |-----------|------------------|

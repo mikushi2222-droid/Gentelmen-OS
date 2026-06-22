@@ -23,7 +23,7 @@
 | Модуль | Статус | Примечания |
 |--------|--------|------------|
 | Scaffold, тема, навигация | ✅ Готово | Material 3, тёмная тема, `#C9A84C` |
-| Drift БД v6 + миграции | ✅ Готово | 13 таблиц, транзакционные DAO, сид |
+| Drift БД v6 + миграции | ✅ Готово | 14 таблиц, 10 DAO, транзакции, сид |
 | Профиль + замеры + BMI | ✅ Готово | `isLargeFrame`, производные рекомендации |
 | Гардероб | ✅ Готово | CRUD, фото, cost-per-wear, поиск, urgency |
 | `WearForecast` / urgency | ✅ Готово | 5 статусов, прогноз на детали вещи |
@@ -38,7 +38,7 @@
 | Фитнес + тренд-дельты | ✅ Готово | fl_chart, стрелки ↑↓ |
 | Привычки + 7д calendar | ✅ Готово | calendar strip, стрик |
 | Мужское здоровье | ✅ Готово | 16 маркеров, ИИ-разбор, индекс [0–100] |
-| RPG + Gentleman Score | ✅ Готово | XP × 5 типов, уровни, ачивки, миссии |
+| RPG + Gentleman Score | ✅ Готово | XP × 8 типов, Score из 5 компонентов, ачивки, миссии |
 | Покупки | ✅ Готово | 48ч правило, 5 табов по статусу |
 | Аниме-маскот | ✅ Готово | `MascotAvatar`, 4 настроения |
 | ИИ-слой | ✅ Готово | `AiAdvisor`, `RouterAI`, защищённый ключ |
@@ -97,23 +97,24 @@
 - [ ] **4.1.3** Убедиться в чистоте всех generated файлов (`.g.dart`, `.freezed.dart`)
 
 ### Эпик 4.2 — Тесты (unit)
-- [ ] **4.2.1** `computeWearForecast` — все 5 ветвей urgency + граничные случаи
-- [ ] **4.2.2** `generateDailyMissions` — все комбинации флагов (8 случаев)
-- [ ] **4.2.3** `computeGentlemanScore` — 5-компонентная формула
-- [ ] **4.2.4** `scoreOutfit` — fit/color/occasion/weather/comfort
-- [ ] **4.2.5** `markerStatus(type, value)` — здоровье: норма/внимание/риск
+- [x] **4.2.1** `computeWearForecast` — все 5 ветвей urgency + граничные случаи (`test/unit/wardrobe/wear_forecast_test.dart`)
+- [x] **4.2.2** `generateDailyMissions` — все комбинации флагов (`test/unit/dashboard/mission_generator_test.dart`)
+- [x] **4.2.3** `computeGentlemanScore` — 5-компонентная формула (`test/unit/rpg/level_calculator_test.dart`)
+- [x] **4.2.4** `scoreOutfit` — fit/color/occasion/weather/comfort (`test/unit/recommendation/outfit_scorer_test.dart`)
+- [x] **4.2.5** `markerStatus(type, value)` — здоровье: норма/внимание/риск (`test/unit/health/health_marker_test.dart`)
 
 ### Эпик 4.3 — Тесты (widget)
-- [ ] **4.3.1** `DashboardScreen` — smoke test (загружается, Score card виден)
+- [x] **4.3.1** `DashboardScreen` — smoke test (`test/widget/dashboard/dashboard_screen_test.dart`)
 - [ ] **4.3.2** `PurchasesScreen` — переключение 5 табов
-- [ ] **4.3.3** `WardrobeScreen` — поиск фильтрует items
+- [x] **4.3.3** `WardrobeScreen` — поиск фильтрует items (`test/widget/wardrobe/wardrobe_screen_test.dart`)
 - [ ] **4.3.4** `OutfitDetailScreen` — score breakdown отображается
 
 ### Эпик 4.4 — Миграционные тесты
 - [ ] **4.4.1** v1→v6 без потери данных (in-memory Drift)
 
 ### Эпик 4.5 — CI
-- [ ] **4.5.1** `flutter test --coverage` зелёный в CI runner
+- [x] **4.5.1** Исправлен конфликт `custom_lint`/`riverpod_lint` → `flutter pub get` проходит (см. [15-ci-and-build.md](15-ci-and-build.md) §7)
+- [ ] **4.5.2** `flutter test --coverage` зелёный в CI runner (зависит от выделения раннера — §1–3 doc 15)
 
 **DoD Фазы 4:** `flutter analyze` + `flutter test` — оба зелёные.
 

@@ -36,14 +36,19 @@
 | V2.6 | Urgency-сортировка гардероба + outfit-today fix в миссиях + 5 табов в покупках | `593641e` |
 | V2.7 | Dashboard urgency strip «Надеть сегодня» + knowledge bookmarks/favorites filter + время чтения статьи | `39e31a0` |
 | V2.8 | Сохранение score breakdown в outfit + разбивка по осям в детали + «Надеть весь образ» + поиск в гардеробе | `f3270cb` |
+| V2.9 | Habits мини-блок на Dashboard + outfit occasion filter + rating screen + purchase→wardrobe | — |
+| V2.11–12 | Расширение unit-тестов + widget-тесты (Dashboard, Wardrobe) + фикс CI (`custom_lint`/`riverpod_lint`) | — |
+
+> Прогресс по тестам и оставшимся эпикам качества отслеживается в
+> [12-production-plan.md](12-production-plan.md) §6 (Фаза 4).
 
 ---
 
-## 2. Следующие шаги — V2.9–V2.12
+## 2. Следующие шаги — V2.10–V2.12
 
-### V2.9 — Quick wins: привычки, покупки→гардероб, outfit rating
+### V2.9 — Quick wins: привычки, покупки→гардероб, outfit rating ✅ Завершено
 
-**Приоритет: Высокий.** Замыкают незакрытые UX-петли.
+**Приоритет: Высокий.** Замыкают незакрытые UX-петли. (Детали ниже — для истории.)
 
 #### A. Стрик-счётчик привычек на Dashboard
 - Добавить мини-блок «Привычки сегодня» между urgency strip и разделом миссий
