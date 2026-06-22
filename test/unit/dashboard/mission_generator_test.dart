@@ -83,5 +83,98 @@ void main() {
       final ids2 = m2.map((m) => m.id.value).toSet();
       expect(ids1.intersection(ids2), isEmpty);
     });
+
+    test('прочитал статью → нет миссии чтения', () {
+      final missions = generateDailyMissions(
+        date: today,
+        hasMeasurementToday: false,
+        hasOutfitToday: false,
+        wardrobeCount: 5,
+        articlesRead: 1,
+      );
+      expect(missions.any((m) => m.id.value.endsWith('_article')), isFalse);
+    });
+
+    test('нет недавних записей здоровья → появляется миссия здоровья', () {
+      final missions = generateDailyMissions(
+        date: today,
+        hasMeasurementToday: true,
+        hasOutfitToday: true,
+        wardrobeCount: 5,
+        articlesRead: 1,
+        hasHealthMarkerRecently: false,
+      );
+      expect(missions.any((m) => m.id.value.endsWith('_health')), isTrue);
+    });
+
+    test('образ сегодня уже есть → нет миссии образа', () {
+      final missions = generateDailyMissions(
+        date: today,
+        hasMeasurementToday: false,
+        hasOutfitToday: true,
+        wardrobeCount: 5,
+        articlesRead: 0,
+      );
+      expect(missions.any((m) => m.id.value.endsWith('_outfit')), isFalse);
+    });
+
+    test('привычка всегда последняя в списке', () {
+      for (final scenario in [
+        (m: false, o: false, w: 0, a: 0, h: true),
+        (m: true, o: true, w: 5, a: 1, h: false),
+        (m: false, o: false, w: 5, a: 0, h: true),
+      ]) {
+        final missions = generateDailyMissions(
+          date: today,
+          hasMeasurementToday: scenario.m,
+          hasOutfitToday: scenario.o,
+          wardrobeCount: scenario.w,
+          articlesRead: scenario.a,
+          hasHealthMarkerRecently: scenario.h,
+        );
+        expect(missions.last.id.value, endsWith('_habit'),
+            reason: 'scenario: $scenario');
+      }
+    });
+
+    test('при всех активных условиях — ровно 3 миссии', () {
+      // Conditionals: measure + first_item + article + health = 4,
+      // but code does take(2) + habit → always 3.
+      final missions = generateDailyMissions(
+        date: today,
+        hasMeasurementToday: false,
+        hasOutfitToday: false,
+        wardrobeCount: 0,
+        articlesRead: 0,
+        hasHealthMarkerRecently: false,
+      );
+      expect(missions.length, 3);
+    });
+
+    test('только одна условная + привычка → 2 миссии', () {
+      final missions = generateDailyMissions(
+        date: today,
+        hasMeasurementToday: true,
+        hasOutfitToday: true,
+        wardrobeCount: 5,
+        articlesRead: 1,
+        hasHealthMarkerRecently: false, // только health mission
+      );
+      expect(missions.length, 2);
+      expect(missions[0].id.value, endsWith('_health'));
+      expect(missions[1].id.value, endsWith('_habit'));
+    });
+
+    test('нет условных миссий → только привычка', () {
+      final missions = generateDailyMissions(
+        date: today,
+        hasMeasurementToday: true,
+        hasOutfitToday: true,
+        wardrobeCount: 5,
+        articlesRead: 1,
+      );
+      expect(missions.length, 1);
+      expect(missions.single.id.value, endsWith('_habit'));
+    });
   });
 }
