@@ -71,7 +71,14 @@ class _ArticleBodyState extends State<_ArticleBody> {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
     final repo = ref.read(knowledgeRepositoryProvider);
+
+    final wordCount = article.contentMarkdown
+        .split(RegExp(r'\s+'))
+        .where((w) => w.isNotEmpty)
+        .length;
+    final readingMinutes = ((wordCount / 200).ceil()).clamp(1, 99);
 
     return Scaffold(
       appBar: AppBar(
@@ -100,28 +107,40 @@ class _ArticleBodyState extends State<_ArticleBody> {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (article.tags.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(
-                Spacing.screenPadding,
-                Spacing.sm,
-                Spacing.screenPadding,
-                0,
-              ),
-              child: Wrap(
-                spacing: 6,
-                children: article.tags
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              Spacing.screenPadding,
+              Spacing.sm,
+              Spacing.screenPadding,
+              0,
+            ),
+            child: Wrap(
+              spacing: 6,
+              runSpacing: 4,
+              children: [
+                Chip(
+                  avatar: Icon(Icons.timer_outlined,
+                      size: 12, color: cs.onSurfaceVariant),
+                  label: Text('~$readingMinutes мин',
+                      style: tt.bodySmall
+                          ?.copyWith(color: cs.onSurfaceVariant)),
+                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  visualDensity: VisualDensity.compact,
+                ),
+                ...article.tags
                     .map(
                       (t) => Chip(
                         label: Text(t),
-                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        materialTapTargetSize:
+                            MaterialTapTargetSize.shrinkWrap,
                         visualDensity: VisualDensity.compact,
-                        labelStyle: Theme.of(context).textTheme.bodySmall,
+                        labelStyle: tt.bodySmall,
                       ),
                     )
                     .toList(),
-              ),
+              ],
             ),
+          ),
           Expanded(
             child: Markdown(
               data: article.contentMarkdown,

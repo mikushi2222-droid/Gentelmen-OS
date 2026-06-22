@@ -12,7 +12,10 @@ import 'package:gentleman_os/features/dashboard/application/dashboard_providers.
 import 'package:gentleman_os/features/dashboard/presentation/widgets/mission_tile.dart';
 import 'package:gentleman_os/features/dashboard/presentation/widgets/quick_action_button.dart';
 import 'package:gentleman_os/features/health/application/health_providers.dart';
+import 'package:gentleman_os/features/wardrobe/application/wardrobe_providers.dart';
+import 'package:gentleman_os/features/wardrobe/domain/wear_forecast.dart';
 import 'package:gentleman_os/shared/enums/xp_type.dart';
+import 'package:gentleman_os/shared/models/clothing_item.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -79,6 +82,8 @@ class DashboardScreen extends ConsumerWidget {
                 _GentlemanScoreCard(),
                 const SizedBox(height: Spacing.md),
                 _HealthIndexMini(),
+                const SizedBox(height: Spacing.md),
+                _UrgencyWardrobeStrip(),
                 const SizedBox(height: Spacing.md),
                 _ColorPaletteHint(),
                 const SizedBox(height: Spacing.sectionGap),
@@ -292,6 +297,145 @@ class _HealthIndexMini extends ConsumerWidget {
               ),
             ),
             Icon(Icons.chevron_right, color: cs.onSurfaceVariant, size: 18),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _UrgencyWardrobeStrip extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final asyncItems = ref.watch(wardrobeListProvider);
+    final tt = Theme.of(context).textTheme;
+    final now = DateTime.now();
+
+    return asyncItems.when(
+      loading: () => const SizedBox.shrink(),
+      error: (_, __) => const SizedBox.shrink(),
+      data: (items) {
+        final urgent = items
+            .where((i) =>
+                computeWearForecast(item: i, now: now, lastWornAt: null)
+                    .urgency
+                    .isActionable)
+            .toList()
+          ..sort((a, b) =>
+              computeWearForecast(item: a, now: now, lastWornAt: null)
+                  .urgency
+                  .index
+                  .compareTo(
+                    computeWearForecast(item: b, now: now, lastWornAt: null)
+                        .urgency
+                        .index,
+                  ));
+
+        if (urgent.isEmpty) return const SizedBox.shrink();
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.wb_sunny_outlined,
+                    size: 16, color: AppColors.gold),
+                const SizedBox(width: 6),
+                Text('Надеть сегодня', style: tt.titleSmall),
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: AppColors.gold.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    '${urgent.length}',
+                    style: tt.labelSmall?.copyWith(color: AppColors.gold),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: Spacing.sm),
+            SizedBox(
+              height: 88,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: urgent.length,
+                separatorBuilder: (_, __) => const SizedBox(width: 8),
+                itemBuilder: (ctx, i) =>
+                    _UrgencyCard(item: urgent[i], now: now),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _UrgencyCard extends StatelessWidget {
+  const _UrgencyCard({required this.item, required this.now});
+
+  final ClothingItem item;
+  final DateTime now;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+    final forecast =
+        computeWearForecast(item: item, now: now, lastWornAt: null);
+    final isToday = forecast.urgency == WearUrgency.today;
+    final urgencyColor = isToday ? AppColors.error : AppColors.warning;
+
+    return GestureDetector(
+      onTap: () => context.push('/wardrobe/${item.id}'),
+      child: Container(
+        width: 100,
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: cs.surfaceContainerLow,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: urgencyColor.withValues(alpha: 0.4)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 6,
+                  height: 6,
+                  decoration: BoxDecoration(
+                    color: urgencyColor,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: Text(
+                    forecast.headline,
+                    style: tt.labelSmall?.copyWith(
+                      color: urgencyColor,
+                      fontSize: 9,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Icon(Icons.checkroom_outlined,
+                size: 20, color: cs.onSurfaceVariant),
+            const SizedBox(height: 4),
+            Text(
+              item.name,
+              style: tt.bodySmall?.copyWith(fontWeight: FontWeight.w600),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
           ],
         ),
       ),
