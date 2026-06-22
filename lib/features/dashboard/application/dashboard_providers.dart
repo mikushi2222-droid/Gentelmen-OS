@@ -19,18 +19,17 @@ final wardrobeCountProvider = Provider<AsyncValue<int>>((ref) {
 final gentlemanScoreProvider = FutureProvider<double>((ref) async {
   final dao = ref.watch(rpgDaoProvider);
   final habitsDao = ref.watch(habitsDaoProvider);
+  final knowledgeDao = ref.watch(knowledgeDaoProvider);
 
   final since7d = DateTime.now().subtract(const Duration(days: 7));
   final recentEvents = await dao.getXpEventsSince(since7d);
 
   int styleXp = 0;
   int fitnessXp = 0;
-  int readingActions = 0;
   int healthXp = 0;
   for (final e in recentEvents) {
     if (e.type == XpType.style.index) styleXp += e.amount;
     if (e.type == XpType.fitness.index) fitnessXp += e.amount;
-    if (e.type == XpType.reading.index) readingActions++;
     if (e.type == XpType.health.index) healthXp += e.amount;
   }
 
@@ -39,12 +38,14 @@ final gentlemanScoreProvider = FutureProvider<double>((ref) async {
   final completedToday =
       habits.where((h) => completedIds.contains(h.id)).length;
 
+  final articlesRead = await knowledgeDao.countReadSince(since7d);
+
   return computeGentlemanScore(
     styleXpLast7d: styleXp,
     fitnessXpLast7d: fitnessXp,
     habitsCompleted: completedToday,
     habitsTotal: habits.length,
-    articlesReadLast7d: readingActions,
+    articlesReadLast7d: articlesRead,
     healthXpLast7d: healthXp,
   );
 });
@@ -72,8 +73,6 @@ final dailyMissionsProvider =
     final hasOutfitToday =
         outfits.any((o) => !o.createdAt.isBefore(startOfDay));
 
-    final articlesReadToday = await knowledgeDao.countReadSince(startOfDay);
-
     final healthDao = ref.read(healthDaoProvider);
     final recentHealthMarkers = await healthDao.getAll();
     final threshold = today.subtract(
@@ -82,12 +81,15 @@ final dailyMissionsProvider =
     final hasHealthMarkerRecently = recentHealthMarkers
         .any((m) => m.date.isAfter(threshold));
 
+    final since7d = today.subtract(const Duration(days: 7));
+    final articlesRead = await knowledgeDao.countReadSince(since7d);
+
     final missions = generateDailyMissions(
       date: today,
       hasMeasurementToday: hasMeasurementToday,
       hasOutfitToday: hasOutfitToday,
       wardrobeCount: wardrobeCount,
-      articlesRead: articlesReadToday,
+      articlesRead: articlesRead,
       hasHealthMarkerRecently: hasHealthMarkerRecently,
     );
     for (final m in missions) {
