@@ -98,19 +98,19 @@ class SettingsScreen extends ConsumerWidget {
           const SizedBox(height: Spacing.md),
           Text('Философия', style: tt.titleSmall),
           const Divider(height: 16),
-          _QuoteCard(
+          const _QuoteCard(
             text:
                 'Джентльмен — это человек, который никогда не причиняет боли '
                 'непреднамеренно.',
             author: 'Оскар Уайльд',
           ),
-          _QuoteCard(
+          const _QuoteCard(
             text:
                 'Стиль — это способ сказать «кто ты» без необходимости '
                 'говорить это словами.',
             author: 'Рейчел Зои',
           ),
-          _QuoteCard(
+          const _QuoteCard(
             text:
                 'Хорошо одетый мужчина — это тот, чья одежда так подходит, '
                 'что её не замечают.',
@@ -134,10 +134,10 @@ class SettingsScreen extends ConsumerWidget {
             title: Text('Gentleman OS'),
             subtitle: Text('v1.0.0 · Offline · Private · No cloud'),
           ),
-          ListTile(
-            leading: const Icon(Icons.book_outlined),
-            title: const Text('Источники вдохновения'),
-            subtitle: const Text(
+          const ListTile(
+            leading: Icon(Icons.book_outlined),
+            title: Text('Источники вдохновения'),
+            subtitle: Text(
               'Manson «Мужские правила» · Roetzel «Der Gentleman» · Boyer «Как одеть мужчину»',
             ),
             isThreeLine: true,
@@ -218,7 +218,7 @@ class SettingsScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
-                  value: model,
+                  initialValue: model,
                   isExpanded: true,
                   decoration: const InputDecoration(labelText: 'Модель'),
                   items: RouterAiConfig.availableModels

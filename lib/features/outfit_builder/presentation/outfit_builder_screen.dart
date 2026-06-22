@@ -4,9 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gentleman_os/core/constants/spacing.dart';
 import 'package:gentleman_os/core/db/database_provider.dart';
-import 'package:gentleman_os/core/services/achievement_service.dart';
 import 'package:gentleman_os/core/services/services_provider.dart';
-import 'package:gentleman_os/core/services/xp_service.dart';
 import 'package:gentleman_os/core/theme/app_colors.dart';
 import 'package:gentleman_os/core/widgets/score_ring.dart';
 import 'package:gentleman_os/features/outfit_builder/application/outfit_providers.dart';
@@ -376,7 +374,7 @@ class _ItemsRow extends StatelessWidget {
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: items.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 8),
+        separatorBuilder: (_, _) => const SizedBox(width: 8),
         itemBuilder: (ctx, i) {
           final item = items[i];
           return Column(
@@ -394,7 +392,7 @@ class _ItemsRow extends StatelessWidget {
                     ? Image.file(
                         File(item.imagePath!),
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => Icon(
+                        errorBuilder: (_, _, _) => Icon(
                           _categoryIcon(item.category),
                           color: cs.outline,
                           size: 28,

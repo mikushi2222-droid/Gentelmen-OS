@@ -36,7 +36,7 @@ class AchievementService {
 
   Future<void> checkAfterWardrobeAdd() async {
     final available = await wardrobeDao.getAvailable();
-    if (available.length >= 1) await _unlock(Achv.firstItem);
+    if (available.isNotEmpty) await _unlock(Achv.firstItem);
     if (available.length >= 10) await _unlock(Achv.wardrobe10);
     if (available.length >= 25) await _unlock(Achv.wardrobe25);
     await _checkLevel();

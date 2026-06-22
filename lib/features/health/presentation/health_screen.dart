@@ -47,7 +47,7 @@ class HealthScreen extends ConsumerWidget {
               height: 140,
               child: Center(child: CircularProgressIndicator()),
             ),
-            error: (_, __) => const SizedBox(),
+            error: (_, _) => const SizedBox(),
             data: (index) => _HealthIndexCard(index: index),
           ),
           const SizedBox(height: Spacing.sectionGap),
@@ -117,7 +117,7 @@ class _AiAnalysisSheet extends ConsumerWidget {
         children: [
           Row(
             children: [
-              Icon(Icons.auto_awesome, size: 18, color: AppColors.gold),
+              const Icon(Icons.auto_awesome, size: 18, color: AppColors.gold),
               const SizedBox(width: 8),
               Text('ИИ-анализ показателей',
                   style: tt.titleMedium?.copyWith(color: AppColors.gold)),
@@ -174,7 +174,7 @@ class _HealthDisclaimer extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(Icons.info_outline, size: 18, color: AppColors.warning),
+          const Icon(Icons.info_outline, size: 18, color: AppColors.warning),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
@@ -303,7 +303,7 @@ class _AddMarkerSheetState extends State<_AddMarkerSheet> {
   final _valueCtrl = TextEditingController();
   final _noteCtrl = TextEditingController();
   HealthMarkerType _type = HealthMarkerType.testosteroneTotal;
-  DateTime _date = DateTime.now();
+  final DateTime _date = DateTime.now();
 
   @override
   void dispose() {
@@ -327,7 +327,7 @@ class _AddMarkerSheetState extends State<_AddMarkerSheet> {
           Text('Новый показатель', style: tt.titleMedium),
           const SizedBox(height: 12),
           DropdownButtonFormField<HealthMarkerType>(
-            value: _type,
+            initialValue: _type,
             isExpanded: true,
             decoration: const InputDecoration(labelText: 'Показатель'),
             items: HealthMarkerType.values

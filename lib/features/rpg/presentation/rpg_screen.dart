@@ -67,7 +67,7 @@ class RpgScreen extends ConsumerWidget {
                 height: 48,
                 child: Center(child: CircularProgressIndicator()),
               ),
-              error: (_, __) => const SizedBox(),
+              error: (_, _) => const SizedBox(),
               data: (xpMap) => Column(
                 children: XpType.values.map((t) {
                   final xp = xpMap[t.index] ?? 0;
@@ -80,7 +80,7 @@ class RpgScreen extends ConsumerWidget {
             const SizedBox(height: Spacing.sm),
             asyncAchievements.when(
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (_, __) => const SizedBox(),
+              error: (_, _) => const SizedBox(),
               data: (list) => _AchievementGrid(achievements: list),
             ),
           ],
@@ -182,7 +182,7 @@ class _AchievementBadge extends StatelessWidget {
 
     return Tooltip(
       message: achievement.description,
-      child: Container(
+      child: DecoratedBox(
         decoration: BoxDecoration(
           color: unlocked ? cs.primaryContainer : cs.surfaceContainerLow,
           borderRadius: BorderRadius.circular(12),

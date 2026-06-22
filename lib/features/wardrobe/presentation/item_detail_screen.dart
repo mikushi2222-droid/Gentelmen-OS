@@ -195,7 +195,7 @@ class _HeroImage extends StatelessWidget {
           height: 280,
           width: double.infinity,
           fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => placeholder,
+          errorBuilder: (_, _, _) => placeholder,
         ),
       );
     }
@@ -229,7 +229,7 @@ class _PhotoAnalysisSheet extends ConsumerWidget {
         children: [
           Row(
             children: [
-              Icon(Icons.auto_awesome, size: 18, color: AppColors.gold),
+              const Icon(Icons.auto_awesome, size: 18, color: AppColors.gold),
               const SizedBox(width: 8),
               Text('ИИ-анализ фото',
                   style: tt.titleMedium?.copyWith(color: AppColors.gold)),

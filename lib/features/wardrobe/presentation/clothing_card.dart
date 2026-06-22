@@ -92,7 +92,7 @@ class _ItemImage extends StatelessWidget {
         File(imagePath!),
         fit: BoxFit.cover,
         width: double.infinity,
-        errorBuilder: (_, __, ___) => _Placeholder(cs: cs),
+        errorBuilder: (_, _, _) => _Placeholder(cs: cs),
       );
     }
     return _Placeholder(cs: cs);
@@ -106,7 +106,7 @@ class _Placeholder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return ColoredBox(
       color: cs.surfaceContainerLow,
       child: Center(
         child: Icon(Icons.checkroom_outlined, size: 48, color: cs.outline),

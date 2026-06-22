@@ -5,7 +5,6 @@ import 'package:gentleman_os/core/constants/spacing.dart';
 import 'package:gentleman_os/core/db/app_database.dart';
 import 'package:gentleman_os/core/db/database_provider.dart';
 import 'package:gentleman_os/core/services/services_provider.dart';
-import 'package:gentleman_os/core/services/xp_service.dart';
 import 'package:gentleman_os/core/theme/app_colors.dart';
 import 'package:gentleman_os/core/widgets/empty_state.dart';
 import 'package:gentleman_os/features/habits/application/habits_providers.dart';
@@ -140,7 +139,7 @@ class _HabitTile extends ConsumerWidget {
         subtitle: Row(
           children: [
             if (habit.streak > 0) ...[
-              Icon(Icons.local_fire_department,
+              const Icon(Icons.local_fire_department,
                   size: 14, color: AppColors.warning),
               const SizedBox(width: 4),
               Text('${habit.streak}д', style: tt.bodySmall),

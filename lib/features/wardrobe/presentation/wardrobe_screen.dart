@@ -127,7 +127,7 @@ class _WardrobeStatsPanel extends ConsumerWidget {
 
     return asyncItems.when(
       loading: () => const SizedBox(),
-      error: (_, __) => const SizedBox(),
+      error: (_, _) => const SizedBox(),
       data: (items) {
         if (items.isEmpty) return const SizedBox();
 
@@ -196,7 +196,7 @@ class _WardrobeStatsPanel extends ConsumerWidget {
                   const SizedBox(height: Spacing.sm),
                   asyncAdvice.when(
                     loading: () => const SizedBox(),
-                    error: (_, __) => const SizedBox(),
+                    error: (_, _) => const SizedBox(),
                     data: (advice) {
                       if (advice.suggestions.isEmpty &&
                           advice.warnings.isEmpty) {
@@ -215,7 +215,7 @@ class _WardrobeStatsPanel extends ConsumerWidget {
                           children: [
                             Row(
                               children: [
-                                Icon(Icons.lightbulb_outline,
+                                const Icon(Icons.lightbulb_outline,
                                     color: AppColors.gold, size: 16),
                                 const SizedBox(width: 6),
                                 Text(
@@ -252,7 +252,7 @@ class _WardrobeStatsPanel extends ConsumerWidget {
                                   crossAxisAlignment:
                                       CrossAxisAlignment.start,
                                   children: [
-                                    Icon(Icons.warning_amber_outlined,
+                                    const Icon(Icons.warning_amber_outlined,
                                         size: 14, color: AppColors.warning),
                                     const SizedBox(width: 4),
                                     Expanded(

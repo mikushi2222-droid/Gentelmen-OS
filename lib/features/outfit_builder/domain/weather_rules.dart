@@ -50,7 +50,7 @@ double _temperatureBonus(
           i.category.name == 'jacket',
     );
     if (!hasCoat) {
-      notes.add('При температуре ${temp}°C рекомендуется верхняя одежда (−)');
+      notes.add('При температуре $temp°C рекомендуется верхняя одежда (−)');
       return -0.15;
     }
     notes.add('Верхний слой присутствует для холодной погоды (+)');
@@ -64,7 +64,7 @@ double _temperatureBonus(
               i.material!.toLowerCase().contains('шерсть')),
     );
     if (hasHeavy) {
-      notes.add('Шерстяные вещи при жаре (${temp}°C) неуместны (−)');
+      notes.add('Шерстяные вещи при жаре ($temp°C) неуместны (−)');
       return -0.1;
     }
   }

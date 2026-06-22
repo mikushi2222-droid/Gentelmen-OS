@@ -25,7 +25,7 @@ class QuickActionButton extends StatelessWidget {
       child: InkWell(
         onTap: () => context.push(route),
         borderRadius: BorderRadius.circular(16),
-        child: Container(
+        child: DecoratedBox(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
             border: Border.all(

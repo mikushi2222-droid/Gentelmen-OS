@@ -32,7 +32,7 @@ class FitnessScreen extends ConsumerWidget {
               delegate: SliverChildListDelegate([
                 asyncLatest.when(
                   loading: () => const LinearProgressIndicator(),
-                  error: (_, __) => const SizedBox(),
+                  error: (_, _) => const SizedBox(),
                   data: (latest) => Column(
                     children: [
                       _MetricCard(
@@ -70,7 +70,7 @@ class FitnessScreen extends ConsumerWidget {
                 const SizedBox(height: Spacing.sectionGap),
                 asyncAll.when(
                   loading: () => const SizedBox(),
-                  error: (_, __) => const SizedBox(),
+                  error: (_, _) => const SizedBox(),
                   data: (logs) {
                     if (logs.isEmpty) return const SizedBox();
                     return Column(

@@ -336,7 +336,7 @@ class _EnumDropdown<T extends Enum> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DropdownButtonFormField<T>(
-      value: value,
+      initialValue: value,
       decoration: InputDecoration(labelText: label),
       items: values
           .map((v) => DropdownMenuItem(value: v, child: Text(labelOf(v))))

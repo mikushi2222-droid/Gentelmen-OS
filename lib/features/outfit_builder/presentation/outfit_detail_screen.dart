@@ -163,7 +163,7 @@ class _ItemRow extends StatelessWidget {
             ? Image.file(
                 File(item.imagePath!),
                 fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) =>
+                errorBuilder: (_, _, _) =>
                     Icon(Icons.checkroom_outlined, color: cs.outline),
               )
             : Icon(Icons.checkroom_outlined, color: cs.outline),

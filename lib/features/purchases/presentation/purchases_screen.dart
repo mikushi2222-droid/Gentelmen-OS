@@ -307,7 +307,7 @@ class _AddWishSheetState extends State<_AddWishSheet> {
           ),
           const SizedBox(height: 8),
           DropdownButtonFormField<ClothingCategory>(
-            value: _category,
+            initialValue: _category,
             decoration: const InputDecoration(labelText: 'Категория'),
             items: ClothingCategory.values
                 .map((c) => DropdownMenuItem(value: c, child: Text(c.label)))

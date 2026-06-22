@@ -123,7 +123,7 @@ class _RecommendedSection extends ConsumerWidget {
 
     return asyncRecs.when(
       loading: () => const SizedBox(),
-      error: (_, __) => const SizedBox(),
+      error: (_, _) => const SizedBox(),
       data: (articles) {
         if (articles.isEmpty) return const SizedBox();
         return Padding(
@@ -138,7 +138,7 @@ class _RecommendedSection extends ConsumerWidget {
             children: [
               Row(
                 children: [
-                  Icon(Icons.lightbulb_outline,
+                  const Icon(Icons.lightbulb_outline,
                       size: 16, color: AppColors.gold),
                   const SizedBox(width: 6),
                   Text(
@@ -155,7 +155,7 @@ class _RecommendedSection extends ConsumerWidget {
                     dense: true,
                     leading: CircleAvatar(
                       backgroundColor: AppColors.gold.withValues(alpha: 0.15),
-                      child: Icon(Icons.auto_awesome,
+                      child: const Icon(Icons.auto_awesome,
                           size: 16, color: AppColors.gold),
                     ),
                     title: Text(a.title, style: tt.bodyMedium),

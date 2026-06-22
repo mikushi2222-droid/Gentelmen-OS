@@ -56,7 +56,7 @@ class _WardrobeSummaryCard extends ConsumerWidget {
 
     return asyncWardrobe.when(
       loading: () => const LinearProgressIndicator(),
-      error: (_, __) => const SizedBox(),
+      error: (_, _) => const SizedBox(),
       data: (items) {
         final categoryCount = items
             .map((i) => i.category)
@@ -72,7 +72,7 @@ class _WardrobeSummaryCard extends ConsumerWidget {
               children: [
                 Row(
                   children: [
-                    Icon(Icons.checkroom_outlined, color: AppColors.gold),
+                    const Icon(Icons.checkroom_outlined, color: AppColors.gold),
                     const SizedBox(width: 8),
                     Text('Ваш гардероб', style: tt.titleSmall),
                   ],
@@ -154,7 +154,7 @@ class _StyleAdviceCard extends ConsumerWidget {
           children: [
             Row(
               children: [
-                Icon(Icons.lightbulb_outline, color: AppColors.gold),
+                const Icon(Icons.lightbulb_outline, color: AppColors.gold),
                 const SizedBox(width: 8),
                 Text('Персональные советы', style: tt.titleSmall),
               ],
@@ -167,7 +167,7 @@ class _StyleAdviceCard extends ConsumerWidget {
                   child: CircularProgressIndicator(),
                 ),
               ),
-              error: (_, __) =>
+              error: (_, _) =>
                   const Text('Не удалось загрузить советы'),
               data: (advice) => Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -196,7 +196,7 @@ class _StyleAdviceCard extends ConsumerWidget {
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Icon(Icons.check_circle_outline,
+                            const Icon(Icons.check_circle_outline,
                                 size: 16, color: AppColors.gold),
                             const SizedBox(width: 8),
                             Expanded(
@@ -219,7 +219,7 @@ class _StyleAdviceCard extends ConsumerWidget {
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Icon(Icons.warning_amber_outlined,
+                            const Icon(Icons.warning_amber_outlined,
                                 size: 16, color: AppColors.warning),
                             const SizedBox(width: 8),
                             Expanded(
@@ -253,7 +253,7 @@ class _RecommendedArticlesCard extends ConsumerWidget {
 
     return asyncRecs.when(
       loading: () => const SizedBox(),
-      error: (_, __) => const SizedBox(),
+      error: (_, _) => const SizedBox(),
       data: (articles) {
         if (articles.isEmpty) return const SizedBox();
         return Card(

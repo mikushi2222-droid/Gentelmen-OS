@@ -35,9 +35,9 @@ final clearAllDataProvider = Provider<Future<void> Function()>((ref) {
       await db.delete(db.healthMarkers).go();
       // Reset achievements to unlocked=false
       await (db.update(db.achievements)).write(
-        AchievementsCompanion(
-          unlocked: const Value(false),
-          unlockedAt: const Value(null),
+        const AchievementsCompanion(
+          unlocked: Value(false),
+          unlockedAt: Value(null),
         ),
       );
     });
