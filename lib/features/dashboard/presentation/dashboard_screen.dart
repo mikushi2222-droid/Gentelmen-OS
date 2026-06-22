@@ -559,7 +559,7 @@ class _HabitsMiniBlock extends ConsumerWidget {
 
     await ref
         .read(xpServiceProvider)
-        .award(XpType.habits, 5, 'Привычка: ${habit.name}');
+        .award(XpType.general, 5, 'Привычка: ${habit.name}');
 
     ref.invalidate(activeHabitsWithCompletionProvider);
     ref.invalidate(habitsTodaySummaryProvider);

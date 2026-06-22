@@ -13,7 +13,7 @@ import 'package:gentleman_os/shared/enums/occasion.dart';
 import 'package:gentleman_os/shared/models/clothing_item.dart';
 import 'package:gentleman_os/shared/models/outfit.dart';
 
-final _outfitDetailProvider =
+final outfitDetailProvider =
     FutureProvider.family<(OutfitsData?, List<ClothingItem>), String>(
   (ref, outfitId) async {
     final dao = ref.watch(outfitDaoProvider);
@@ -38,7 +38,7 @@ class OutfitDetailScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final asyncData = ref.watch(_outfitDetailProvider(outfitId));
+    final asyncData = ref.watch(outfitDetailProvider(outfitId));
 
     return asyncData.when(
       loading: () => const Scaffold(
