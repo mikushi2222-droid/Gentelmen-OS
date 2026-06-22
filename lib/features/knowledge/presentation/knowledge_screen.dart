@@ -9,6 +9,8 @@ import 'package:gentleman_os/features/knowledge/application/knowledge_providers.
 import 'package:gentleman_os/shared/enums/knowledge_category.dart';
 import 'package:gentleman_os/shared/models/knowledge_article.dart';
 
+enum _KnowledgeFilter { bookmarks, favorites }
+
 class KnowledgeScreen extends ConsumerStatefulWidget {
   const KnowledgeScreen({super.key});
 
@@ -18,6 +20,7 @@ class KnowledgeScreen extends ConsumerStatefulWidget {
 
 class _KnowledgeScreenState extends ConsumerState<KnowledgeScreen> {
   KnowledgeCategory? _category;
+  _KnowledgeFilter? _specialFilter;
   bool _searching = false;
   String _query = '';
   final _searchCtrl = TextEditingController();
@@ -55,9 +58,13 @@ class _KnowledgeScreenState extends ConsumerState<KnowledgeScreen> {
       );
     }
 
-    final asyncItems = _category == null
-        ? ref.watch(knowledgeListProvider)
-        : ref.watch(knowledgeByCategoryProvider(_category!));
+    final asyncItems = _specialFilter == _KnowledgeFilter.bookmarks
+        ? ref.watch(knowledgeBookmarkedProvider)
+        : _specialFilter == _KnowledgeFilter.favorites
+            ? ref.watch(knowledgeFavoritesProvider)
+            : _category == null
+                ? ref.watch(knowledgeListProvider)
+                : ref.watch(knowledgeByCategoryProvider(_category!));
 
     return Scaffold(
       body: CustomScrollView(
@@ -76,11 +83,19 @@ class _KnowledgeScreenState extends ConsumerState<KnowledgeScreen> {
               preferredSize: const Size.fromHeight(56),
               child: _CategoryFilter(
                 selected: _category,
-                onSelected: (c) => setState(() => _category = c),
+                onSelected: (c) => setState(() {
+                  _category = c;
+                  if (c != null) _specialFilter = null;
+                }),
+                specialFilter: _specialFilter,
+                onSpecialSelected: (f) => setState(() {
+                  _specialFilter = f;
+                  if (f != null) _category = null;
+                }),
               ),
             ),
           ),
-          if (_category == null)
+          if (_category == null && _specialFilter == null)
             const SliverToBoxAdapter(child: _RecommendedSection()),
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(
@@ -222,10 +237,17 @@ class _ArticleList extends StatelessWidget {
 }
 
 class _CategoryFilter extends StatelessWidget {
-  const _CategoryFilter({this.selected, this.onSelected});
+  const _CategoryFilter({
+    this.selected,
+    this.onSelected,
+    this.specialFilter,
+    this.onSpecialSelected,
+  });
 
   final KnowledgeCategory? selected;
   final ValueChanged<KnowledgeCategory?>? onSelected;
+  final _KnowledgeFilter? specialFilter;
+  final ValueChanged<_KnowledgeFilter?>? onSpecialSelected;
 
   @override
   Widget build(BuildContext context) {
@@ -240,8 +262,29 @@ class _CategoryFilter extends StatelessWidget {
         children: [
           _Chip(
             label: 'Все',
-            selected: selected == null,
-            onTap: () => onSelected?.call(null),
+            selected: selected == null && specialFilter == null,
+            onTap: () {
+              onSelected?.call(null);
+              onSpecialSelected?.call(null);
+            },
+          ),
+          _Chip(
+            label: 'Закладки',
+            selected: specialFilter == _KnowledgeFilter.bookmarks,
+            onTap: () => onSpecialSelected?.call(
+              specialFilter == _KnowledgeFilter.bookmarks
+                  ? null
+                  : _KnowledgeFilter.bookmarks,
+            ),
+          ),
+          _Chip(
+            label: 'Избранное',
+            selected: specialFilter == _KnowledgeFilter.favorites,
+            onTap: () => onSpecialSelected?.call(
+              specialFilter == _KnowledgeFilter.favorites
+                  ? null
+                  : _KnowledgeFilter.favorites,
+            ),
           ),
           ...KnowledgeCategory.values.map(
             (c) => _Chip(

@@ -23,6 +23,13 @@ final knowledgeFavoritesProvider = StreamProvider<List<KnowledgeArticle>>(
   (ref) => ref.watch(knowledgeRepositoryProvider).watchFavorites(),
 );
 
+final knowledgeBookmarkedProvider = StreamProvider<List<KnowledgeArticle>>(
+  (ref) => ref
+      .watch(knowledgeRepositoryProvider)
+      .watchAll()
+      .map((articles) => articles.where((a) => a.bookmarked).toList()),
+);
+
 /// Количество прочитанных статей (readAt != null), реактивно.
 final readArticlesCountProvider = StreamProvider<int>(
   (ref) => ref
