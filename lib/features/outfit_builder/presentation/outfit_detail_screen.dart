@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:gentleman_os/core/constants/spacing.dart';
 import 'package:gentleman_os/core/db/app_database.dart';
 import 'package:gentleman_os/core/db/database_provider.dart';
@@ -114,10 +115,23 @@ class _OutfitBody extends ConsumerWidget {
           const SizedBox(height: Spacing.sm),
           ...items.map((item) => _ItemRow(item: item)),
           const SizedBox(height: Spacing.md),
-          FilledButton.icon(
-            onPressed: () => _wearAll(context, ref),
-            icon: const Icon(Icons.checkroom_outlined),
-            label: const Text('Надеть весь образ'),
+          Row(
+            children: [
+              Expanded(
+                child: FilledButton.icon(
+                  onPressed: () => _wearAll(context, ref),
+                  icon: const Icon(Icons.checkroom_outlined),
+                  label: const Text('Надеть весь образ'),
+                ),
+              ),
+              const SizedBox(width: 8),
+              OutlinedButton.icon(
+                onPressed: () =>
+                    context.push('/outfits/${outfit.id}/rate'),
+                icon: const Icon(Icons.star_outline, size: 18),
+                label: const Text('Оценить'),
+              ),
+            ],
           ),
           const SizedBox(height: Spacing.sectionGap),
           Text('Оценка образа', style: tt.titleMedium),

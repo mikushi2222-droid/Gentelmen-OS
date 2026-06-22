@@ -16,9 +16,16 @@ import 'package:gentleman_os/shared/models/clothing_item.dart';
 import 'package:uuid/uuid.dart';
 
 class AddItemScreen extends ConsumerStatefulWidget {
-  const AddItemScreen({this.itemId, super.key});
+  const AddItemScreen({
+    this.itemId,
+    this.initialName,
+    this.initialCategory,
+    super.key,
+  });
 
   final String? itemId;
+  final String? initialName;
+  final int? initialCategory;
 
   @override
   ConsumerState<AddItemScreen> createState() => _AddItemScreenState();
@@ -50,6 +57,13 @@ class _AddItemScreenState extends ConsumerState<AddItemScreen> {
     super.initState();
     if (_isEdit) {
       WidgetsBinding.instance.addPostFrameCallback((_) => _loadItem());
+    } else {
+      if (widget.initialName != null) _nameCtrl.text = widget.initialName!;
+      if (widget.initialCategory != null) {
+        final idx = widget.initialCategory!
+            .clamp(0, ClothingCategory.values.length - 1);
+        _category = ClothingCategory.values[idx];
+      }
     }
   }
 

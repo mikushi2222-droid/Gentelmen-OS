@@ -11,6 +11,7 @@ import 'package:gentleman_os/core/widgets/score_ring.dart';
 import 'package:gentleman_os/features/dashboard/application/dashboard_providers.dart';
 import 'package:gentleman_os/features/dashboard/presentation/widgets/mission_tile.dart';
 import 'package:gentleman_os/features/dashboard/presentation/widgets/quick_action_button.dart';
+import 'package:gentleman_os/features/habits/application/habits_providers.dart';
 import 'package:gentleman_os/features/health/application/health_providers.dart';
 import 'package:gentleman_os/features/wardrobe/application/wardrobe_providers.dart';
 import 'package:gentleman_os/features/wardrobe/domain/wear_forecast.dart';
@@ -84,6 +85,8 @@ class DashboardScreen extends ConsumerWidget {
                 _HealthIndexMini(),
                 const SizedBox(height: Spacing.md),
                 _UrgencyWardrobeStrip(),
+                const SizedBox(height: Spacing.md),
+                _HabitsMiniBlock(),
                 const SizedBox(height: Spacing.md),
                 _ColorPaletteHint(),
                 const SizedBox(height: Spacing.sectionGap),
@@ -439,6 +442,101 @@ class _UrgencyCard extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _HabitsMiniBlock extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final asyncSummary = ref.watch(habitsTodaySummaryProvider);
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
+    return asyncSummary.when(
+      loading: () => const SizedBox.shrink(),
+      error: (_, __) => const SizedBox.shrink(),
+      data: (s) {
+        if (s.total == 0) return const SizedBox.shrink();
+        final allDone = s.completed == s.total;
+        return GestureDetector(
+          onTap: () => GoRouter.of(context).push('/progress/habits'),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: cs.surfaceContainerLow,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: allDone
+                    ? AppColors.success.withValues(alpha: 0.4)
+                    : AppColors.gold.withValues(alpha: 0.2),
+                width: 0.5,
+              ),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: allDone
+                        ? AppColors.success.withValues(alpha: 0.15)
+                        : AppColors.gold.withValues(alpha: 0.12),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.repeat,
+                    color: allDone ? AppColors.success : AppColors.gold,
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'ПРИВЫЧКИ СЕГОДНЯ',
+                        style: tt.labelSmall?.copyWith(
+                          color: AppColors.textSecondary,
+                          letterSpacing: 1.2,
+                          fontSize: 9,
+                        ),
+                      ),
+                      Text(
+                        '${s.completed} / ${s.total} выполнено',
+                        style: tt.titleSmall?.copyWith(
+                          color: allDone ? AppColors.success : cs.onSurface,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (s.maxStreak > 0)
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        '🔥 ${s.maxStreak}',
+                        style: tt.titleSmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        'дней подряд',
+                        style: tt.labelSmall
+                            ?.copyWith(color: cs.onSurfaceVariant),
+                      ),
+                    ],
+                  ),
+                const SizedBox(width: 4),
+                Icon(Icons.chevron_right, color: cs.onSurfaceVariant, size: 18),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

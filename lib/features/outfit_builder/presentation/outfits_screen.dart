@@ -10,11 +10,18 @@ import 'package:gentleman_os/core/widgets/empty_state.dart';
 import 'package:gentleman_os/features/outfit_builder/application/outfit_providers.dart';
 import 'package:gentleman_os/shared/enums/occasion.dart';
 
-class OutfitsScreen extends ConsumerWidget {
+class OutfitsScreen extends ConsumerStatefulWidget {
   const OutfitsScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<OutfitsScreen> createState() => _OutfitsScreenState();
+}
+
+class _OutfitsScreenState extends ConsumerState<OutfitsScreen> {
+  Occasion? _occasion;
+
+  @override
+  Widget build(BuildContext context) {
     final asyncOutfits = ref.watch(savedOutfitsProvider);
 
     return Scaffold(
@@ -25,6 +32,12 @@ class OutfitsScreen extends ConsumerWidget {
             snap: true,
             title: Text('Образы'),
           ),
+          SliverToBoxAdapter(
+            child: _OccasionFilter(
+              selected: _occasion,
+              onSelected: (o) => setState(() => _occasion = o),
+            ),
+          ),
           SliverPadding(
             padding: const EdgeInsets.all(Spacing.screenPadding),
             sliver: asyncOutfits.when(
@@ -34,28 +47,38 @@ class OutfitsScreen extends ConsumerWidget {
               error: (e, _) => SliverFillRemaining(
                 child: Center(child: Text('Ошибка: $e')),
               ),
-              data: (outfits) => outfits.isEmpty
-                  ? SliverFillRemaining(
-                      child: EmptyState(
-                        icon: Icons.style_outlined,
-                        title: 'Образов пока нет',
-                        subtitle:
-                            'Соберите первый образ из вашего гардероба',
-                        action: Builder(
-                          builder: (ctx) => FilledButton.icon(
-                            onPressed: () => ctx.push('/outfits/build'),
-                            icon: const Icon(Icons.auto_awesome),
-                            label: const Text('Собрать образ'),
+              data: (outfits) {
+                final filtered = _occasion == null
+                    ? outfits
+                    : outfits
+                        .where((o) => o.occasion == _occasion!.index)
+                        .toList();
+                return filtered.isEmpty
+                    ? SliverFillRemaining(
+                        child: EmptyState(
+                          icon: Icons.style_outlined,
+                          title: _occasion == null
+                              ? 'Образов пока нет'
+                              : 'Нет образов для «${_occasion!.label}»',
+                          subtitle: _occasion == null
+                              ? 'Соберите первый образ из вашего гардероба'
+                              : 'Соберите образ для этого повода',
+                          action: Builder(
+                            builder: (ctx) => FilledButton.icon(
+                              onPressed: () => ctx.push('/outfits/build'),
+                              icon: const Icon(Icons.auto_awesome),
+                              label: const Text('Собрать образ'),
+                            ),
                           ),
                         ),
-                      ),
-                    )
-                  : SliverList(
-                      delegate: SliverChildBuilderDelegate(
-                        (ctx, i) => _OutfitCard(outfit: outfits[i]),
-                        childCount: outfits.length,
-                      ),
-                    ),
+                      )
+                    : SliverList(
+                        delegate: SliverChildBuilderDelegate(
+                          (ctx, i) => _OutfitCard(outfit: filtered[i]),
+                          childCount: filtered.length,
+                        ),
+                      );
+              },
             ),
           ),
         ],
@@ -64,6 +87,54 @@ class OutfitsScreen extends ConsumerWidget {
         onPressed: () => context.push('/outfits/build'),
         icon: const Icon(Icons.auto_awesome),
         label: const Text('Собрать образ'),
+      ),
+    );
+  }
+}
+
+class _OccasionFilter extends StatelessWidget {
+  const _OccasionFilter({this.selected, this.onSelected});
+
+  final Occasion? selected;
+  final ValueChanged<Occasion?>? onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
+    return SizedBox(
+      height: 48,
+      child: ListView(
+        padding: const EdgeInsets.symmetric(
+          horizontal: Spacing.screenPadding,
+          vertical: 8,
+        ),
+        scrollDirection: Axis.horizontal,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: FilterChip(
+              label: const Text('Все'),
+              selected: selected == null,
+              onSelected: (_) => onSelected?.call(null),
+              selectedColor: cs.primaryContainer,
+              checkmarkColor: cs.onPrimaryContainer,
+            ),
+          ),
+          ...Occasion.values.map(
+            (o) => Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: FilterChip(
+                label: Text(o.label),
+                selected: selected == o,
+                onSelected: (_) =>
+                    onSelected?.call(selected == o ? null : o),
+                selectedColor: cs.primaryContainer,
+                checkmarkColor: cs.onPrimaryContainer,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

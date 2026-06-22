@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:drift/drift.dart' show Value;
 import 'package:gentleman_os/core/constants/spacing.dart';
@@ -284,9 +285,14 @@ class _WishCard extends StatelessWidget {
                       ? Icons.radio_button_checked
                       : Icons.radio_button_off,
                 ),
-                onTap: () {
-                  ref.read(purchasesDaoProvider).updateStatus(item.id, s.index);
+                onTap: () async {
+                  await ref
+                      .read(purchasesDaoProvider)
+                      .updateStatus(item.id, s.index);
                   Navigator.pop(ctx);
+                  if (s == WishStatus.bought && context.mounted) {
+                    _offerAddToWardrobe(context);
+                  }
                 },
               ),
             ),
@@ -303,6 +309,33 @@ class _WishCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  void _offerAddToWardrobe(BuildContext context) {
+    showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Добавить в гардероб?'),
+        content: Text('Добавить «${item.itemName}» в цифровой гардероб?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Нет'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Добавить'),
+          ),
+        ],
+      ),
+    ).then((confirmed) {
+      if (confirmed == true && context.mounted) {
+        context.push(
+          '/wardrobe/add',
+          extra: {'name': item.itemName, 'category': item.category},
+        );
+      }
+    });
   }
 }
 
