@@ -50,4 +50,13 @@ class WardrobeDao extends DatabaseAccessor<AppDatabase>
       (select(clothingItems)
             ..where((t) => t.isAvailable.equals(true)))
           .get();
+
+  Future<DateTime?> lastWornAt(String itemId) async {
+    final rows = await (select(wearLogs)
+          ..where((t) => t.itemId.equals(itemId))
+          ..orderBy([(t) => OrderingTerm.desc(t.wornAt)])
+          ..limit(1))
+        .get();
+    return rows.isEmpty ? null : rows.first.wornAt;
+  }
 }
