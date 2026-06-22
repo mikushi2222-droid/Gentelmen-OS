@@ -7,6 +7,9 @@ import 'package:gentleman_os/features/rpg/domain/level_calculator.dart';
 import 'package:gentleman_os/features/wardrobe/application/wardrobe_providers.dart';
 import 'package:gentleman_os/shared/enums/xp_type.dart';
 
+// 7 days without logging any health marker triggers the health mission
+const _healthMissionThresholdDays = 7;
+
 final wardrobeCountProvider = Provider<AsyncValue<int>>((ref) {
   return ref.watch(wardrobeListProvider).whenData((items) => items.length);
 });
@@ -61,12 +64,21 @@ final dailyMissionsProvider =
         latest.date.month == today.month &&
         latest.date.day == today.day;
 
+    final healthDao = ref.read(healthDaoProvider);
+    final recentHealthMarkers = await healthDao.getAll();
+    final threshold = today.subtract(
+      const Duration(days: _healthMissionThresholdDays),
+    );
+    final hasHealthMarkerRecently = recentHealthMarkers
+        .any((m) => m.date.isAfter(threshold));
+
     final missions = generateDailyMissions(
       date: today,
       hasMeasurementToday: hasMeasurementToday,
       hasOutfitToday: false,
       wardrobeCount: wardrobeCount,
       articlesRead: 0,
+      hasHealthMarkerRecently: hasHealthMarkerRecently,
     );
     for (final m in missions) {
       await dao.upsertMission(m);

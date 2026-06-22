@@ -9,6 +9,7 @@ List<DailyMissionsCompanion> generateDailyMissions({
   required bool hasOutfitToday,
   required int wardrobeCount,
   required int articlesRead,
+  bool hasHealthMarkerRecently = true,
 }) {
   final missions = <DailyMissionsCompanion>[];
   final day = DateTime(date.year, date.month, date.day);
@@ -65,6 +66,21 @@ List<DailyMissionsCompanion> generateDailyMissions({
         description: const Value('Открой базу знаний и прочти одну статью'),
         xpReward: const Value(10),
         xpType: const Value(3), // reading
+        completed: const Value(false),
+      ),
+    );
+  }
+
+  // Health mission — once a week prompt to log health marker
+  if (!hasHealthMarkerRecently) {
+    missions.add(
+      DailyMissionsCompanion(
+        id: Value('${day.toIso8601String()}_health'),
+        date: Value(day),
+        title: const Value('Внести показатель здоровья'),
+        description: const Value('Зафиксируй анализ или маркер здоровья'),
+        xpReward: const Value(15),
+        xpType: const Value(7), // health
         completed: const Value(false),
       ),
     );
