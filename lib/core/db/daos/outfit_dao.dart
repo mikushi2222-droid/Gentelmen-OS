@@ -44,6 +44,10 @@ class OutfitDao extends DatabaseAccessor<AppDatabase> with _$OutfitDaoMixin {
       (update(outfits)..where((t) => t.id.equals(id)))
           .write(OutfitsCompanion(score: Value(score)));
 
+  Future<void> updateNotes(String id, String? notes) =>
+      (update(outfits)..where((t) => t.id.equals(id)))
+          .write(OutfitsCompanion(notes: Value(notes)));
+
   Future<bool> wasCreatedToday() async {
     final today = DateTime.now();
     final dayStart = DateTime(today.year, today.month, today.day);

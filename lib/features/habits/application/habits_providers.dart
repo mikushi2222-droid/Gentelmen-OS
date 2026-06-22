@@ -19,3 +19,20 @@ final habitLast7DaysProvider =
     FutureProvider.family<List<bool>, String>((ref, habitId) {
   return ref.watch(habitsDaoProvider).getLast7DaysCompleted(habitId);
 });
+
+typedef HabitsTodaySummary = ({int completed, int total, int maxStreak});
+
+/// Today's completion count, total active habits, and highest stored streak.
+final habitsTodaySummaryProvider =
+    FutureProvider.autoDispose<HabitsTodaySummary>((ref) async {
+  final dao = ref.watch(habitsDaoProvider);
+  final habits = await dao.watchActive().first;
+  if (habits.isEmpty) return (completed: 0, total: 0, maxStreak: 0);
+
+  final completedResults =
+      await Future.wait(habits.map((h) => dao.isCompletedToday(h.id)));
+  final completed = completedResults.where((done) => done).length;
+  final maxStreak = habits.fold<int>(0, (m, h) => h.streak > m ? h.streak : m);
+
+  return (completed: completed, total: habits.length, maxStreak: maxStreak);
+});

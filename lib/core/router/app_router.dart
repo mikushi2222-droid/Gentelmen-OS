@@ -11,6 +11,7 @@ import 'package:gentleman_os/features/knowledge/presentation/article_screen.dart
 import 'package:gentleman_os/features/outfit_builder/presentation/outfits_screen.dart';
 import 'package:gentleman_os/features/outfit_builder/presentation/outfit_builder_screen.dart';
 import 'package:gentleman_os/features/outfit_builder/presentation/outfit_detail_screen.dart';
+import 'package:gentleman_os/features/outfit_builder/presentation/outfit_rating_screen.dart';
 import 'package:gentleman_os/features/profile/presentation/profile_screen.dart';
 import 'package:gentleman_os/features/profile/presentation/edit_profile_screen.dart';
 import 'package:gentleman_os/features/purchases/presentation/purchases_screen.dart';
@@ -45,7 +46,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: 'add',
-                builder: (c, s) => const AddItemScreen(),
+                builder: (c, s) {
+                  final extra = s.extra as Map<String, dynamic>?;
+                  return AddItemScreen(
+                    initialName: extra?['name'] as String?,
+                    initialCategory: extra?['category'] as int?,
+                  );
+                },
               ),
               GoRoute(
                 path: ':itemId',
@@ -74,6 +81,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                 path: ':outfitId',
                 builder: (c, s) =>
                     OutfitDetailScreen(outfitId: s.pathParameters['outfitId']!),
+                routes: [
+                  GoRoute(
+                    path: 'rate',
+                    builder: (c, s) => OutfitRatingScreen(
+                        outfitId: s.pathParameters['outfitId']!),
+                  ),
+                ],
               ),
             ],
           ),
