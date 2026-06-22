@@ -6,9 +6,12 @@ import 'package:gentleman_os/core/constants/spacing.dart';
 import 'package:gentleman_os/core/theme/app_colors.dart';
 import 'package:gentleman_os/core/widgets/empty_state.dart';
 import 'package:gentleman_os/features/wardrobe/application/wardrobe_providers.dart';
+import 'package:gentleman_os/features/wardrobe/domain/wear_forecast.dart';
 import 'package:gentleman_os/features/wardrobe/presentation/clothing_card.dart';
 import 'package:gentleman_os/shared/enums/clothing_category.dart';
 import 'package:gentleman_os/shared/models/clothing_item.dart';
+
+enum _WardrobeSort { newest, urgency }
 
 class WardrobeScreen extends ConsumerStatefulWidget {
   const WardrobeScreen({super.key});
@@ -19,6 +22,7 @@ class WardrobeScreen extends ConsumerStatefulWidget {
 
 class _WardrobeScreenState extends ConsumerState<WardrobeScreen> {
   ClothingCategory? _selectedCategory;
+  _WardrobeSort _sort = _WardrobeSort.newest;
 
   @override
   Widget build(BuildContext context) {
@@ -29,6 +33,24 @@ class _WardrobeScreenState extends ConsumerState<WardrobeScreen> {
             floating: true,
             snap: true,
             title: const Text('Гардероб'),
+            actions: [
+              IconButton(
+                tooltip: _sort == _WardrobeSort.newest
+                    ? 'Сортировать по срочности'
+                    : 'Сортировать по дате',
+                icon: Icon(
+                  _sort == _WardrobeSort.newest
+                      ? Icons.sort
+                      : Icons.wb_sunny_outlined,
+                  color: _sort == _WardrobeSort.urgency
+                      ? AppColors.gold
+                      : null,
+                ),
+                onPressed: () => setState(() => _sort = _sort == _WardrobeSort.newest
+                    ? _WardrobeSort.urgency
+                    : _WardrobeSort.newest),
+              ),
+            ],
             bottom: PreferredSize(
               preferredSize: const Size.fromHeight(56),
               child: _CategoryFilter(
@@ -42,7 +64,7 @@ class _WardrobeScreenState extends ConsumerState<WardrobeScreen> {
             const SliverToBoxAdapter(child: _WardrobeStatsPanel()),
           SliverPadding(
             padding: const EdgeInsets.all(Spacing.screenPadding),
-            sliver: _WardrobeGrid(category: _selectedCategory),
+            sliver: _WardrobeGrid(category: _selectedCategory, sort: _sort),
           ),
         ],
       ),
@@ -362,9 +384,10 @@ class _StatRow extends StatelessWidget {
 }
 
 class _WardrobeGrid extends ConsumerWidget {
-  const _WardrobeGrid({this.category});
+  const _WardrobeGrid({this.category, required this.sort});
 
   final ClothingCategory? category;
+  final _WardrobeSort sort;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -379,15 +402,16 @@ class _WardrobeGrid extends ConsumerWidget {
       error: (e, _) => SliverFillRemaining(
         child: Center(child: Text('Ошибка: $e')),
       ),
-      data: (items) => _ItemsGrid(items: items),
+      data: (items) => _ItemsGrid(items: items, sort: sort),
     );
   }
 }
 
 class _ItemsGrid extends StatelessWidget {
-  const _ItemsGrid({required this.items});
+  const _ItemsGrid({required this.items, required this.sort});
 
   final List<ClothingItem> items;
+  final _WardrobeSort sort;
 
   @override
   Widget build(BuildContext context) {
@@ -409,10 +433,25 @@ class _ItemsGrid extends StatelessWidget {
       );
     }
 
+    final now = DateTime.now();
+    final sorted = sort == _WardrobeSort.urgency
+        ? (List.of(items)
+          ..sort(
+            (a, b) => computeWearForecast(item: a, now: now, lastWornAt: null)
+                .urgency
+                .index
+                .compareTo(
+                  computeWearForecast(item: b, now: now, lastWornAt: null)
+                      .urgency
+                      .index,
+                ),
+          ))
+        : items;
+
     return SliverGrid(
       delegate: SliverChildBuilderDelegate(
-        (ctx, i) => ClothingCard(item: items[i]),
-        childCount: items.length,
+        (ctx, i) => ClothingCard(item: sorted[i]),
+        childCount: sorted.length,
       ),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
