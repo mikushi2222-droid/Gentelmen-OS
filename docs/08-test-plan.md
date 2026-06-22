@@ -25,7 +25,7 @@ test/widget/
 ```
 
 Ещё **не реализовано** (бэклог качества, см. [12-production-plan.md](12-production-plan.md)):
-golden-тесты, миграционные тесты (`v1→v6`), `integration_test/`, тесты
+golden-тесты, миграционные тесты (`v1→v7`), `integration_test/`, тесты
 репозиториев на in-memory Drift, виджет-тесты `PurchasesScreen` / `OutfitDetailScreen`.
 
 > Все тесты требуют прогнанного `build_runner` (генерация `.g.dart`/`.freezed.dart`)
