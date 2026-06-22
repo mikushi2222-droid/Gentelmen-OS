@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:drift/drift.dart' show Value;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gentleman_os/core/db/app_database.dart';
@@ -11,6 +13,7 @@ import 'package:gentleman_os/shared/enums/dress_code.dart';
 import 'package:gentleman_os/shared/enums/occasion.dart';
 import 'package:gentleman_os/shared/enums/season.dart';
 import 'package:gentleman_os/shared/enums/weather_condition.dart';
+import 'package:gentleman_os/shared/models/outfit.dart';
 import 'package:gentleman_os/shared/models/user_profile.dart';
 import 'package:uuid/uuid.dart';
 
@@ -74,6 +77,7 @@ Future<void> saveOutfitSuggestion({
       dressCode: Value(params.dressCode.index),
       season: Value(params.season.index),
       score: Value(score.totalScaled),
+      scoreBreakdown: Value(jsonEncode(score.toJson())),
       createdAt: Value(DateTime.now()),
     ),
     suggestion.items.map((i) => i.id).toList(),

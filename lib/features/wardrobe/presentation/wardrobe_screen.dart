@@ -23,6 +23,15 @@ class WardrobeScreen extends ConsumerStatefulWidget {
 class _WardrobeScreenState extends ConsumerState<WardrobeScreen> {
   ClothingCategory? _selectedCategory;
   _WardrobeSort _sort = _WardrobeSort.newest;
+  bool _searching = false;
+  String _query = '';
+  final _searchCtrl = TextEditingController();
+
+  @override
+  void dispose() {
+    _searchCtrl.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,39 +41,70 @@ class _WardrobeScreenState extends ConsumerState<WardrobeScreen> {
           SliverAppBar(
             floating: true,
             snap: true,
-            title: const Text('Гардероб'),
+            title: _searching
+                ? TextField(
+                    controller: _searchCtrl,
+                    autofocus: true,
+                    decoration: const InputDecoration(
+                      hintText: 'Поиск по названию...',
+                      border: InputBorder.none,
+                    ),
+                    onChanged: (v) => setState(() => _query = v),
+                  )
+                : const Text('Гардероб'),
             actions: [
-              IconButton(
-                tooltip: _sort == _WardrobeSort.newest
-                    ? 'Сортировать по срочности'
-                    : 'Сортировать по дате',
-                icon: Icon(
-                  _sort == _WardrobeSort.newest
-                      ? Icons.sort
-                      : Icons.wb_sunny_outlined,
-                  color: _sort == _WardrobeSort.urgency
-                      ? AppColors.gold
-                      : null,
+              if (_searching)
+                IconButton(
+                  icon: const Icon(Icons.close),
+                  onPressed: () => setState(() {
+                    _searching = false;
+                    _query = '';
+                    _searchCtrl.clear();
+                  }),
+                )
+              else ...[
+                IconButton(
+                  icon: const Icon(Icons.search),
+                  tooltip: 'Поиск',
+                  onPressed: () => setState(() => _searching = true),
                 ),
-                onPressed: () => setState(() => _sort = _sort == _WardrobeSort.newest
-                    ? _WardrobeSort.urgency
-                    : _WardrobeSort.newest),
-              ),
+                IconButton(
+                  tooltip: _sort == _WardrobeSort.newest
+                      ? 'Сортировать по срочности'
+                      : 'Сортировать по дате',
+                  icon: Icon(
+                    _sort == _WardrobeSort.newest
+                        ? Icons.sort
+                        : Icons.wb_sunny_outlined,
+                    color: _sort == _WardrobeSort.urgency
+                        ? AppColors.gold
+                        : null,
+                  ),
+                  onPressed: () => setState(
+                    () => _sort = _sort == _WardrobeSort.newest
+                        ? _WardrobeSort.urgency
+                        : _WardrobeSort.newest,
+                  ),
+                ),
+              ],
             ],
             bottom: PreferredSize(
               preferredSize: const Size.fromHeight(56),
               child: _CategoryFilter(
                 selected: _selectedCategory,
-                onSelected: (c) =>
-                    setState(() => _selectedCategory = c),
+                onSelected: (c) => setState(() => _selectedCategory = c),
               ),
             ),
           ),
-          if (_selectedCategory == null)
+          if (_selectedCategory == null && !_searching)
             const SliverToBoxAdapter(child: _WardrobeStatsPanel()),
           SliverPadding(
             padding: const EdgeInsets.all(Spacing.screenPadding),
-            sliver: _WardrobeGrid(category: _selectedCategory, sort: _sort),
+            sliver: _WardrobeGrid(
+              category: _selectedCategory,
+              sort: _sort,
+              query: _query,
+            ),
           ),
         ],
       ),
@@ -384,10 +424,15 @@ class _StatRow extends StatelessWidget {
 }
 
 class _WardrobeGrid extends ConsumerWidget {
-  const _WardrobeGrid({this.category, required this.sort});
+  const _WardrobeGrid({
+    this.category,
+    required this.sort,
+    this.query = '',
+  });
 
   final ClothingCategory? category;
   final _WardrobeSort sort;
+  final String query;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -402,40 +447,59 @@ class _WardrobeGrid extends ConsumerWidget {
       error: (e, _) => SliverFillRemaining(
         child: Center(child: Text('Ошибка: $e')),
       ),
-      data: (items) => _ItemsGrid(items: items, sort: sort),
+      data: (items) => _ItemsGrid(items: items, sort: sort, query: query),
     );
   }
 }
 
 class _ItemsGrid extends StatelessWidget {
-  const _ItemsGrid({required this.items, required this.sort});
+  const _ItemsGrid({
+    required this.items,
+    required this.sort,
+    this.query = '',
+  });
 
   final List<ClothingItem> items;
   final _WardrobeSort sort;
+  final String query;
 
   @override
   Widget build(BuildContext context) {
-    if (items.isEmpty) {
+    final filtered = query.isEmpty
+        ? items
+        : items.where((i) {
+            final q = query.toLowerCase();
+            return i.name.toLowerCase().contains(q) ||
+                (i.brand?.toLowerCase().contains(q) ?? false);
+          }).toList();
+
+    if (filtered.isEmpty) {
       return SliverFillRemaining(
-        child: EmptyState(
-          icon: Icons.checkroom_outlined,
-          title: 'Гардероб пуст',
-          subtitle:
-              'Добавьте первую вещь, чтобы начать\nстроить ваш цифровой гардероб',
-          action: Builder(
-            builder: (context) => FilledButton.icon(
-              onPressed: () => context.push('/wardrobe/add'),
-              icon: const Icon(Icons.add),
-              label: const Text('Добавить вещь'),
-            ),
-          ),
-        ),
+        child: query.isEmpty
+            ? EmptyState(
+                icon: Icons.checkroom_outlined,
+                title: 'Гардероб пуст',
+                subtitle:
+                    'Добавьте первую вещь, чтобы начать\nстроить ваш цифровой гардероб',
+                action: Builder(
+                  builder: (context) => FilledButton.icon(
+                    onPressed: () => context.push('/wardrobe/add'),
+                    icon: const Icon(Icons.add),
+                    label: const Text('Добавить вещь'),
+                  ),
+                ),
+              )
+            : EmptyState(
+                icon: Icons.search_off,
+                title: 'Ничего не найдено',
+                subtitle: 'По запросу «$query» вещей не найдено',
+              ),
       );
     }
 
     final now = DateTime.now();
     final sorted = sort == _WardrobeSort.urgency
-        ? (List.of(items)
+        ? (List.of(filtered)
           ..sort(
             (a, b) => computeWearForecast(item: a, now: now, lastWornAt: null)
                 .urgency
@@ -446,7 +510,7 @@ class _ItemsGrid extends StatelessWidget {
                       .index,
                 ),
           ))
-        : items;
+        : filtered;
 
     return SliverGrid(
       delegate: SliverChildBuilderDelegate(
