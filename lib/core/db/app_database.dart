@@ -58,7 +58,7 @@ class AppDatabase extends _$AppDatabase {
       : super(executor ?? driftDatabase(name: 'gentleman_os'));
 
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 7;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -81,6 +81,12 @@ class AppDatabase extends _$AppDatabase {
           }
           if (from < 6) {
             await _seedHealthHabits();
+          }
+          if (from < 7) {
+            // Пересев базовых статей: правит категорию 'discipline-habits'
+            // (была 9=reading, стало 8=discipline). insertOnConflictUpdate —
+            // идемпотентно обновляет существующие строки.
+            await _seedKnowledgeArticles();
           }
         },
       );
@@ -321,7 +327,7 @@ Navy, серый, чёрный, белый, бежевый, кэмэл, кори
       (
         id: 'discipline-habits',
         title: 'Дисциплина и привычки',
-        category: 9, // discipline
+        category: 8, // discipline
         tags: '["дисциплина","привычки","утро","рутина","Manson"]',
         content: '''# Дисциплина и привычки
 
@@ -422,7 +428,7 @@ Navy, серый, чёрный, белый, бежевый, кэмэл, кори
       (
         id: 'shoes-care',
         title: 'Уход за обувью',
-        category: 4, // accessories
+        category: 4, // shoes
         tags: '["обувь","уход","щётка","крем","кожа"]',
         content: '''# Уход за обувью
 

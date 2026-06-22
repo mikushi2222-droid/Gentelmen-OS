@@ -2,7 +2,7 @@
 
 > Последнее обновление: **2026-06-22**  
 > Ветка разработки: `claude/garment-wear-forecast-card-5o5oe8`  
-> Схема БД: **v6**
+> Схема БД: **v7**
 
 ---
 
@@ -109,7 +109,7 @@
 - Widget: `ClothingCard` с разными urgency (уже частично есть)
 - Widget: `DashboardScreen` — smoke test (рендерится без ошибок)
 - Widget: `PurchasesScreen` — переключение табов
-- Migration: v1→v2→v3→v4→v5→v6 без потери данных
+- Migration: v1→v2→v3→v4→v5→v6→v7 без потери данных
 
 #### C. CI
 - Убедиться что `flutter test --coverage` проходит в CI runner
