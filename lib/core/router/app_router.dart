@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gentleman_os/core/router/shell_scaffold.dart';
+import 'package:gentleman_os/features/biohacking/presentation/biohacking_screen.dart';
 import 'package:gentleman_os/features/dashboard/presentation/dashboard_screen.dart';
 import 'package:gentleman_os/features/fitness/presentation/fitness_screen.dart';
 import 'package:gentleman_os/features/fitness/presentation/add_measurement_screen.dart';
@@ -106,19 +107,39 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               ),
             ],
           ),
-        ],
-      ),
-      // Вне shell
-      GoRoute(
-        path: '/profile',
-        builder: (c, s) => const ProfileScreen(),
-        routes: [
           GoRoute(
-            path: 'edit',
-            builder: (c, s) => const EditProfileScreen(),
+            path: '/health',
+            pageBuilder: (c, s) =>
+                const NoTransitionPage(child: HealthScreen()),
+            routes: [
+              GoRoute(
+                path: 'marker/:typeIndex',
+                builder: (c, s) => HealthMarkerDetailScreen(
+                  typeIndex:
+                      int.tryParse(s.pathParameters['typeIndex'] ?? '') ?? -1,
+                ),
+              ),
+            ],
+          ),
+          GoRoute(
+            path: '/biohacking',
+            pageBuilder: (c, s) =>
+                const NoTransitionPage(child: BiohackingScreen()),
+          ),
+          GoRoute(
+            path: '/profile',
+            pageBuilder: (c, s) =>
+                const NoTransitionPage(child: ProfileScreen()),
+            routes: [
+              GoRoute(
+                path: 'edit',
+                builder: (c, s) => const EditProfileScreen(),
+              ),
+            ],
           ),
         ],
       ),
+      // Вне shell
       GoRoute(
         path: '/purchases',
         builder: (c, s) => const PurchasesScreen(),
@@ -126,18 +147,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/style-advisor',
         builder: (c, s) => const StyleAdvisorScreen(),
-      ),
-      GoRoute(
-        path: '/health',
-        builder: (c, s) => const HealthScreen(),
-        routes: [
-          GoRoute(
-            path: 'marker/:typeIndex',
-            builder: (c, s) => HealthMarkerDetailScreen(
-              typeIndex: int.tryParse(s.pathParameters['typeIndex'] ?? '') ?? -1,
-            ),
-          ),
-        ],
       ),
       GoRoute(
         path: '/settings',

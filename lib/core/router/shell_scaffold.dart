@@ -10,9 +10,9 @@ class ShellScaffold extends StatelessWidget {
   static const _tabs = [
     _Tab(label: 'Главная', icon: Icons.home_outlined, active: Icons.home, path: '/dashboard'),
     _Tab(label: 'Гардероб', icon: Icons.checkroom_outlined, active: Icons.checkroom, path: '/wardrobe'),
-    _Tab(label: 'Образы', icon: Icons.style_outlined, active: Icons.style, path: '/outfits'),
-    _Tab(label: 'Знания', icon: Icons.menu_book_outlined, active: Icons.menu_book, path: '/knowledge'),
-    _Tab(label: 'Прогресс', icon: Icons.trending_up_outlined, active: Icons.trending_up, path: '/progress'),
+    _Tab(label: 'Здоровье', icon: Icons.favorite_outline, active: Icons.favorite, path: '/health'),
+    _Tab(label: 'Биохакинг', icon: Icons.bolt_outlined, active: Icons.bolt, path: '/biohacking'),
+    _Tab(label: 'Профиль', icon: Icons.person_outline, active: Icons.person, path: '/profile'),
   ];
 
   @override
