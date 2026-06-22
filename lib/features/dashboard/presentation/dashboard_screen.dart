@@ -9,6 +9,7 @@ import 'package:gentleman_os/core/theme/app_colors.dart';
 import 'package:gentleman_os/core/widgets/mascot_avatar.dart';
 import 'package:gentleman_os/core/widgets/score_ring.dart';
 import 'package:gentleman_os/features/dashboard/application/dashboard_providers.dart';
+import 'package:gentleman_os/features/dashboard/domain/sub_scores.dart';
 import 'package:gentleman_os/features/dashboard/presentation/widgets/mission_tile.dart';
 import 'package:gentleman_os/features/dashboard/presentation/widgets/quick_action_button.dart';
 import 'package:gentleman_os/shared/enums/xp_type.dart';
@@ -76,9 +77,13 @@ class DashboardScreen extends ConsumerWidget {
               delegate: SliverChildListDelegate([
                 _GentlemanScoreCard(),
                 const SizedBox(height: Spacing.md),
+                _SubScoresBlock(),
+                const SizedBox(height: Spacing.md),
                 _ColorPaletteHint(),
                 const SizedBox(height: Spacing.sectionGap),
                 _DailyMissionsSection(),
+                const SizedBox(height: Spacing.md),
+                _DailyTipCard(),
                 const SizedBox(height: Spacing.sectionGap),
                 _QuickActionsSection(),
                 const SizedBox(height: 80),
@@ -348,6 +353,118 @@ class _QuickActionsSection extends StatelessWidget {
           ],
         ),
       ],
+    );
+  }
+}
+
+/// Блок 2 — четыре под-оценки (Стиль/Здоровье/Биохакинг/Дисциплина).
+class _SubScoresBlock extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final async = ref.watch(subScoresProvider);
+    return async.when(
+      loading: () => const Padding(
+        padding: EdgeInsets.symmetric(vertical: 8),
+        child: LinearProgressIndicator(),
+      ),
+      error: (_, _) => const SizedBox.shrink(),
+      data: (s) {
+        final items = s.all;
+        return Column(
+          children: [
+            Row(
+              children: [
+                Expanded(child: _SubScoreCard(item: items[0])),
+                const SizedBox(width: Spacing.sm),
+                Expanded(child: _SubScoreCard(item: items[1])),
+              ],
+            ),
+            const SizedBox(height: Spacing.sm),
+            Row(
+              children: [
+                Expanded(child: _SubScoreCard(item: items[2])),
+                const SizedBox(width: Spacing.sm),
+                Expanded(child: _SubScoreCard(item: items[3])),
+              ],
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _SubScoreCard extends StatelessWidget {
+  const _SubScoreCard({required this.item});
+
+  final SubScore item;
+
+  @override
+  Widget build(BuildContext context) {
+    final tt = Theme.of(context).textTheme;
+    return Container(
+      padding: const EdgeInsets.all(Spacing.md),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.outline, width: 0.5),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '${item.value}',
+            style: tt.headlineSmall?.copyWith(color: AppColors.gold),
+          ),
+          Text(
+            item.name,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: tt.bodySmall?.copyWith(color: AppColors.textSecondary),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Блок 4 — совет дня, вытекающий из самого слабого звена.
+class _DailyTipCard extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final tt = Theme.of(context).textTheme;
+    final scores = ref.watch(subScoresProvider).value;
+    final tip = scores == null
+        ? 'Маленькое действие сегодня лучше идеального плана завтра.'
+        : dailyTip(scores);
+    return Container(
+      padding: const EdgeInsets.all(Spacing.cardPadding),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
+        border:
+            Border.all(color: AppColors.gold.withValues(alpha: 0.2), width: 0.5),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(Icons.lightbulb_outline, color: AppColors.gold, size: 20),
+          const SizedBox(width: Spacing.sm),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Совет дня', style: tt.titleSmall),
+                const SizedBox(height: 2),
+                Text(
+                  tip,
+                  style: tt.bodySmall?.copyWith(color: AppColors.textSecondary),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

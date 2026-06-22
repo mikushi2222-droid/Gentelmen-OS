@@ -1,7 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gentleman_os/core/db/app_database.dart';
 import 'package:gentleman_os/core/db/database_provider.dart';
+import 'package:gentleman_os/features/biohacking/application/biohacking_providers.dart';
+import 'package:gentleman_os/features/biohacking/domain/optimization.dart';
 import 'package:gentleman_os/features/dashboard/domain/mission_generator.dart';
+import 'package:gentleman_os/features/dashboard/domain/sub_scores.dart';
 import 'package:gentleman_os/features/rpg/domain/level_calculator.dart';
 import 'package:gentleman_os/features/wardrobe/application/wardrobe_providers.dart';
 import 'package:gentleman_os/shared/enums/xp_type.dart';
@@ -78,4 +81,23 @@ final dailyMissionsProvider =
   }
 
   yield* dao.watchForDate(today);
+});
+
+/// Четыре под-оценки Главной (Стиль/Здоровье/Биохакинг/Дисциплина), выведенные
+/// из доменов биохакинга — без дополнительных запросов к БД.
+final subScoresProvider = FutureProvider<SubScores>((ref) async {
+  final domains = await ref.watch(biohackingDomainsProvider.future);
+  final optimization = optimizationScore(domains);
+  double scoreOf(String name) => domains
+      .firstWhere(
+        (d) => d.name == name,
+        orElse: () => const OptimizationDomain(name: '', score: 0),
+      )
+      .score;
+  return SubScores(
+    style: (scoreOf('Стиль') * 100).round(),
+    health: (scoreOf('Тело и активность') * 100).round(),
+    biohacking: optimization,
+    discipline: (scoreOf('Дисциплина') * 100).round(),
+  );
 });
