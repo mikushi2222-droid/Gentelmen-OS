@@ -12,6 +12,8 @@ final class LocalAiAdvisor implements AiAdvisor {
   Future<StyleAdvice> getStyleAdvice({
     required List<ClothingItem> wardrobe,
     String? occasion,
+    List<ClothingItem> urgentItems = const [],
+    String? currentSeason,
   }) async {
     final suggestions = <String>[];
     final warnings = <String>[];

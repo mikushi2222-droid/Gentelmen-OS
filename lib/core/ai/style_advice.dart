@@ -5,17 +5,14 @@ class StyleAdvice {
     required this.suggestions,
     this.warnings = const [],
     this.score,
+    this.outfitOfDay,
   });
 
-  /// Short human-readable advice (1-2 sentences).
   final String summary;
-
-  /// Specific actionable suggestions.
   final List<String> suggestions;
-
-  /// Items or combinations to avoid.
   final List<String> warnings;
-
-  /// Optional confidence/quality score 0–100.
   final double? score;
+
+  /// Concrete "outfit of the day" recommendation (optional, cloud AI only).
+  final String? outfitOfDay;
 }

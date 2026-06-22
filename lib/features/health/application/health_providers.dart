@@ -36,6 +36,31 @@ final healthIndexProvider = FutureProvider<double>((ref) async {
   return healthIndex(latest);
 });
 
+/// Последняя запись (включая дату) для каждого типа маркера.
+final latestHealthRowsByTypeProvider =
+    FutureProvider<Map<HealthMarkerType, HealthMarkersData>>((ref) async {
+  ref.watch(healthMarkersProvider);
+  final rows = await ref.watch(healthDaoProvider).latestByType();
+  return {
+    for (final e in rows.entries)
+      if (e.key >= 0 && e.key < HealthMarkerType.values.length)
+        HealthMarkerType.values[e.key]: e.value,
+  };
+});
+
+/// Маркеры, по которым давно не вносились данные (просрочены).
+final overdueMarkersProvider = FutureProvider<List<HealthMarkerType>>((ref) async {
+  final rows = await ref.watch(latestHealthRowsByTypeProvider.future);
+  final now = DateTime.now();
+  return [
+    for (final type in HealthMarkerType.values)
+      if (rows[type] != null &&
+          now.isAfter(rows[type]!.date
+              .add(Duration(days: type.checkIntervalMonths * 30))))
+        type,
+  ];
+});
+
 /// ИИ-анализатор здоровья (доступен только при настроенном RouterAI).
 final healthAiAnalyzerProvider = Provider<HealthAiAnalyzer?>((ref) {
   final client = ref.watch(routerAiClientProvider);

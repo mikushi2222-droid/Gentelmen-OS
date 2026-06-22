@@ -8,6 +8,8 @@ import 'package:gentleman_os/core/ai/style_advice.dart';
 import 'package:gentleman_os/core/utils/app_logger.dart';
 import 'package:gentleman_os/features/knowledge/application/knowledge_providers.dart';
 import 'package:gentleman_os/features/wardrobe/application/wardrobe_providers.dart';
+import 'package:gentleman_os/features/wardrobe/domain/wear_forecast.dart';
+import 'package:gentleman_os/shared/models/clothing_item.dart';
 import 'package:gentleman_os/shared/models/knowledge_article.dart';
 
 /// HTTP-клиент RouterAI — есть только если задан API-ключ.
@@ -37,8 +39,39 @@ final aiAdvisorProvider = Provider<AiAdvisor>((ref) {
 final styleAdviceProvider = FutureProvider<StyleAdvice>((ref) async {
   final wardrobe = await ref.watch(wardrobeListProvider.future);
   final advisor = ref.watch(aiAdvisorProvider);
-  return advisor.getStyleAdvice(wardrobe: wardrobe);
+  final now = DateTime.now();
+
+  final urgentItems = (wardrobe
+          .where((i) =>
+              computeWearForecast(item: i, now: now, lastWornAt: null)
+                  .urgency
+                  .isActionable)
+          .toList()
+        ..sort((a, b) =>
+            computeWearForecast(item: a, now: now, lastWornAt: null)
+                .urgency
+                .index
+                .compareTo(
+                  computeWearForecast(item: b, now: now, lastWornAt: null)
+                      .urgency
+                      .index,
+                )))
+      .take(5)
+      .toList();
+
+  return advisor.getStyleAdvice(
+    wardrobe: wardrobe,
+    urgentItems: urgentItems,
+    currentSeason: _currentSeason(now.month),
+  );
 });
+
+String _currentSeason(int month) => switch (month) {
+      3 || 4 || 5 => 'весна',
+      6 || 7 || 8 => 'лето',
+      9 || 10 || 11 => 'осень',
+      _ => 'зима',
+    };
 
 /// Returns AI-recommended articles based on wardrobe gaps.
 final recommendedArticlesProvider =

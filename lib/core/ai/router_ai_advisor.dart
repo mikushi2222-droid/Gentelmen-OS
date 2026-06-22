@@ -22,9 +22,15 @@ class RouterAiAdvisor implements AiAdvisor {
   Future<StyleAdvice> getStyleAdvice({
     required List<ClothingItem> wardrobe,
     String? occasion,
+    List<ClothingItem> urgentItems = const [],
+    String? currentSeason,
   }) async {
     if (wardrobe.isEmpty) {
-      return fallback.getStyleAdvice(wardrobe: wardrobe, occasion: occasion);
+      return fallback.getStyleAdvice(
+          wardrobe: wardrobe,
+          occasion: occasion,
+          urgentItems: urgentItems,
+          currentSeason: currentSeason);
     }
     try {
       final inventory = wardrobe
@@ -34,15 +40,23 @@ class RouterAiAdvisor implements AiAdvisor {
               '${i.wearCount > 0 ? ', надевалась ${i.wearCount}×' : ''}')
           .join('\n');
 
+      final urgentSection = urgentItems.isEmpty
+          ? ''
+          : '\n\nВещи, которые пора надеть сегодня/скоро:\n'
+              '${urgentItems.map((i) => '- ${i.name} (${i.category.label})').join('\n')}';
+
+      final seasonSection =
+          currentSeason != null ? '\nТекущий сезон: $currentSeason.' : '';
+
       final userPrompt = '''
 Проанализируй мужской гардероб и дай совет по стилю.
-Повод: ${occasion ?? 'повседневный'}.
+Повод: ${occasion ?? 'повседневный'}.$seasonSection$urgentSection
 
 Гардероб:
 $inventory
 
 Верни СТРОГО валидный JSON без markdown:
-{"summary":"1-2 предложения","suggestions":["совет",...],"warnings":["предостережение",...],"score":<число 0-100>}''';
+{"summary":"1-2 предложения","suggestions":["совет",...],"warnings":["предостережение",...],"score":<число 0-100>,"outfit_of_day":"Конкретное сочетание вещей на сегодня (1-2 предложения) или null"}''';
 
       final content = await client.chat(
         jsonMode: true,
@@ -60,11 +74,14 @@ $inventory
 
       final map = jsonDecode(content) as Map<String, dynamic>;
       log.i(_tag, 'Стиль-совет получен от RouterAI');
+      final outfitOfDay = (map['outfit_of_day'] as String?)?.trim();
       return StyleAdvice(
         summary: (map['summary'] as String?)?.trim() ?? '',
         suggestions: _stringList(map['suggestions']),
         warnings: _stringList(map['warnings']),
         score: (map['score'] as num?)?.toDouble(),
+        outfitOfDay:
+            (outfitOfDay?.isNotEmpty ?? false) ? outfitOfDay : null,
       );
     } on Object catch (err, st) {
       log.w(_tag, 'RouterAI недоступен, оффлайн-фолбэк', error: err);
