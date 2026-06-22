@@ -15,13 +15,15 @@ import 'package:gentleman_os/shared/models/clothing_item.dart';
   final targetFormality = _targetFormality(occasion, dressCode);
   final diff = (avgFormality - targetFormality).abs();
 
-  if (diff == 0) {
+  // diff — непрерывная величина (средняя формальность вещей минус цель),
+  // поэтому сравниваем по порогам, а не на точное равенство.
+  if (diff <= 0.5) {
     score += 0.4;
     notes.add('Образ точно соответствует поводу (+)');
-  } else if (diff == 1) {
+  } else if (diff <= 1.5) {
     score += 0.2;
     notes.add('Образ близок к поводу (+)');
-  } else if (diff == 2) {
+  } else if (diff <= 2.5) {
     // приемлемо
     notes.add('Небольшое несоответствие поводу');
   } else {

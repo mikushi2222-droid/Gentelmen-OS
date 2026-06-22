@@ -60,7 +60,9 @@ void main() {
         ),
       ];
       final formal = occasionScore(items, Occasion.business, DressCode.business);
-      expect(formal.notes, anyElement(contains('кроссовки')));
+      // движок добавляет ноту «Кроссовки недопустимы…» — матчим корень слова
+      // без привязки к регистру первой буквы
+      expect(formal.notes, anyElement(contains('россовк')));
     });
 
     test('пустой список → score не null', () {
