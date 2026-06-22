@@ -33,7 +33,10 @@ android {
     buildTypes {
         release {
             signingConfig signingConfigs.debug
+            // shrinkResources требует включённого minify; держим оба
+            // согласованно выключенными (AGP 8.6 иначе падает на конфликте).
             minifyEnabled false
+            shrinkResources false
         }
     }
 }
