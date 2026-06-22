@@ -6,9 +6,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gentleman_os/core/constants/spacing.dart';
 import 'package:gentleman_os/core/db/app_database.dart';
 import 'package:gentleman_os/core/db/database_provider.dart';
+import 'package:gentleman_os/core/theme/app_colors.dart';
 import 'package:gentleman_os/features/wardrobe/application/wardrobe_providers.dart';
 import 'package:gentleman_os/shared/enums/occasion.dart';
 import 'package:gentleman_os/shared/models/clothing_item.dart';
+import 'package:gentleman_os/shared/models/outfit.dart';
 
 final _outfitDetailProvider =
     FutureProvider.family<(OutfitsData?, List<ClothingItem>), String>(
@@ -58,27 +60,30 @@ class OutfitDetailScreen extends ConsumerWidget {
   }
 }
 
-class _OutfitBody extends StatelessWidget {
+class _OutfitBody extends ConsumerWidget {
   const _OutfitBody({required this.outfit, required this.items});
 
   final OutfitsData outfit;
   final List<ClothingItem> items;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
 
-    // Parse score breakdown if stored as JSON
-    Map<String, dynamic> breakdown = {};
+    OutfitScore? score;
     try {
-      breakdown = jsonDecode(outfit.scoreBreakdown) as Map<String, dynamic>;
+      final map = jsonDecode(outfit.scoreBreakdown) as Map<String, dynamic>;
+      if (map.isNotEmpty) score = OutfitScore.fromJson(map);
     } catch (_) {}
 
+    final hasBreakdown = score != null &&
+        (score.fitScore + score.colorScore + score.occasionScore +
+                score.weatherScore + score.comfortScore) >
+            0;
+
     return Scaffold(
-      appBar: AppBar(
-        title: Text(outfit.name),
-      ),
+      appBar: AppBar(title: Text(outfit.name)),
       body: ListView(
         padding: const EdgeInsets.all(Spacing.screenPadding),
         children: [
@@ -96,7 +101,8 @@ class _OutfitBody extends StatelessWidget {
                     ),
                     Text(
                       '${items.length} вещей',
-                      style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+                      style:
+                          tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
                     ),
                   ],
                 ),
@@ -107,13 +113,76 @@ class _OutfitBody extends StatelessWidget {
           Text('Вещи образа', style: tt.titleMedium),
           const SizedBox(height: Spacing.sm),
           ...items.map((item) => _ItemRow(item: item)),
+          const SizedBox(height: Spacing.md),
+          FilledButton.icon(
+            onPressed: () => _wearAll(context, ref),
+            icon: const Icon(Icons.checkroom_outlined),
+            label: const Text('Надеть весь образ'),
+          ),
           const SizedBox(height: Spacing.sectionGap),
-          Text('Score breakdown', style: tt.titleMedium),
+          Text('Оценка образа', style: tt.titleMedium),
           const SizedBox(height: Spacing.sm),
+          if (hasBreakdown) ...[
+            _ScoreRow(
+                label: 'Посадка (×0.30)',
+                value: score!.fitScore),
+            _ScoreRow(
+                label: 'Повод (×0.25)',
+                value: score.occasionScore),
+            _ScoreRow(
+                label: 'Погода/сезон (×0.20)',
+                value: score.weatherScore),
+            _ScoreRow(
+                label: 'Цветовая гармония (×0.15)',
+                value: score.colorScore),
+            _ScoreRow(
+                label: 'Комфорт (×0.10)',
+                value: score.comfortScore),
+            const Divider(height: Spacing.lg),
+          ],
           _ScoreRow(label: 'Итого', value: outfit.score / 100),
+          if (score != null && score.explanation.isNotEmpty) ...[
+            const SizedBox(height: Spacing.md),
+            Text('Детали', style: tt.titleSmall),
+            const SizedBox(height: Spacing.sm),
+            ...score.explanation.map(
+              (e) => Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('• ',
+                        style: tt.bodySmall
+                            ?.copyWith(color: cs.onSurfaceVariant)),
+                    Expanded(
+                      child: Text(e,
+                          style: tt.bodySmall
+                              ?.copyWith(color: cs.onSurfaceVariant)),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+          const SizedBox(height: 80),
         ],
       ),
     );
+  }
+
+  Future<void> _wearAll(BuildContext context, WidgetRef ref) async {
+    final repo = ref.read(wardrobeRepositoryProvider);
+    for (final item in items) {
+      await repo.incrementWear(item.id);
+    }
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Отмечено ${items.length} вещей как надетые'),
+          backgroundColor: AppColors.success,
+        ),
+      );
+    }
   }
 }
 
