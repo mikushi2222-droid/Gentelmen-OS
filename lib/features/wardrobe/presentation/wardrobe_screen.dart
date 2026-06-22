@@ -9,6 +9,7 @@ import 'package:gentleman_os/features/wardrobe/application/wardrobe_providers.da
 import 'package:gentleman_os/features/wardrobe/domain/wear_forecast.dart';
 import 'package:gentleman_os/features/wardrobe/presentation/clothing_card.dart';
 import 'package:gentleman_os/shared/enums/clothing_category.dart';
+import 'package:gentleman_os/shared/enums/season.dart';
 import 'package:gentleman_os/shared/models/clothing_item.dart';
 
 enum _WardrobeSort { newest, urgency }
@@ -26,6 +27,16 @@ class _WardrobeScreenState extends ConsumerState<WardrobeScreen> {
   bool _searching = false;
   String _query = '';
   final _searchCtrl = TextEditingController();
+
+  // Advanced filter state
+  Season? _filterSeason;
+  String _filterColor = '';
+  String _filterBrand = '';
+
+  bool get _hasActiveFilter =>
+      _filterSeason != null ||
+      _filterColor.isNotEmpty ||
+      _filterBrand.isNotEmpty;
 
   @override
   void dispose() {
@@ -69,6 +80,14 @@ class _WardrobeScreenState extends ConsumerState<WardrobeScreen> {
                   onPressed: () => setState(() => _searching = true),
                 ),
                 IconButton(
+                  tooltip: 'Фильтры',
+                  icon: Badge(
+                    isLabelVisible: _hasActiveFilter,
+                    child: const Icon(Icons.filter_list),
+                  ),
+                  onPressed: _showFilterSheet,
+                ),
+                IconButton(
                   tooltip: _sort == _WardrobeSort.newest
                       ? 'Сортировать по срочности'
                       : 'Сортировать по дате',
@@ -104,6 +123,9 @@ class _WardrobeScreenState extends ConsumerState<WardrobeScreen> {
               category: _selectedCategory,
               sort: _sort,
               query: _query,
+              filterSeason: _filterSeason,
+              filterColor: _filterColor,
+              filterBrand: _filterBrand,
             ),
           ),
         ],
@@ -112,6 +134,103 @@ class _WardrobeScreenState extends ConsumerState<WardrobeScreen> {
         onPressed: () => context.push('/wardrobe/add'),
         icon: const Icon(Icons.add),
         label: const Text('Добавить'),
+      ),
+    );
+  }
+
+  void _showFilterSheet() {
+    Season? tempSeason = _filterSeason;
+    final colorCtrl = TextEditingController(text: _filterColor);
+    final brandCtrl = TextEditingController(text: _filterBrand);
+
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setModalState) {
+          return Padding(
+            padding: EdgeInsets.fromLTRB(
+                16, 16, 16, 16 + MediaQuery.of(ctx).viewInsets.bottom),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Фильтры',
+                    style: Theme.of(ctx).textTheme.titleMedium),
+                const SizedBox(height: 12),
+                Text('Сезон',
+                    style: Theme.of(ctx).textTheme.labelMedium),
+                const SizedBox(height: 6),
+                Wrap(
+                  spacing: 6,
+                  children: [
+                    FilterChip(
+                      label: const Text('Все'),
+                      selected: tempSeason == null,
+                      onSelected: (_) =>
+                          setModalState(() => tempSeason = null),
+                    ),
+                    ...Season.values.map(
+                      (s) => FilterChip(
+                        label: Text(s.label),
+                        selected: tempSeason == s,
+                        onSelected: (_) =>
+                            setModalState(() => tempSeason = s),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: colorCtrl,
+                  decoration: const InputDecoration(
+                    labelText: 'Цвет',
+                    prefixIcon: Icon(Icons.palette_outlined),
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: brandCtrl,
+                  decoration: const InputDecoration(
+                    labelText: 'Бренд',
+                    prefixIcon: Icon(Icons.label_outline),
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    OutlinedButton(
+                      onPressed: () {
+                        setModalState(() {
+                          tempSeason = null;
+                          colorCtrl.clear();
+                          brandCtrl.clear();
+                        });
+                      },
+                      child: const Text('Сбросить'),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: FilledButton(
+                        onPressed: () {
+                          setState(() {
+                            _filterSeason = tempSeason;
+                            _filterColor = colorCtrl.text.trim();
+                            _filterBrand = brandCtrl.text.trim();
+                          });
+                          Navigator.pop(ctx);
+                        },
+                        child: const Text('Применить'),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
@@ -288,6 +407,20 @@ class _WardrobeStatsPanel extends ConsumerWidget {
                               ],
                             ),
                             const SizedBox(height: 6),
+                            if (advice.outfitOfDay != null) ...[
+                              Text(
+                                'Образ дня',
+                                style: tt.labelSmall
+                                    ?.copyWith(color: AppColors.gold),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                advice.outfitOfDay!,
+                                style: tt.bodySmall
+                                    ?.copyWith(color: cs.onSurface),
+                              ),
+                              const SizedBox(height: 8),
+                            ],
                             ...advice.suggestions.map(
                               (s) => Padding(
                                 padding: const EdgeInsets.only(bottom: 4),
@@ -428,11 +561,17 @@ class _WardrobeGrid extends ConsumerWidget {
     this.category,
     required this.sort,
     this.query = '',
+    this.filterSeason,
+    this.filterColor = '',
+    this.filterBrand = '',
   });
 
   final ClothingCategory? category;
   final _WardrobeSort sort;
   final String query;
+  final Season? filterSeason;
+  final String filterColor;
+  final String filterBrand;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -447,7 +586,14 @@ class _WardrobeGrid extends ConsumerWidget {
       error: (e, _) => SliverFillRemaining(
         child: Center(child: Text('Ошибка: $e')),
       ),
-      data: (items) => _ItemsGrid(items: items, sort: sort, query: query),
+      data: (items) => _ItemsGrid(
+        items: items,
+        sort: sort,
+        query: query,
+        filterSeason: filterSeason,
+        filterColor: filterColor,
+        filterBrand: filterBrand,
+      ),
     );
   }
 }
@@ -457,26 +603,62 @@ class _ItemsGrid extends StatelessWidget {
     required this.items,
     required this.sort,
     this.query = '',
+    this.filterSeason,
+    this.filterColor = '',
+    this.filterBrand = '',
   });
 
   final List<ClothingItem> items;
   final _WardrobeSort sort;
   final String query;
+  final Season? filterSeason;
+  final String filterColor;
+  final String filterBrand;
 
   @override
   Widget build(BuildContext context) {
-    final filtered = query.isEmpty
-        ? items
-        : items.where((i) {
-            final q = query.toLowerCase();
-            return i.name.toLowerCase().contains(q) ||
-                (i.brand?.toLowerCase().contains(q) ?? false);
-          }).toList();
+    var filtered = items;
+
+    if (query.isNotEmpty) {
+      final q = query.toLowerCase();
+      filtered = filtered
+          .where((i) =>
+              i.name.toLowerCase().contains(q) ||
+              (i.brand?.toLowerCase().contains(q) ?? false))
+          .toList();
+    }
+    if (filterSeason != null) {
+      filtered = filtered
+          .where((i) => i.season == filterSeason || i.season == Season.all)
+          .toList();
+    }
+    if (filterColor.isNotEmpty) {
+      final c = filterColor.toLowerCase();
+      filtered = filtered
+          .where((i) => i.color?.toLowerCase().contains(c) ?? false)
+          .toList();
+    }
+    if (filterBrand.isNotEmpty) {
+      final b = filterBrand.toLowerCase();
+      filtered = filtered
+          .where((i) => i.brand?.toLowerCase().contains(b) ?? false)
+          .toList();
+    }
+
+    final hasAnyFilter = query.isNotEmpty ||
+        filterSeason != null ||
+        filterColor.isNotEmpty ||
+        filterBrand.isNotEmpty;
 
     if (filtered.isEmpty) {
       return SliverFillRemaining(
-        child: query.isEmpty
+        child: hasAnyFilter
             ? EmptyState(
+                icon: Icons.search_off,
+                title: 'Ничего не найдено',
+                subtitle: 'Попробуйте изменить параметры фильтра',
+              )
+            : EmptyState(
                 icon: Icons.checkroom_outlined,
                 title: 'Гардероб пуст',
                 subtitle:
@@ -488,11 +670,6 @@ class _ItemsGrid extends StatelessWidget {
                     label: const Text('Добавить вещь'),
                   ),
                 ),
-              )
-            : EmptyState(
-                icon: Icons.search_off,
-                title: 'Ничего не найдено',
-                subtitle: 'По запросу «$query» вещей не найдено',
               ),
       );
     }

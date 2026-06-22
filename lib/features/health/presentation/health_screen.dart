@@ -51,6 +51,7 @@ class HealthScreen extends ConsumerWidget {
             error: (_, __) => const SizedBox(),
             data: (index) => _HealthIndexCard(index: index),
           ),
+          const _OverdueReminder(),
           const SizedBox(height: Spacing.sectionGap),
           Text('Показатели', style: tt.titleMedium),
           const SizedBox(height: Spacing.sm),
@@ -93,6 +94,60 @@ class HealthScreen extends ConsumerWidget {
 }
 
 /// Лист с ИИ-разбором показателей (RouterAI).
+class _OverdueReminder extends ConsumerWidget {
+  const _OverdueReminder();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final asyncOverdue = ref.watch(overdueMarkersProvider);
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
+    return asyncOverdue.when(
+      loading: () => const SizedBox.shrink(),
+      error: (_, __) => const SizedBox.shrink(),
+      data: (overdue) {
+        if (overdue.isEmpty) return const SizedBox.shrink();
+        return Container(
+          margin: const EdgeInsets.only(top: Spacing.md),
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: AppColors.warning.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(12),
+            border:
+                Border.all(color: AppColors.warning.withValues(alpha: 0.3)),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(Icons.schedule, size: 18, color: AppColors.warning),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Пора проверить',
+                      style: tt.labelMedium
+                          ?.copyWith(color: AppColors.warning),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      overdue.map((t) => t.label).join(', '),
+                      style: tt.bodySmall
+                          ?.copyWith(color: cs.onSurfaceVariant),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
 class _AiAnalysisSheet extends ConsumerWidget {
   const _AiAnalysisSheet();
 

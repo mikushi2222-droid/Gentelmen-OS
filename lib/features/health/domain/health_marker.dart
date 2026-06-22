@@ -92,6 +92,26 @@ enum HealthMarkerType {
         HealthMarkerType.sleepHours => (min: 7.0, max: 9.0),
       };
 
+  /// Рекомендованный интервал проверки в месяцах.
+  int get checkIntervalMonths => switch (this) {
+        HealthMarkerType.testosteroneTotal => 6,
+        HealthMarkerType.testosteroneFree => 6,
+        HealthMarkerType.shbg => 6,
+        HealthMarkerType.psa => 12,
+        HealthMarkerType.vitaminD => 6,
+        HealthMarkerType.ferritin => 6,
+        HealthMarkerType.ldl => 12,
+        HealthMarkerType.hdl => 12,
+        HealthMarkerType.glucose => 3,
+        HealthMarkerType.hba1c => 3,
+        HealthMarkerType.tsh => 12,
+        HealthMarkerType.bloodPressureSys => 1,
+        HealthMarkerType.bloodPressureDia => 1,
+        HealthMarkerType.restingHeartRate => 1,
+        HealthMarkerType.bodyFat => 3,
+        HealthMarkerType.sleepHours => 1,
+      };
+
   /// Краткая подсказка о маркере.
   String get hint => switch (this) {
         HealthMarkerType.testosteroneTotal =>

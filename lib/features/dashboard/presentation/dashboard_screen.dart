@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:drift/drift.dart' show Value;
 import 'package:gentleman_os/core/constants/spacing.dart';
 import 'package:gentleman_os/core/db/app_database.dart';
 import 'package:gentleman_os/core/db/database_provider.dart';
@@ -8,6 +9,8 @@ import 'package:gentleman_os/core/services/services_provider.dart';
 import 'package:gentleman_os/core/theme/app_colors.dart';
 import 'package:gentleman_os/core/widgets/mascot_avatar.dart';
 import 'package:gentleman_os/core/widgets/score_ring.dart';
+import 'package:gentleman_os/core/services/services_provider.dart';
+import 'package:gentleman_os/core/services/xp_service.dart';
 import 'package:gentleman_os/features/dashboard/application/dashboard_providers.dart';
 import 'package:gentleman_os/features/dashboard/presentation/widgets/mission_tile.dart';
 import 'package:gentleman_os/features/dashboard/presentation/widgets/quick_action_button.dart';
@@ -449,94 +452,164 @@ class _UrgencyCard extends StatelessWidget {
 class _HabitsMiniBlock extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final asyncSummary = ref.watch(habitsTodaySummaryProvider);
+    final asyncHabits = ref.watch(activeHabitsWithCompletionProvider);
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
 
-    return asyncSummary.when(
+    return asyncHabits.when(
       loading: () => const SizedBox.shrink(),
       error: (_, __) => const SizedBox.shrink(),
-      data: (s) {
-        if (s.total == 0) return const SizedBox.shrink();
-        final allDone = s.completed == s.total;
-        return GestureDetector(
-          onTap: () => GoRouter.of(context).push('/progress/habits'),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: cs.surfaceContainerLow,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: allDone
-                    ? AppColors.success.withValues(alpha: 0.4)
-                    : AppColors.gold.withValues(alpha: 0.2),
-                width: 0.5,
-              ),
+      data: (list) {
+        if (list.isEmpty) return const SizedBox.shrink();
+        final completed = list.where((e) => e.doneToday).length;
+        final total = list.length;
+        final allDone = completed == total;
+        final maxStreak =
+            list.fold<int>(0, (m, e) => e.habit.streak > m ? e.habit.streak : m);
+
+        return Container(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+          decoration: BoxDecoration(
+            color: cs.surfaceContainerLow,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: allDone
+                  ? AppColors.success.withValues(alpha: 0.4)
+                  : AppColors.gold.withValues(alpha: 0.2),
+              width: 0.5,
             ),
-            child: Row(
-              children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: allDone
-                        ? AppColors.success.withValues(alpha: 0.15)
-                        : AppColors.gold.withValues(alpha: 0.12),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    Icons.repeat,
-                    color: allDone ? AppColors.success : AppColors.gold,
-                    size: 20,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'ПРИВЫЧКИ СЕГОДНЯ',
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header row
+              GestureDetector(
+                onTap: () => GoRouter.of(context).push('/progress/habits'),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.repeat,
+                      size: 16,
+                      color: allDone ? AppColors.success : AppColors.gold,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Привычки сегодня',
+                      style: tt.titleSmall,
+                    ),
+                    const Spacer(),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: allDone
+                            ? AppColors.success.withValues(alpha: 0.15)
+                            : AppColors.gold.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        '$completed / $total',
                         style: tt.labelSmall?.copyWith(
-                          color: AppColors.textSecondary,
-                          letterSpacing: 1.2,
-                          fontSize: 9,
+                          color: allDone ? AppColors.success : AppColors.gold,
                         ),
                       ),
+                    ),
+                    if (maxStreak > 0) ...[
+                      const SizedBox(width: 8),
                       Text(
-                        '${s.completed} / ${s.total} выполнено',
-                        style: tt.titleSmall?.copyWith(
-                          color: allDone ? AppColors.success : cs.onSurface,
-                          fontWeight: FontWeight.w600,
-                        ),
+                        '🔥$maxStreak',
+                        style: tt.labelSmall,
                       ),
                     ],
-                  ),
+                    const SizedBox(width: 4),
+                    Icon(Icons.chevron_right,
+                        size: 16, color: cs.onSurfaceVariant),
+                  ],
                 ),
-                if (s.maxStreak > 0)
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        '🔥 ${s.maxStreak}',
-                        style: tt.titleSmall?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Text(
-                        'дней подряд',
-                        style: tt.labelSmall
-                            ?.copyWith(color: cs.onSurfaceVariant),
-                      ),
-                    ],
-                  ),
-                const SizedBox(width: 4),
-                Icon(Icons.chevron_right, color: cs.onSurfaceVariant, size: 18),
-              ],
-            ),
+              ),
+              const SizedBox(height: 8),
+              // Individual habit rows
+              ...list.map(
+                (e) => _HabitQuickRow(
+                  habit: e.habit,
+                  doneToday: e.doneToday,
+                  onToggle: () => _completeHabit(ref, e.habit),
+                ),
+              ),
+            ],
           ),
         );
       },
+    );
+  }
+
+  Future<void> _completeHabit(WidgetRef ref, HabitsData habit) async {
+    final dao = ref.read(habitsDaoProvider);
+    final alreadyDone = await dao.isCompletedToday(habit.id);
+    if (alreadyDone) return;
+
+    final today = DateTime.now();
+    await dao.log(HabitLogsCompanion(
+      habitId: Value(habit.id),
+      date: Value(today),
+    ));
+
+    final newStreak = await dao.computeStreak(habit.id);
+    await dao.updateStreak(habit.id, newStreak);
+
+    await ref
+        .read(xpServiceProvider)
+        .award(XpType.habits, 5, 'Привычка: ${habit.name}');
+
+    ref.invalidate(activeHabitsWithCompletionProvider);
+    ref.invalidate(habitsTodaySummaryProvider);
+  }
+}
+
+class _HabitQuickRow extends StatelessWidget {
+  const _HabitQuickRow({
+    required this.habit,
+    required this.doneToday,
+    required this.onToggle,
+  });
+
+  final HabitsData habit;
+  final bool doneToday;
+  final VoidCallback onToggle;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              habit.name,
+              style: tt.bodySmall?.copyWith(
+                color: doneToday ? cs.onSurfaceVariant : cs.onSurface,
+                decoration:
+                    doneToday ? TextDecoration.lineThrough : null,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          GestureDetector(
+            onTap: doneToday ? null : onToggle,
+            child: Icon(
+              doneToday
+                  ? Icons.check_circle
+                  : Icons.radio_button_unchecked,
+              size: 22,
+              color: doneToday ? AppColors.success : cs.onSurfaceVariant,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
