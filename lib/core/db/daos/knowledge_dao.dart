@@ -62,4 +62,9 @@ class KnowledgeDao extends DatabaseAccessor<AppDatabase>
     final all = await select(knowledgeArticles).get();
     return all.where((a) => a.readAt != null).length;
   }
+
+  Future<int> countReadSince(DateTime since) async {
+    final all = await select(knowledgeArticles).get();
+    return all.where((a) => a.readAt != null && a.readAt!.isAfter(since)).length;
+  }
 }

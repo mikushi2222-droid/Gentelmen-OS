@@ -17,6 +17,7 @@ final wardrobeCountProvider = Provider<AsyncValue<int>>((ref) {
 final gentlemanScoreProvider = FutureProvider<double>((ref) async {
   final dao = ref.watch(rpgDaoProvider);
   final habitsDao = ref.watch(habitsDaoProvider);
+  final knowledgeDao = ref.watch(knowledgeDaoProvider);
 
   final since7d = DateTime.now().subtract(const Duration(days: 7));
   final recentEvents = await dao.getXpEventsSince(since7d);
@@ -36,12 +37,14 @@ final gentlemanScoreProvider = FutureProvider<double>((ref) async {
     if (await habitsDao.isCompletedToday(h.id)) completedToday++;
   }
 
+  final articlesRead = await knowledgeDao.countReadSince(since7d);
+
   return computeGentlemanScore(
     styleXpLast7d: styleXp,
     fitnessXpLast7d: fitnessXp,
     habitsCompleted: completedToday,
     habitsTotal: habits.length,
-    articlesReadLast7d: 0,
+    articlesReadLast7d: articlesRead,
     healthXpLast7d: healthXp,
   );
 });
@@ -65,6 +68,7 @@ final dailyMissionsProvider =
         latest.date.day == today.day;
 
     final healthDao = ref.read(healthDaoProvider);
+    final knowledgeDao = ref.read(knowledgeDaoProvider);
     final recentHealthMarkers = await healthDao.getAll();
     final threshold = today.subtract(
       const Duration(days: _healthMissionThresholdDays),
@@ -72,12 +76,15 @@ final dailyMissionsProvider =
     final hasHealthMarkerRecently = recentHealthMarkers
         .any((m) => m.date.isAfter(threshold));
 
+    final since7d = today.subtract(const Duration(days: 7));
+    final articlesRead = await knowledgeDao.countReadSince(since7d);
+
     final missions = generateDailyMissions(
       date: today,
       hasMeasurementToday: hasMeasurementToday,
       hasOutfitToday: false,
       wardrobeCount: wardrobeCount,
-      articlesRead: 0,
+      articlesRead: articlesRead,
       hasHealthMarkerRecently: hasHealthMarkerRecently,
     );
     for (final m in missions) {
