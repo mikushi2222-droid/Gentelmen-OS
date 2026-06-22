@@ -176,7 +176,7 @@ class _StyleAdviceCard extends ConsumerWidget {
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: AppColors.gold.withOpacity(0.08),
+                      color: AppColors.gold.withValues(alpha: 0.08),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(

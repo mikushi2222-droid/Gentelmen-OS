@@ -124,7 +124,7 @@ class _HabitTile extends ConsumerWidget {
           },
           child: CircleAvatar(
             backgroundColor: isCompleted
-                ? AppColors.success.withOpacity(0.2)
+                ? AppColors.success.withValues(alpha: 0.2)
                 : cs.surfaceContainerLow,
             child: Icon(
               isCompleted ? Icons.check_circle : Icons.circle_outlined,

@@ -167,7 +167,7 @@ class _MarkerChart extends StatelessWidget {
             show: true,
             drawVerticalLine: false,
             getDrawingHorizontalLine: (v) =>
-                FlLine(color: cs.outlineVariant.withOpacity(0.4), strokeWidth: 1),
+                FlLine(color: cs.outlineVariant.withValues(alpha: 0.4), strokeWidth: 1),
           ),
           borderData: FlBorderData(show: false),
           titlesData: FlTitlesData(
@@ -210,14 +210,14 @@ class _MarkerChart extends StatelessWidget {
               if (ref.min != null)
                 HorizontalLine(
                   y: ref.min!,
-                  color: AppColors.success.withOpacity(0.5),
+                  color: AppColors.success.withValues(alpha: 0.5),
                   strokeWidth: 1,
                   dashArray: [4, 4],
                 ),
               if (ref.max != null)
                 HorizontalLine(
                   y: ref.max!,
-                  color: AppColors.warning.withOpacity(0.5),
+                  color: AppColors.warning.withValues(alpha: 0.5),
                   strokeWidth: 1,
                   dashArray: [4, 4],
                 ),
@@ -247,8 +247,8 @@ class _MarkerChart extends StatelessWidget {
                 show: true,
                 gradient: LinearGradient(
                   colors: [
-                    AppColors.gold.withOpacity(0.2),
-                    AppColors.gold.withOpacity(0.0),
+                    AppColors.gold.withValues(alpha: 0.2),
+                    AppColors.gold.withValues(alpha: 0.0),
                   ],
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,

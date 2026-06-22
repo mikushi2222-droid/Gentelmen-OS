@@ -68,7 +68,7 @@ class ClothingCard extends StatelessWidget {
                     Text(
                       item.brand!,
                       style: tt.bodySmall?.copyWith(
-                        color: AppColors.gold.withOpacity(0.7),
+                        color: AppColors.gold.withValues(alpha: 0.7),
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -122,27 +122,27 @@ class _WearForecastStrip extends StatelessWidget {
   static (Color bg, Color fg, IconData icon) _style(WearUrgency u) =>
       switch (u) {
         WearUrgency.today => (
-            AppColors.gold.withOpacity(0.22),
+            AppColors.gold.withValues(alpha: 0.22),
             AppColors.gold,
             Icons.wb_sunny_outlined,
           ),
         WearUrgency.soon => (
-            AppColors.success.withOpacity(0.18),
+            AppColors.success.withValues(alpha: 0.18),
             AppColors.success,
             Icons.schedule_outlined,
           ),
         WearUrgency.onRotation => (
-            const Color(0xFF4A5568).withOpacity(0.35),
+            const Color(0xFF4A5568).withValues(alpha: 0.35),
             const Color(0xFFB0BEC5),
             Icons.check_circle_outline,
           ),
         WearUrgency.offSeason => (
-            const Color(0xFF2D3748).withOpacity(0.5),
+            const Color(0xFF2D3748).withValues(alpha: 0.5),
             const Color(0xFF718096),
             Icons.ac_unit_outlined,
           ),
         WearUrgency.retired => (
-            const Color(0xFF2D3748).withOpacity(0.4),
+            const Color(0xFF2D3748).withValues(alpha: 0.4),
             const Color(0xFF718096),
             Icons.block_outlined,
           ),
@@ -194,7 +194,7 @@ class _WearBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
-        color: AppColors.gold.withOpacity(0.15),
+        color: AppColors.gold.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Text(

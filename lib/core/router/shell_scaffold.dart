@@ -26,7 +26,7 @@ class ShellScaffold extends StatelessWidget {
         selectedIndex: currentIndex,
         onDestinationSelected: (i) => context.go(_tabs[i].path),
         backgroundColor: AppColors.surface,
-        indicatorColor: AppColors.gold.withOpacity(0.2),
+        indicatorColor: AppColors.gold.withValues(alpha: 0.2),
         labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
         destinations: _tabs
             .map(

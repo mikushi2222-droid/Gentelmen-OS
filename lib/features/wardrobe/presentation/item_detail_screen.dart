@@ -249,7 +249,7 @@ class _PhotoAnalysisSheet extends ConsumerWidget {
             error: (e, _) => Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppColors.warning.withOpacity(0.12),
+                color: AppColors.warning.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
@@ -285,7 +285,7 @@ class _WearForecastCard extends ConsumerWidget {
           decoration: BoxDecoration(
             color: bg,
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: fg.withOpacity(0.3), width: 1),
+            border: Border.all(color: fg.withValues(alpha: 0.3), width: 1),
           ),
           child: Row(
             children: [
@@ -317,7 +317,7 @@ class _WearForecastCard extends ConsumerWidget {
                         forecast.detail!,
                         style: TextStyle(
                           fontSize: 12,
-                          color: fg.withOpacity(0.7),
+                          color: fg.withValues(alpha: 0.7),
                         ),
                       ),
                   ],
@@ -334,13 +334,13 @@ class _WearForecastCard extends ConsumerWidget {
       WearForecast f) =>
       switch (f.urgency) {
         WearUrgency.today => (
-            AppColors.gold.withOpacity(0.15),
+            AppColors.gold.withValues(alpha: 0.15),
             AppColors.gold,
             Icons.wb_sunny_outlined,
             'ПРОГНОЗ НОСКИ',
           ),
         WearUrgency.soon => (
-            AppColors.success.withOpacity(0.12),
+            AppColors.success.withValues(alpha: 0.12),
             AppColors.success,
             Icons.schedule_outlined,
             'ПРОГНОЗ НОСКИ',

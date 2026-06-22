@@ -173,7 +173,7 @@ class _WeightChart extends StatelessWidget {
                 show: true,
                 drawVerticalLine: false,
                 getDrawingHorizontalLine: (v) => FlLine(
-                  color: cs.outlineVariant.withOpacity(0.4),
+                  color: cs.outlineVariant.withValues(alpha: 0.4),
                   strokeWidth: 1,
                 ),
               ),
@@ -236,8 +236,8 @@ class _WeightChart extends StatelessWidget {
                     show: true,
                     gradient: LinearGradient(
                       colors: [
-                        AppColors.gold.withOpacity(0.25),
-                        AppColors.gold.withOpacity(0.0),
+                        AppColors.gold.withValues(alpha: 0.25),
+                        AppColors.gold.withValues(alpha: 0.0),
                       ],
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
@@ -314,7 +314,7 @@ class _WaistChart extends StatelessWidget {
                 show: true,
                 drawVerticalLine: false,
                 getDrawingHorizontalLine: (v) => FlLine(
-                  color: cs.outlineVariant.withOpacity(0.4),
+                  color: cs.outlineVariant.withValues(alpha: 0.4),
                   strokeWidth: 1,
                 ),
               ),
@@ -371,8 +371,8 @@ class _WaistChart extends StatelessWidget {
                     show: true,
                     gradient: LinearGradient(
                       colors: [
-                        AppColors.success.withOpacity(0.2),
-                        AppColors.success.withOpacity(0.0),
+                        AppColors.success.withValues(alpha: 0.2),
+                        AppColors.success.withValues(alpha: 0.0),
                       ],
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,

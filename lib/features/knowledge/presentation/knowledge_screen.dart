@@ -156,7 +156,7 @@ class _RecommendedSection extends ConsumerWidget {
                   child: ListTile(
                     dense: true,
                     leading: CircleAvatar(
-                      backgroundColor: AppColors.gold.withOpacity(0.15),
+                      backgroundColor: AppColors.gold.withValues(alpha: 0.15),
                       child: Icon(Icons.auto_awesome,
                           size: 16, color: AppColors.gold),
                     ),
@@ -310,12 +310,12 @@ class _ArticleCard extends StatelessWidget {
             if (article.isRead) ...[
               const SizedBox(width: 6),
               Icon(Icons.check_circle,
-                  size: 12, color: cs.primary.withOpacity(0.7)),
+                  size: 12, color: cs.primary.withValues(alpha: 0.7)),
               const SizedBox(width: 2),
               Text(
                 'Прочитано',
                 style: tt.labelSmall?.copyWith(
-                  color: cs.primary.withOpacity(0.7),
+                  color: cs.primary.withValues(alpha: 0.7),
                 ),
               ),
             ],

@@ -58,7 +58,7 @@ class AppDatabase extends _$AppDatabase {
       : super(executor ?? driftDatabase(name: 'gentleman_os'));
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -79,6 +79,9 @@ class AppDatabase extends _$AppDatabase {
           if (from < 5) {
             await _seedHealthKnowledgeArticles();
           }
+          if (from < 6) {
+            await _seedHealthHabits();
+          }
         },
       );
 
@@ -87,6 +90,7 @@ class AppDatabase extends _$AppDatabase {
     await _seedAchievements();
     await _seedKnowledgeArticles();
     await _seedHealthKnowledgeArticles();
+    await _seedHealthHabits();
   }
 
   Future<void> _seedUserProfile() async {
@@ -820,6 +824,28 @@ Navy, серый, чёрный, белый, бежевый, кэмэл, кори
           category: a.category,
           tags: Value(a.tags),
           contentMarkdown: a.content,
+          createdAt: now,
+        ),
+      );
+    }
+  }
+
+  Future<void> _seedHealthHabits() async {
+    final now = DateTime.now();
+    const templates = [
+      (id: 'habit-sleep', title: 'Сон 7–9 часов', target: 1, period: 0),
+      (id: 'habit-steps', title: '10 000 шагов', target: 10000, period: 0),
+      (id: 'habit-water', title: 'Вода 2 л', target: 2, period: 0),
+    ];
+
+    for (final t in templates) {
+      await into(habits).insertOnConflictUpdate(
+        HabitsCompanion.insert(
+          id: t.id,
+          title: t.title,
+          target: Value(t.target),
+          period: Value(t.period),
+          active: const Value(true),
           createdAt: now,
         ),
       );
