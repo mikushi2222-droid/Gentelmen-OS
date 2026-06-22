@@ -14,3 +14,8 @@ final habitCompletedTodayProvider =
     FutureProvider.family<bool, String>((ref, habitId) {
   return ref.watch(habitsDaoProvider).isCompletedToday(habitId);
 });
+
+final habitLast7DaysProvider =
+    FutureProvider.family<List<bool>, String>((ref, habitId) {
+  return ref.watch(habitsDaoProvider).getLast7DaysCompleted(habitId);
+});
