@@ -74,12 +74,10 @@ final dailyMissionsProvider =
         outfits.any((o) => !o.createdAt.isBefore(startOfDay));
 
     final healthDao = ref.read(healthDaoProvider);
-    final recentHealthMarkers = await healthDao.getAll();
     final threshold = today.subtract(
       const Duration(days: _healthMissionThresholdDays),
     );
-    final hasHealthMarkerRecently = recentHealthMarkers
-        .any((m) => m.date.isAfter(threshold));
+    final hasHealthMarkerRecently = await healthDao.hasRecentMarker(threshold);
 
     final since7d = today.subtract(const Duration(days: 7));
     final articlesRead = await knowledgeDao.countReadSince(since7d);

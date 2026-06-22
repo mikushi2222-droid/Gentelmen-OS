@@ -86,19 +86,19 @@ List<DailyMissionsCompanion> generateDailyMissions({
     );
   }
 
-  // Grooming/Habit mission (always)
-  missions.add(
-    DailyMissionsCompanion(
-      id: Value('${day.toIso8601String()}_habit'),
-      date: Value(day),
-      title: const Value('Выполнить привычки'),
-      description: const Value('Отметь хотя бы одну ежедневную привычку'),
-      xpReward: const Value(5),
-      xpType: const Value(6), // general
-      completed: const Value(false),
-    ),
+  // Habit mission always comes last but is guaranteed a slot:
+  // cap conditionals to 2 so there's always room for it.
+  final conditional = missions.take(2).toList();
+
+  final habit = DailyMissionsCompanion(
+    id: Value('${day.toIso8601String()}_habit'),
+    date: Value(day),
+    title: const Value('Выполнить привычки'),
+    description: const Value('Отметь хотя бы одну ежедневную привычку'),
+    xpReward: const Value(5),
+    xpType: const Value(6), // general
+    completed: const Value(false),
   );
 
-  // Return max 3 missions
-  return missions.take(3).toList();
+  return [...conditional, habit];
 }

@@ -7,8 +7,11 @@ import 'package:gentleman_os/shared/enums/condition.dart';
 import 'package:gentleman_os/shared/enums/season.dart';
 import 'package:gentleman_os/shared/models/clothing_item.dart';
 
+// Fixed summer date so season tests are deterministic in CI.
+final _summerDate = DateTime(2026, 7, 15);
+
 // Wrap ClothingCard in a router because it calls context.push().
-Widget _wrap(ClothingItem item) {
+Widget _wrap(ClothingItem item, {DateTime? now}) {
   final router = GoRouter(
     initialLocation: '/',
     routes: [
@@ -17,7 +20,7 @@ Widget _wrap(ClothingItem item) {
         builder: (_, __) => Scaffold(body: SizedBox(
           width: 200,
           height: 300,
-          child: ClothingCard(item: item),
+          child: ClothingCard(item: item, now: now ?? _summerDate),
         )),
       ),
       GoRoute(
@@ -48,7 +51,7 @@ ClothingItem _item({
       season: season,
       condition: condition,
       wearCount: wearCount,
-      createdAt: createdAt ?? DateTime.now().subtract(const Duration(days: 60)),
+      createdAt: createdAt ?? _summerDate.subtract(const Duration(days: 60)),
     );
 
 void main() {
@@ -75,7 +78,7 @@ void main() {
       final oldItem = _item(
         season: Season.all,
         wearCount: 0,
-        createdAt: DateTime.now().subtract(const Duration(days: 60)),
+        createdAt: _summerDate.subtract(const Duration(days: 60)),
       );
       await tester.pumpWidget(_wrap(oldItem));
       await tester.pumpAndSettle();
@@ -98,7 +101,7 @@ void main() {
         brand: 'Hugo Boss',
         season: Season.all,
         wearCount: 3,
-        createdAt: DateTime.now().subtract(const Duration(days: 5)),
+        createdAt: _summerDate.subtract(const Duration(days: 5)),
       );
       await tester.pumpWidget(_wrap(item));
       await tester.pumpAndSettle();

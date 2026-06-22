@@ -32,6 +32,14 @@ class HealthDao extends DatabaseAccessor<AppDatabase> with _$HealthDaoMixin {
     return result;
   }
 
+  Future<bool> hasRecentMarker(DateTime since) async {
+    final row = await (select(healthMarkers)
+          ..where((t) => t.date.isBiggerThanValue(since))
+          ..limit(1))
+        .getSingleOrNull();
+    return row != null;
+  }
+
   Future<void> upsert(HealthMarkersCompanion entry) =>
       into(healthMarkers).insertOnConflictUpdate(entry);
 

@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gentleman_os/core/theme/app_colors.dart';
@@ -7,9 +8,11 @@ import 'package:gentleman_os/features/wardrobe/domain/wear_forecast.dart';
 import 'package:gentleman_os/shared/models/clothing_item.dart';
 
 class ClothingCard extends StatelessWidget {
-  const ClothingCard({super.key, required this.item});
+  const ClothingCard({super.key, required this.item, this.now});
 
   final ClothingItem item;
+  @visibleForTesting
+  final DateTime? now;
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +22,7 @@ class ClothingCard extends StatelessWidget {
     // Sync forecast — чистая функция, lastWornAt не нужен в сетке.
     final forecast = computeWearForecast(
       item: item,
-      now: DateTime.now(),
+      now: now ?? DateTime.now(),
       lastWornAt: null,
     );
 
