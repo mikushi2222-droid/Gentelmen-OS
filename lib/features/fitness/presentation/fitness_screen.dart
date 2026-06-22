@@ -15,7 +15,6 @@ class FitnessScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
-    final asyncLatest = ref.watch(latestMeasurementProvider);
     final asyncAll = ref.watch(measurementListProvider);
 
     return Scaffold(
@@ -30,42 +29,49 @@ class FitnessScreen extends ConsumerWidget {
             padding: const EdgeInsets.all(Spacing.screenPadding),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
-                asyncLatest.when(
+                asyncAll.when(
                   loading: () => const LinearProgressIndicator(),
                   error: (_, __) => const SizedBox(),
-                  data: (latest) => Column(
-                    children: [
-                      _MetricCard(
-                        label: 'Вес',
-                        value: latest?.weight != null
-                            ? latest!.weight!.toStringAsFixed(1)
-                            : '—',
-                        unit: 'кг',
-                        icon: Icons.monitor_weight_outlined,
-                        trend: null,
-                      ),
-                      const SizedBox(height: Spacing.sm),
-                      _MetricCard(
-                        label: 'Талия',
-                        value: latest?.waist != null
-                            ? latest!.waist!.toStringAsFixed(0)
-                            : '—',
-                        unit: 'см',
-                        icon: Icons.straighten,
-                        trend: null,
-                      ),
-                      const SizedBox(height: Spacing.sm),
-                      _MetricCard(
-                        label: 'Грудь',
-                        value: latest?.chest != null
-                            ? latest!.chest!.toStringAsFixed(0)
-                            : '—',
-                        unit: 'см',
-                        icon: Icons.fitness_center,
-                        trend: null,
-                      ),
-                    ],
-                  ),
+                  data: (logs) {
+                    final latest = logs.isNotEmpty ? logs.first : null;
+                    final prev = logs.length >= 2 ? logs[1] : null;
+                    return Column(
+                      children: [
+                        _MetricCard(
+                          label: 'Вес',
+                          value: latest?.weight != null
+                              ? latest!.weight!.toStringAsFixed(1)
+                              : '—',
+                          unit: 'кг',
+                          icon: Icons.monitor_weight_outlined,
+                          delta: _delta(latest?.weight, prev?.weight),
+                          lowerIsBetter: true,
+                        ),
+                        const SizedBox(height: Spacing.sm),
+                        _MetricCard(
+                          label: 'Талия',
+                          value: latest?.waist != null
+                              ? latest!.waist!.toStringAsFixed(0)
+                              : '—',
+                          unit: 'см',
+                          icon: Icons.straighten,
+                          delta: _delta(latest?.waist, prev?.waist),
+                          lowerIsBetter: true,
+                        ),
+                        const SizedBox(height: Spacing.sm),
+                        _MetricCard(
+                          label: 'Грудь',
+                          value: latest?.chest != null
+                              ? latest!.chest!.toStringAsFixed(0)
+                              : '—',
+                          unit: 'см',
+                          icon: Icons.fitness_center,
+                          delta: _delta(latest?.chest, prev?.chest),
+                          lowerIsBetter: false,
+                        ),
+                      ],
+                    );
+                  },
                 ),
                 const SizedBox(height: Spacing.sectionGap),
                 asyncAll.when(
@@ -434,25 +440,45 @@ class _HistoryList extends StatelessWidget {
   }
 }
 
+double? _delta(double? current, double? previous) {
+  if (current == null || previous == null) return null;
+  final d = current - previous;
+  return d.abs() < 0.05 ? null : d;
+}
+
 class _MetricCard extends StatelessWidget {
   const _MetricCard({
     required this.label,
     required this.value,
     required this.unit,
     required this.icon,
-    this.trend,
+    this.delta,
+    this.lowerIsBetter = false,
   });
 
   final String label;
   final String value;
   final String unit;
   final IconData icon;
-  final String? trend;
+  final double? delta;
+  final bool lowerIsBetter;
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
+
+    Color? deltaColor;
+    IconData? deltaIcon;
+    String? deltaText;
+
+    if (delta != null) {
+      final isGood = lowerIsBetter ? delta! < 0 : delta! > 0;
+      deltaColor = isGood ? AppColors.success : AppColors.warning;
+      deltaIcon = delta! > 0 ? Icons.arrow_upward : Icons.arrow_downward;
+      final sign = delta! > 0 ? '+' : '';
+      deltaText = '$sign${delta!.toStringAsFixed(1)} $unit';
+    }
 
     return Card(
       child: Padding(
@@ -476,10 +502,17 @@ class _MetricCard extends StatelessWidget {
               ],
             ),
             const Spacer(),
-            if (trend != null)
-              Chip(
-                label: Text(trend!),
-                backgroundColor: cs.primaryContainer,
+            if (delta != null)
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(deltaIcon!, size: 14, color: deltaColor),
+                  const SizedBox(width: 2),
+                  Text(
+                    deltaText!,
+                    style: tt.labelSmall?.copyWith(color: deltaColor),
+                  ),
+                ],
               ),
           ],
         ),

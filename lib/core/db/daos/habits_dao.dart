@@ -67,4 +67,27 @@ class HabitsDao extends DatabaseAccessor<AppDatabase> with _$HabitsDaoMixin {
   Future<void> updateStreak(String habitId, int streak) =>
       (update(habits)..where((t) => t.id.equals(habitId)))
           .write(HabitsCompanion(streak: Value(streak)));
+
+  /// Returns a 7-element list where index 0 = today, index 6 = 6 days ago.
+  /// Each element is true if the habit was logged on that day.
+  Future<List<bool>> getLast7DaysCompleted(String habitId) async {
+    final today = DateTime.now();
+    final since = DateTime(today.year, today.month, today.day)
+        .subtract(const Duration(days: 6));
+    final logs = await (select(habitLogs)
+          ..where(
+            (t) =>
+                t.habitId.equals(habitId) &
+                t.date.isBiggerOrEqualValue(since),
+          ))
+        .get();
+    final completedDays = logs
+        .map((l) => DateTime(l.date.year, l.date.month, l.date.day))
+        .toSet();
+    return List.generate(7, (i) {
+      final day = DateTime(today.year, today.month, today.day)
+          .subtract(Duration(days: i));
+      return completedDays.contains(day);
+    });
+  }
 }

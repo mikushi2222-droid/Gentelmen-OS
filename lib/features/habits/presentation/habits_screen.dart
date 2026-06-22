@@ -10,6 +10,7 @@ import 'package:gentleman_os/core/services/xp_service.dart';
 import 'package:gentleman_os/core/theme/app_colors.dart';
 import 'package:gentleman_os/core/widgets/empty_state.dart';
 import 'package:gentleman_os/features/habits/application/habits_providers.dart';
+import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 
 class HabitsScreen extends ConsumerWidget {
@@ -139,19 +140,27 @@ class _HabitTile extends ConsumerWidget {
             color: isCompleted ? cs.onSurfaceVariant : null,
           ),
         ),
-        subtitle: Row(
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            if (habit.streak > 0) ...[
-              Icon(Icons.local_fire_department,
-                  size: 14, color: AppColors.warning),
-              const SizedBox(width: 4),
-              Text('${habit.streak}д', style: tt.bodySmall),
-              const SizedBox(width: 8),
-            ],
-            Text(
-              habit.period == 0 ? 'Ежедневно' : 'Еженедельно',
-              style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+            Row(
+              children: [
+                if (habit.streak > 0) ...[
+                  Icon(Icons.local_fire_department,
+                      size: 14, color: AppColors.warning),
+                  const SizedBox(width: 4),
+                  Text('${habit.streak}д', style: tt.bodySmall),
+                  const SizedBox(width: 8),
+                ],
+                Text(
+                  habit.period == 0 ? 'Ежедневно' : 'Еженедельно',
+                  style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+                ),
+              ],
             ),
+            const SizedBox(height: 6),
+            _HabitWeekStrip(habitId: habit.id),
           ],
         ),
         trailing: PopupMenuButton<String>(
@@ -300,5 +309,67 @@ class _AddHabitSheetState extends State<_AddHabitSheet> {
         );
 
     if (mounted) Navigator.pop(context);
+  }
+}
+
+/// 7-dot strip: each dot = one of the past 7 days (Mon→today, right = most recent).
+class _HabitWeekStrip extends ConsumerWidget {
+  const _HabitWeekStrip({required this.habitId});
+
+  final String habitId;
+
+  static final _dayFmt = DateFormat('E', 'ru');
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+    final async7 = ref.watch(habitLast7DaysProvider(habitId));
+    // [0]=today … [6]=6 days ago; display oldest→newest left to right
+    final days = async7.valueOrNull ?? List.filled(7, false);
+    final today = DateTime.now();
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: List.generate(7, (i) {
+        final dayIndex = 6 - i; // 6=oldest, 0=today
+        final date = today.subtract(Duration(days: dayIndex));
+        final done = days[dayIndex];
+        final isToday = dayIndex == 0;
+
+        return Padding(
+          padding: const EdgeInsets.only(right: 5),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 20,
+                height: 20,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: done
+                      ? AppColors.success.withValues(alpha: 0.85)
+                      : cs.surfaceContainerHighest,
+                  border: isToday
+                      ? Border.all(color: AppColors.gold, width: 1.5)
+                      : null,
+                ),
+                child: done
+                    ? Icon(Icons.check, size: 12, color: cs.surface)
+                    : null,
+              ),
+              const SizedBox(height: 2),
+              Text(
+                _dayFmt.format(date).replaceAll('.', ''),
+                style: tt.labelSmall?.copyWith(
+                  fontSize: 9,
+                  color: isToday ? AppColors.gold : cs.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
+        );
+      }),
+    );
   }
 }
