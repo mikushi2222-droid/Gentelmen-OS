@@ -93,6 +93,49 @@ flutter build apk --release
 - Версии пакетов под Flutter 3.44 (см. [13-packages-spec.md](13-packages-spec.md)).
 - Gradle wrapper подтягивается `flutter build` автоматически.
 
+## 7. Конфликт зависимостей: custom_lint / riverpod_lint (июнь 2026)
+
+### Симптом
+
+`flutter pub get` падал на этапе разрешения зависимостей с ошибкой:
+
+```
+Because riverpod_lint >=3.1.4-dev.1 depends on analyzer_plugin ^0.14.0
+and custom_lint >=0.7.4 <0.8.0 depends on analyzer_plugin ^0.13.0,
+riverpod_lint >=3.1.4-dev.1 is incompatible with custom_lint >=0.7.4 <0.8.0.
+```
+
+### Причина
+
+`riverpod_lint >=3.1.4` требует `analyzer_plugin ^0.14.0`, а `custom_lint ^0.8.1`
+требует `analyzer_plugin ^0.13.0` — диапазоны несовместимы. Pub не может
+найти версию-решение.
+
+### Исправление
+
+Из `pubspec.yaml` (dev_dependencies) удалены:
+```yaml
+custom_lint: ^0.8.1      # удалено
+riverpod_lint: ^3.1.4    # удалено
+```
+
+Из `analysis_options.yaml` удалена секция плагина:
+```yaml
+# было:
+analyzer:
+  plugins:
+    - custom_lint
+# стало: секция plugins отсутствует
+```
+
+### Последствия
+
+- Riverpod-специфичные линты (напр. `avoid_public_notifier_auto_dispose`,
+  `avoid_ref_inside_state_dispose`) больше **не проверяются автоматически**.
+- Стандартный набор правил из `flutter_lints` остаётся активным.
+- При появлении совместимых версий пакеты можно вернуть: убедитесь, что
+  `custom_lint` и `riverpod_lint` требуют одинаковый диапазон `analyzer_plugin`.
+
 ## 6. Почему нельзя «настроить раннер из кода»
 
 Раннер выделяет платформа GitHub по факту наличия квоты/способа оплаты или

@@ -48,8 +48,13 @@
 | freezed | `^3.2.5` | Кодоген моделей (`.freezed.dart`) | [pub](https://pub.dev/packages/freezed) |
 | json_serializable | `^6.14.0` | Кодоген `fromJson/toJson` | [pub](https://pub.dev/packages/json_serializable) |
 | go_router_builder | `^4.3.0` | Типобезопасные маршруты | [pub](https://pub.dev/packages/go_router_builder) |
-| custom_lint | `^0.8.1` | Движок кастомных линтов | [pub](https://pub.dev/packages/custom_lint) |
-| riverpod_lint | `^3.1.4` | Линты и быстрые правки Riverpod | [pub](https://pub.dev/packages/riverpod_lint) |
+
+> **Удалено (июнь 2026):** `custom_lint ^0.8.1` и `riverpod_lint ^3.1.4` исключены
+> из-за конфликта транзитивных зависимостей: `riverpod_lint >=3.1.4` требует
+> `analyzer_plugin ^0.14.0`, а `custom_lint ^0.8.1` — `analyzer_plugin ^0.13.0`
+> (несовместимые диапазоны). Версия-решение не найдена, поэтому пакеты удалены.
+> Riverpod-специфичные линты (например, `avoid_public_notifier_auto_dispose`)
+> больше не проверяются автоматически; стандартный набор `flutter_lints` сохранён.
 
 ## Команды кодогенерации
 
