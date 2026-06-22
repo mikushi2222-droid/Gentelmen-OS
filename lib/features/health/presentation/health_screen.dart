@@ -7,6 +7,7 @@ import 'package:gentleman_os/core/ai/router_ai_client.dart';
 import 'package:gentleman_os/core/constants/spacing.dart';
 import 'package:gentleman_os/core/db/app_database.dart';
 import 'package:gentleman_os/core/db/database_provider.dart';
+import 'package:gentleman_os/core/services/services_provider.dart';
 import 'package:gentleman_os/core/theme/app_colors.dart';
 import 'package:gentleman_os/core/widgets/score_ring.dart';
 import 'package:gentleman_os/features/health/application/health_providers.dart';
@@ -388,6 +389,11 @@ class _AddMarkerSheetState extends State<_AddMarkerSheet> {
             ),
           ),
         );
+
+    // +15 XP за внесение анализа.
+    await widget.ref
+        .read(xpServiceProvider)
+        .healthMarkerLogged(_type.label);
 
     if (mounted) Navigator.pop(context);
   }

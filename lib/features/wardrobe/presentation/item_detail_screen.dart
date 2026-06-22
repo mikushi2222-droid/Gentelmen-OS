@@ -9,6 +9,8 @@ import 'package:gentleman_os/core/constants/spacing.dart';
 import 'package:gentleman_os/core/theme/app_colors.dart';
 import 'package:gentleman_os/features/wardrobe/application/clothing_ai_providers.dart';
 import 'package:gentleman_os/features/wardrobe/application/wardrobe_providers.dart';
+import 'package:gentleman_os/features/wardrobe/application/wear_forecast_providers.dart';
+import 'package:gentleman_os/features/wardrobe/domain/wear_forecast.dart';
 import 'package:gentleman_os/shared/models/clothing_item.dart';
 
 class ItemDetailScreen extends ConsumerWidget {
@@ -73,7 +75,9 @@ class _ItemBody extends StatelessWidget {
         padding: const EdgeInsets.all(Spacing.screenPadding),
         children: [
           _HeroImage(imagePath: item.imagePath),
-          const SizedBox(height: Spacing.lg),
+          const SizedBox(height: Spacing.md),
+          _WearForecastCard(itemId: item.id),
+          const SizedBox(height: Spacing.sm),
           Text(item.name, style: tt.headlineSmall),
           if (item.brand != null) ...[
             const SizedBox(height: 4),
@@ -259,6 +263,107 @@ class _PhotoAnalysisSheet extends ConsumerWidget {
       ),
     );
   }
+}
+
+class _WearForecastCard extends ConsumerWidget {
+  const _WearForecastCard({required this.itemId});
+
+  final String itemId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final asyncForecast = ref.watch(wearForecastProvider(itemId));
+
+    return asyncForecast.when(
+      loading: () => const SizedBox.shrink(),
+      error: (_, __) => const SizedBox.shrink(),
+      data: (forecast) {
+        final (bg, fg, icon, label) = _style(forecast);
+        return Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: bg,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: fg.withOpacity(0.3), width: 1),
+          ),
+          child: Row(
+            children: [
+              Icon(icon, size: 22, color: fg),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      label,
+                      style: const TextStyle(
+                        fontSize: 10,
+                        color: Colors.white54,
+                        letterSpacing: 1.2,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    Text(
+                      forecast.headline,
+                      style: TextStyle(
+                        fontSize: 15,
+                        color: fg,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    if (forecast.detail != null)
+                      Text(
+                        forecast.detail!,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: fg.withOpacity(0.7),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  static (Color bg, Color fg, IconData icon, String label) _style(
+      WearForecast f) =>
+      switch (f.urgency) {
+        WearUrgency.today => (
+            AppColors.gold.withOpacity(0.15),
+            AppColors.gold,
+            Icons.wb_sunny_outlined,
+            'ПРОГНОЗ НОСКИ',
+          ),
+        WearUrgency.soon => (
+            AppColors.success.withOpacity(0.12),
+            AppColors.success,
+            Icons.schedule_outlined,
+            'ПРОГНОЗ НОСКИ',
+          ),
+        WearUrgency.onRotation => (
+            const Color(0xFF2D3748),
+            const Color(0xFFB0BEC5),
+            Icons.check_circle_outline,
+            'ПРОГНОЗ НОСКИ',
+          ),
+        WearUrgency.offSeason => (
+            const Color(0xFF2D3748),
+            const Color(0xFF718096),
+            Icons.ac_unit_outlined,
+            'ПРОГНОЗ НОСКИ',
+          ),
+        WearUrgency.retired => (
+            const Color(0xFF2D3748),
+            const Color(0xFF718096),
+            Icons.block_outlined,
+            'СТАТУС',
+          ),
+      };
 }
 
 class _AttrRow extends StatelessWidget {

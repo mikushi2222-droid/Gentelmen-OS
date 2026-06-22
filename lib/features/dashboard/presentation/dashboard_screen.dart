@@ -11,6 +11,7 @@ import 'package:gentleman_os/core/widgets/score_ring.dart';
 import 'package:gentleman_os/features/dashboard/application/dashboard_providers.dart';
 import 'package:gentleman_os/features/dashboard/presentation/widgets/mission_tile.dart';
 import 'package:gentleman_os/features/dashboard/presentation/widgets/quick_action_button.dart';
+import 'package:gentleman_os/features/health/application/health_providers.dart';
 import 'package:gentleman_os/shared/enums/xp_type.dart';
 
 class DashboardScreen extends ConsumerWidget {
@@ -76,6 +77,8 @@ class DashboardScreen extends ConsumerWidget {
             sliver: SliverList(
               delegate: SliverChildListDelegate([
                 _GentlemanScoreCard(),
+                const SizedBox(height: Spacing.md),
+                _HealthIndexMini(),
                 const SizedBox(height: Spacing.md),
                 _ColorPaletteHint(),
                 const SizedBox(height: Spacing.sectionGap),
@@ -217,6 +220,81 @@ class _ColorPaletteHint extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// Мини-плитка «Индекс здоровья» на дашборде.
+class _HealthIndexMini extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final asyncIndex = ref.watch(healthIndexProvider);
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
+    return GestureDetector(
+      onTap: () => context.push('/health'),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: cs.surfaceContainerLow,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppColors.gold.withOpacity(0.2), width: 0.5),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: AppColors.success.withOpacity(0.15),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.favorite_outline,
+                color: AppColors.success,
+                size: 20,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'МУЖСКОЕ ЗДОРОВЬЕ',
+                    style: tt.labelSmall?.copyWith(
+                      color: AppColors.textSecondary,
+                      letterSpacing: 1.2,
+                      fontSize: 9,
+                    ),
+                  ),
+                  asyncIndex.when(
+                    loading: () => Text('—', style: tt.titleMedium),
+                    error: (_, __) => Text('—', style: tt.titleMedium),
+                    data: (index) => Text(
+                      index == 0
+                          ? 'Внесите анализы'
+                          : 'Индекс ${index.toStringAsFixed(0)}/100',
+                      style: tt.titleSmall?.copyWith(
+                        color: index == 0
+                            ? cs.onSurfaceVariant
+                            : index >= 70
+                                ? AppColors.success
+                                : index >= 40
+                                    ? AppColors.warning
+                                    : AppColors.error,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(Icons.chevron_right, color: cs.onSurfaceVariant, size: 18),
+          ],
+        ),
+      ),
     );
   }
 }

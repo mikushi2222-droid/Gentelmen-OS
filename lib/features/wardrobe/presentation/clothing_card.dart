@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gentleman_os/core/theme/app_colors.dart';
+import 'package:gentleman_os/features/wardrobe/domain/wear_forecast.dart';
 import 'package:gentleman_os/shared/models/clothing_item.dart';
 
 class ClothingCard extends StatelessWidget {
@@ -15,6 +16,13 @@ class ClothingCard extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
 
+    // Sync forecast — чистая функция, lastWornAt не нужен в сетке.
+    final forecast = computeWearForecast(
+      item: item,
+      now: DateTime.now(),
+      lastWornAt: null,
+    );
+
     return Card(
       clipBehavior: Clip.antiAlias,
       child: InkWell(
@@ -25,16 +33,16 @@ class ClothingCard extends StatelessWidget {
             Expanded(
               child: _ItemImage(imagePath: item.imagePath),
             ),
+            // ── Полоса прогноза носки ──────────────────────────────────
+            _WearForecastStrip(forecast: forecast),
             Padding(
-              padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
+              padding: const EdgeInsets.fromLTRB(10, 6, 10, 10),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     item.name,
-                    style: tt.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: tt.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -74,6 +82,71 @@ class ClothingCard extends StatelessWidget {
       ),
     );
   }
+}
+
+class _WearForecastStrip extends StatelessWidget {
+  const _WearForecastStrip({required this.forecast});
+
+  final WearForecast forecast;
+
+  @override
+  Widget build(BuildContext context) {
+    final tt = Theme.of(context).textTheme;
+    final (bg, fg, icon) = _style(forecast.urgency);
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      color: bg,
+      child: Row(
+        children: [
+          Icon(icon, size: 12, color: fg),
+          const SizedBox(width: 4),
+          Expanded(
+            child: Text(
+              forecast.headline,
+              style: tt.labelSmall?.copyWith(
+                color: fg,
+                fontWeight: FontWeight.w600,
+                fontSize: 11,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  static (Color bg, Color fg, IconData icon) _style(WearUrgency u) =>
+      switch (u) {
+        WearUrgency.today => (
+            AppColors.gold.withOpacity(0.22),
+            AppColors.gold,
+            Icons.wb_sunny_outlined,
+          ),
+        WearUrgency.soon => (
+            AppColors.success.withOpacity(0.18),
+            AppColors.success,
+            Icons.schedule_outlined,
+          ),
+        WearUrgency.onRotation => (
+            const Color(0xFF4A5568).withOpacity(0.35),
+            const Color(0xFFB0BEC5),
+            Icons.check_circle_outline,
+          ),
+        WearUrgency.offSeason => (
+            const Color(0xFF2D3748).withOpacity(0.5),
+            const Color(0xFF718096),
+            Icons.ac_unit_outlined,
+          ),
+        WearUrgency.retired => (
+            const Color(0xFF2D3748).withOpacity(0.4),
+            const Color(0xFF718096),
+            Icons.block_outlined,
+          ),
+      };
 }
 
 class _ItemImage extends StatelessWidget {

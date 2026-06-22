@@ -106,6 +106,13 @@ class FitnessScreen extends ConsumerWidget {
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => context.push('/progress/habits'),
                 ),
+                ListTile(
+                  leading: Icon(Icons.favorite_outline, color: AppColors.success),
+                  title: const Text('Мужское здоровье'),
+                  subtitle: const Text('Анализы, маркеры, индекс здоровья'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => context.push('/health'),
+                ),
                 const SizedBox(height: 80),
               ]),
             ),

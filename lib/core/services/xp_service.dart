@@ -37,6 +37,9 @@ class XpService {
 
   Future<void> habitCompleted(String habitTitle) =>
       award(XpType.general, 5, 'Привычка: $habitTitle');
+
+  Future<void> healthMarkerLogged(String markerLabel) =>
+      award(XpType.health, 15, 'Здоровье: $markerLabel');
 }
 
 final xpServiceProvider = Provider<XpService>(
