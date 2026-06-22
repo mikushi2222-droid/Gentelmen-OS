@@ -12,20 +12,52 @@ import 'package:gentleman_os/shared/enums/clothing_category.dart';
 import 'package:gentleman_os/shared/enums/wish_status.dart';
 import 'package:uuid/uuid.dart';
 
-class PurchasesScreen extends ConsumerWidget {
+class PurchasesScreen extends ConsumerStatefulWidget {
   const PurchasesScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<PurchasesScreen> createState() => _PurchasesScreenState();
+}
+
+class _PurchasesScreenState extends ConsumerState<PurchasesScreen>
+    with SingleTickerProviderStateMixin {
+  late final TabController _tab;
+
+  // Tab order: All | Wish | Planned | Bought | Rejected
+  static const _tabStatuses = [-1, 0, 1, 2, 3];
+  static const _tabLabels = ['Все', 'Хочу', 'Планирую', 'Куплено', 'Отклонено'];
+
+  @override
+  void initState() {
+    super.initState();
+    _tab = TabController(length: _tabStatuses.length, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tab.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final asyncList = ref.watch(purchasesListProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Покупки')),
+      appBar: AppBar(
+        title: const Text('Покупки'),
+        bottom: TabBar(
+          controller: _tab,
+          isScrollable: true,
+          tabAlignment: TabAlignment.start,
+          tabs: _tabLabels.map((l) => Tab(text: l)).toList(),
+        ),
+      ),
       body: asyncList.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('Ошибка: $e')),
-        data: (items) {
-          if (items.isEmpty) {
+        data: (all) {
+          if (all.isEmpty) {
             return const EmptyState(
               icon: Icons.shopping_bag_outlined,
               title: 'Список желаний пуст',
@@ -33,26 +65,41 @@ class PurchasesScreen extends ConsumerWidget {
                   'Добавьте вещи, которые хотите купить,\nчтобы принимать осознанные решения',
             );
           }
-          final pendingBudget = items
+          final pendingBudget = all
               .where((i) => i.status < 2 && i.budget != null)
               .fold<double>(0, (sum, i) => sum + i.budget!);
+
           return Column(
             children: [
               if (pendingBudget > 0) _BudgetSummary(total: pendingBudget),
-              Expanded(child: _WishList(items: items)),
+              Expanded(
+                child: TabBarView(
+                  controller: _tab,
+                  children: _tabStatuses.map((status) {
+                    final items = status == -1
+                        ? all
+                        : all.where((i) => i.status == status).toList();
+                    return items.isEmpty
+                        ? const Center(
+                            child: Text('Список пуст'),
+                          )
+                        : _WishList(items: items, ref: ref);
+                  }).toList(),
+                ),
+              ),
             ],
           );
         },
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showAddWishDialog(context, ref),
+        onPressed: () => _showAddWishDialog(context),
         icon: const Icon(Icons.add),
         label: const Text('Добавить'),
       ),
     );
   }
 
-  void _showAddWishDialog(BuildContext context, WidgetRef ref) {
+  void _showAddWishDialog(BuildContext context) {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -104,13 +151,14 @@ class _BudgetSummary extends StatelessWidget {
   }
 }
 
-class _WishList extends ConsumerWidget {
-  const _WishList({required this.items});
+class _WishList extends StatelessWidget {
+  const _WishList({required this.items, required this.ref});
 
   final List<PurchaseWishesData> items;
+  final WidgetRef ref;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     return ListView.builder(
       padding: const EdgeInsets.all(Spacing.screenPadding),
       itemCount: items.length,
@@ -134,9 +182,9 @@ class _WishCard extends StatelessWidget {
 
   static const _statusLabels = {
     0: 'Хочу',
-    1: 'Куплю',
+    1: 'Планирую',
     2: 'Куплено',
-    3: 'Отложено',
+    3: 'Отклонено',
   };
 
   @override

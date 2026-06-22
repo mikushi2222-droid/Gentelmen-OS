@@ -73,6 +73,7 @@ final dailyMissionsProvider =
     final hasOutfitToday =
         outfits.any((o) => !o.createdAt.isBefore(startOfDay));
 
+    final outfitDao = ref.read(outfitDaoProvider);
     final healthDao = ref.read(healthDaoProvider);
     final threshold = today.subtract(
       const Duration(days: _healthMissionThresholdDays),
@@ -81,6 +82,8 @@ final dailyMissionsProvider =
 
     final since7d = today.subtract(const Duration(days: 7));
     final articlesRead = await knowledgeDao.countReadSince(since7d);
+
+    final hasOutfitToday = await outfitDao.wasCreatedToday();
 
     final missions = generateDailyMissions(
       date: today,
