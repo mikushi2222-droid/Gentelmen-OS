@@ -76,5 +76,78 @@ void main() {
       );
       expect(score, inInclusiveRange(0.0, 100.0));
     });
+
+    test('только привычки (вес 30%) → score ≈ 30', () {
+      final score = computeGentlemanScore(
+        styleXpLast7d: 0,
+        fitnessXpLast7d: 0,
+        habitsCompleted: 7,
+        habitsTotal: 7,
+        articlesReadLast7d: 0,
+        healthXpLast7d: 0,
+      );
+      expect(score, closeTo(30.0, 0.01));
+    });
+
+    test('только чтение (вес 10%, максимум при 3 статьях) → score ≈ 10', () {
+      final score = computeGentlemanScore(
+        styleXpLast7d: 0,
+        fitnessXpLast7d: 0,
+        habitsCompleted: 0,
+        habitsTotal: 0,
+        articlesReadLast7d: 3,
+        healthXpLast7d: 0,
+      );
+      expect(score, closeTo(10.0, 0.01));
+    });
+
+    test('только здоровье (вес 10%, максимум при 30 XP) → score ≈ 10', () {
+      final score = computeGentlemanScore(
+        styleXpLast7d: 0,
+        fitnessXpLast7d: 0,
+        habitsCompleted: 0,
+        habitsTotal: 0,
+        articlesReadLast7d: 0,
+        healthXpLast7d: 30,
+      );
+      expect(score, closeTo(10.0, 0.01));
+    });
+
+    test('только стиль (вес 25%, максимум при 50 XP) → score ≈ 25', () {
+      final score = computeGentlemanScore(
+        styleXpLast7d: 50,
+        fitnessXpLast7d: 0,
+        habitsCompleted: 0,
+        habitsTotal: 0,
+        articlesReadLast7d: 0,
+        healthXpLast7d: 0,
+      );
+      expect(score, closeTo(25.0, 0.01));
+    });
+
+    test('только фитнес (вес 25%, максимум при 50 XP) → score ≈ 25', () {
+      final score = computeGentlemanScore(
+        styleXpLast7d: 0,
+        fitnessXpLast7d: 50,
+        habitsCompleted: 0,
+        habitsTotal: 0,
+        articlesReadLast7d: 0,
+        healthXpLast7d: 0,
+      );
+      expect(score, closeTo(25.0, 0.01));
+    });
+
+    test('нет привычек (habitsTotal == 0) → habitsC == 0, нет ошибки', () {
+      final score = computeGentlemanScore(
+        styleXpLast7d: 50,
+        fitnessXpLast7d: 50,
+        habitsCompleted: 0,
+        habitsTotal: 0,
+        articlesReadLast7d: 0,
+        healthXpLast7d: 0,
+      );
+      // style(0.25) + fitness(0.25) = 0.50 → 50
+      expect(score, closeTo(50.0, 0.01));
+    });
   });
 }

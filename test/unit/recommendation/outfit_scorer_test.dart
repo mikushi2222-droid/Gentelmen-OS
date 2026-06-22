@@ -100,4 +100,103 @@ void main() {
 
     expect(neutral.colorScore, greaterThanOrEqualTo(loud.colorScore));
   });
+
+  test('все пять компонентов в диапазоне [0, 1]', () {
+    final score = scoreOutfit(
+      items: [shirt, trousers, shoes],
+      profile: profile,
+      occasion: Occasion.everyday,
+      dressCode: DressCode.casual,
+      season: Season.all,
+    );
+    expect(score.fitScore, inInclusiveRange(0.0, 1.0));
+    expect(score.colorScore, inInclusiveRange(0.0, 1.0));
+    expect(score.occasionScore, inInclusiveRange(0.0, 1.0));
+    expect(score.weatherScore, inInclusiveRange(0.0, 1.0));
+    expect(score.comfortScore, inInclusiveRange(0.0, 1.0));
+  });
+
+  test('вещь с рейтингом 5 → comfortScore выше, чем без рейтинга', () {
+    final ratedItem = ClothingItem(
+      id: 'rated',
+      name: 'Rated Shirt',
+      category: ClothingCategory.shirt,
+      rating: 5,
+      createdAt: DateTime(2024),
+    );
+    final unratedItem = ClothingItem(
+      id: 'unrated',
+      name: 'Unrated Shirt',
+      category: ClothingCategory.shirt,
+      createdAt: DateTime(2024),
+    );
+
+    final withRating = scoreOutfit(
+      items: [ratedItem],
+      profile: profile,
+      occasion: Occasion.everyday,
+      dressCode: DressCode.casual,
+      season: Season.all,
+    );
+    final withoutRating = scoreOutfit(
+      items: [unratedItem],
+      profile: profile,
+      occasion: Occasion.everyday,
+      dressCode: DressCode.casual,
+      season: Season.all,
+    );
+
+    expect(withRating.comfortScore, greaterThan(withoutRating.comfortScore));
+  });
+
+  test('вещь с рейтингом 1 → comfortScore ниже, чем без рейтинга', () {
+    final poorItem = ClothingItem(
+      id: 'poor',
+      name: 'Poor Shirt',
+      category: ClothingCategory.shirt,
+      rating: 1,
+      createdAt: DateTime(2024),
+    );
+    final unratedItem = ClothingItem(
+      id: 'unrated',
+      name: 'Unrated Shirt',
+      category: ClothingCategory.shirt,
+      createdAt: DateTime(2024),
+    );
+
+    final withPoorRating = scoreOutfit(
+      items: [poorItem],
+      profile: profile,
+      occasion: Occasion.everyday,
+      dressCode: DressCode.casual,
+      season: Season.all,
+    );
+    final withoutRating = scoreOutfit(
+      items: [unratedItem],
+      profile: profile,
+      occasion: Occasion.everyday,
+      dressCode: DressCode.casual,
+      season: Season.all,
+    );
+
+    expect(withPoorRating.comfortScore, lessThan(withoutRating.comfortScore));
+  });
+
+  test('totalScaled = взвешенная сумма компонентов × 100', () {
+    final score = scoreOutfit(
+      items: [shirt, trousers],
+      profile: profile,
+      occasion: Occasion.everyday,
+      dressCode: DressCode.casual,
+      season: Season.all,
+    );
+    final expected = (
+      score.fitScore * 0.30 +
+      score.occasionScore * 0.25 +
+      score.weatherScore * 0.20 +
+      score.colorScore * 0.15 +
+      score.comfortScore * 0.10
+    ) * 100;
+    expect(score.totalScaled, closeTo(expected.clamp(0.0, 100.0), 0.01));
+  });
 }

@@ -104,4 +104,150 @@ void main() {
       expect(f.detail, contains('Ещё не носил'));
     });
   });
+
+  group('computeWearForecast — граничные значения (30/14 дней)', () {
+    test('daysSince == 30 → soon (не today, нужно > 30)', () {
+      final lastWorn = summerNow.subtract(const Duration(days: 30));
+      final f = computeWearForecast(
+        item: _item(season: Season.summer, wearCount: 5),
+        now: summerNow,
+        lastWornAt: lastWorn,
+      );
+      expect(f.urgency, WearUrgency.soon);
+    });
+
+    test('daysSince == 31 → today', () {
+      final lastWorn = summerNow.subtract(const Duration(days: 31));
+      final f = computeWearForecast(
+        item: _item(season: Season.summer, wearCount: 5),
+        now: summerNow,
+        lastWornAt: lastWorn,
+      );
+      expect(f.urgency, WearUrgency.today);
+    });
+
+    test('daysSince == 14 → onRotation (не soon, нужно > 14)', () {
+      final lastWorn = summerNow.subtract(const Duration(days: 14));
+      final f = computeWearForecast(
+        item: _item(season: Season.summer, wearCount: 5),
+        now: summerNow,
+        lastWornAt: lastWorn,
+      );
+      expect(f.urgency, WearUrgency.onRotation);
+    });
+
+    test('daysSince == 15 → soon', () {
+      final lastWorn = summerNow.subtract(const Duration(days: 15));
+      final f = computeWearForecast(
+        item: _item(season: Season.summer, wearCount: 5),
+        now: summerNow,
+        lastWornAt: lastWorn,
+      );
+      expect(f.urgency, WearUrgency.soon);
+    });
+  });
+
+  group('computeWearForecast — wearCount > 0 без lastWornAt', () {
+    test('расчёт среднего: 60 дней / 3 носки = 20 дней → soon', () {
+      final item = _item(
+        season: Season.summer,
+        wearCount: 3,
+        createdAt: summerNow.subtract(const Duration(days: 60)),
+      );
+      final f = computeWearForecast(item: item, now: summerNow);
+      expect(f.urgency, WearUrgency.soon);
+    });
+
+    test('расчёт среднего: 90 дней / 2 носки = 45 дней → today', () {
+      final item = _item(
+        season: Season.summer,
+        wearCount: 2,
+        createdAt: summerNow.subtract(const Duration(days: 90)),
+      );
+      final f = computeWearForecast(item: item, now: summerNow);
+      expect(f.urgency, WearUrgency.today);
+    });
+  });
+
+  group('computeWearForecast — весенние и осенние сезоны', () {
+    test('весенняя вещь весной → не offSeason', () {
+      final springNow = DateTime(2026, 4, 15);
+      final f = computeWearForecast(
+        item: _item(season: Season.spring),
+        now: springNow,
+      );
+      expect(f.urgency, isNot(WearUrgency.offSeason));
+    });
+
+    test('осенняя вещь осенью → не offSeason', () {
+      final autumnNow = DateTime(2026, 10, 15);
+      final f = computeWearForecast(
+        item: _item(season: Season.autumn),
+        now: autumnNow,
+      );
+      expect(f.urgency, isNot(WearUrgency.offSeason));
+    });
+
+    test('весенняя вещь летом → offSeason', () {
+      final f = computeWearForecast(
+        item: _item(season: Season.spring),
+        now: summerNow,
+      );
+      expect(f.urgency, WearUrgency.offSeason);
+    });
+
+    test('летняя вещь зимой → offSeason', () {
+      final f = computeWearForecast(
+        item: _item(season: Season.summer),
+        now: winterNow,
+      );
+      expect(f.urgency, WearUrgency.offSeason);
+    });
+  });
+
+  group('WearUrgencyX.isActionable', () {
+    test('today и soon — actionable', () {
+      expect(WearUrgency.today.isActionable, isTrue);
+      expect(WearUrgency.soon.isActionable, isTrue);
+    });
+
+    test('onRotation, offSeason, retired — не actionable', () {
+      expect(WearUrgency.onRotation.isActionable, isFalse);
+      expect(WearUrgency.offSeason.isActionable, isFalse);
+      expect(WearUrgency.retired.isActionable, isFalse);
+    });
+  });
+
+  group('computeWearForecast — detail поле', () {
+    test('onRotation с lastWornAt → detail содержит "дн. назад"', () {
+      final lastWorn = summerNow.subtract(const Duration(days: 7));
+      final f = computeWearForecast(
+        item: _item(season: Season.summer, wearCount: 1),
+        now: summerNow,
+        lastWornAt: lastWorn,
+      );
+      expect(f.urgency, WearUrgency.onRotation);
+      expect(f.detail, contains('дн. назад'));
+    });
+
+    test('today с lastWornAt → detail содержит "дней в шкафу"', () {
+      final lastWorn = summerNow.subtract(const Duration(days: 45));
+      final f = computeWearForecast(
+        item: _item(season: Season.summer, wearCount: 1),
+        now: summerNow,
+        lastWornAt: lastWorn,
+      );
+      expect(f.urgency, WearUrgency.today);
+      expect(f.detail, contains('дней в шкафу'));
+    });
+
+    test('offSeason → detail содержит сезон', () {
+      final f = computeWearForecast(
+        item: _item(season: Season.winter),
+        now: summerNow,
+      );
+      expect(f.urgency, WearUrgency.offSeason);
+      expect(f.detail, isNotNull);
+    });
+  });
 }
