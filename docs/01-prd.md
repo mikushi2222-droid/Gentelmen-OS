@@ -120,7 +120,7 @@ Acceptance:
 
 ### 4.7 Gentleman RPG
 **Механика:** XP, уровни, навыки (style, fitness, etiquette, reading, career,
-finance), достижения, стрики.
+finance, health), достижения, стрики.
 
 Назначение — связать повседневные действия с ощущением прогресса (мягкая мотивация).
 
@@ -137,6 +137,31 @@ Acceptance:
 - Список сортируется по приоритету/бюджету.
 - Статус (wish / planned / bought / rejected) меняется и сохраняется.
 
+### 4.9 Men's Health (мужское здоровье) — реализовано
+
+**Маркеры (`HealthMarker`, 16 типов):** тестостерон общий/свободный, ГСПГ, ПСА,
+витамин D, ферритин, ЛПНП, ЛПВП, глюкоза, HbA1c, ТТГ, давление сис./диа., пульс
+покоя, % жира, часы сна.
+
+Функции: ввод значения на дату, цветовой статус (норма/внимание/риск) против
+референсных диапазонов, индекс здоровья [0–100], графики динамики, ИИ-разбор
+маркеров (RouterAI + веб-поиск).
+
+Acceptance:
+- Каждый маркер сравнивается с референсом и получает статус.
+- ИИ-разбор сопровождается дисклеймером «не является медицинской рекомендацией».
+
+### 4.10 AI Layer (опциональный облачный советник) — реализовано
+
+Порт `AiAdvisor` с оффлайн-движком по умолчанию (`LocalAiAdvisor`) и облачной
+реализацией через RouterAI (включается вводом ключа). Применяется в: советнике по
+стилю, ИИ-разборе здоровья, анализе фото вещи (vision). Любая ошибка облака →
+тихий откат на оффлайн. Подробнее — [14-ai-integration.md](14-ai-integration.md).
+
+Acceptance:
+- Без ключа приложение полностью работает на локальных правилах.
+- Ключ хранится в `flutter_secure_storage`, данные уходят только по явному действию.
+
 ## 5. Бизнес-правила (эвристики)
 
 - Избегать skinny fit для крупной фигуры.
@@ -151,8 +176,10 @@ Acceptance:
 ## 6. Требования к данным
 
 Определить entities, DTO, DAO, repositories и локальные таблицы для:
-UserProfile, ClothingItem, Outfit, MeasurementLog, KnowledgeArticle, Habit,
-XpEvent, Achievement, PurchaseWish. Детали — в [03-data-model.md](03-data-model.md).
+UserProfile, ClothingItem, Outfit, OutfitItem, WearLog, MeasurementLog,
+KnowledgeArticle, Habit, HabitLog, XpEvent, Achievement, PurchaseWish,
+DailyMission, HealthMarker (всего 14 таблиц). Детали — в
+[03-data-model.md](03-data-model.md).
 
 ## 7. Нефункциональные требования
 См. [00-overview.md](00-overview.md) §6.

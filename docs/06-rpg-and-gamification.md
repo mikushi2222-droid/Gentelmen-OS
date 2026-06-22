@@ -23,13 +23,15 @@
 | `career` | выполнить связанную задачу/привычку |
 | `finance` | закрыть PurchaseWish осознанно, уложиться в бюджет |
 
-Плюс `general` — для действий, не привязанных к навыку.
+Плюс `general` — для действий, не привязанных к навыку, и `health` — XP за
+внесение маркеров мужского здоровья. Полный enum (`XpType`, 8 значений):
+`style, fitness, etiquette, reading, career, finance, general, health`.
 
 ## 3. Начисление XP
 
 Каждое значимое действие создаёт `XpEvent { type, amount, reason, createdAt }`.
 
-Примерная таблица наград (настраиваемая, в `core/constants/xp_constants.dart`):
+Примерная таблица наград (значения заданы в `core/services/xp_service.dart`):
 
 | Действие | type | amount |
 |----------|------|--------|
@@ -89,20 +91,24 @@ LevelInfo computeLevel(int totalXp) { ... }   // юнит-тестируется
 
 ## 7. Gentleman Score (для Dashboard)
 
-Агрегированный показатель «собранности» дня/недели. Считается из нескольких
-компонентов (нормированных в 0..100):
+Агрегированный показатель «собранности» за последние 7 дней. Чистая функция
+`computeGentlemanScore` (в `features/rpg/domain/level_calculator.dart`) — это
+**взвешенная сумма 5 компонентов**, каждый нормирован в [0, 1], итог × 100:
 
 ```
-gentlemanScore = avg(
-  styleComponent,      // активность по образам/гардеробу
-  fitnessComponent,    // свежесть замеров + тренировки
-  habitsComponent,     // выполнение привычек / стрики
-  knowledgeComponent   // чтение
+gentlemanScore = clamp(0..100,
+    style    * 0.25     // styleXpLast7d   / 50  → max
+  + fitness  * 0.25     // fitnessXpLast7d / 50  → max
+  + habits   * 0.30     // habitsCompleted / habitsTotal (0 при total == 0)
+  + reading  * 0.10     // articlesReadLast7d / 3 → max
+  + health   * 0.10     // healthXpLast7d  / 30  → max
 )
 ```
 
-- Это «витринный» показатель, тоже чистая функция от состояния.
-- Показывает динамику (вверх/вниз относительно прошлого периода).
+- Веса: привычки 30%, стиль 25%, фитнес 25%, чтение 10%, здоровье 10%.
+- Детерминирован при фиксированном состоянии (покрыт `test/unit/rpg/`).
+- Маскот (`MascotAvatar`) меняет настроение от Score: `sleeping < 20`,
+  `neutral < 50`, `pleased < 80`, `proud ≥ 80`.
 
 ## 8. Задачи дня (Daily Missions)
 
@@ -113,19 +119,28 @@ gentlemanScore = avg(
 
 ## 9. Слой в архитектуре
 
+Фактическое размещение (июнь 2026):
+
 ```
 features/rpg/
 ├── domain/
-│   ├── level_calculator.dart      // чистые функции уровней
-│   ├── achievement_rules.dart     // декларативные правила
-│   └── gentleman_score.dart       // агрегатор
+│   └── level_calculator.dart      // computeLevel + computeGentlemanScore
 ├── application/
-│   └── rpg_controller.dart        // подписка на XpEvent, пересчёт
-├── data/
-│   └── (DAO для xp_events, achievements)
+│   └── rpg_providers.dart         // провайдеры уровня/Score/навыков
 └── presentation/
     └── rpg_screen.dart
+
+core/services/
+├── xp_service.dart                // начисление XpEvent (таблица наград)
+└── achievement_service.dart       // декларативные правила ачивок, разблокировка
+
+features/dashboard/domain/
+└── mission_generator.dart         // generateDailyMissions (см. §8)
 ```
+
+> Начисление XP и проверка ачивок вынесены в `core/services/` (кросс-фичевые),
+> а `gentleman_score`/уровни — чистые функции в `rpg/domain/level_calculator.dart`.
+> DAO для `xp_events`/`achievements` — `core/db/daos/rpg_dao.dart`.
 
 ## 10. Тестирование
 

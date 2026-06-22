@@ -5,19 +5,22 @@
 
 ## 1. Где живёт логика
 
-Движок — это чистый Dart в `domain` (или отдельном пакете `core/scoring`).
-Никаких зависимостей от Flutter/Drift. Это делает его тривиально тестируемым.
+Движок — это чистый Dart в `features/outfit_builder/domain/`. Никаких
+зависимостей от Flutter/Drift — тривиально тестируется (`test/unit/outfit/`,
+`test/unit/recommendation/`).
 
 ```
-domain/recommendation/
-├── outfit_scorer.dart        // итоговый scoring образа
+features/outfit_builder/domain/
+├── outfit_scorer.dart        // итоговый scoring образа (включая комфорт)
 ├── fit_rules.dart            // правила посадки под фигуру
 ├── color_harmony.dart        // цветовая гармония
 ├── occasion_rules.dart       // соответствие поводу/дресс-коду
 ├── weather_rules.dart        // соответствие погоде/сезону
-├── comfort_rules.dart        // комфорт
 └── outfit_generator.dart     // генерация кандидатов из гардероба
 ```
+
+> Отдельного `comfort_rules.dart` нет: комфортная ось считается внутри
+> `outfit_scorer.dart` (`comfortScore`: база 0.6 + бонус `(rating-3)*0.1` за вещь).
 
 ## 2. Четыре (пять) осей оценки
 
@@ -161,9 +164,11 @@ explanation: [
 
 ## 11. Настраиваемость
 
-- Веса осей хранятся (можно вынести в Settings позже).
-- Пороги (что считать «крупной фигурой», температурные границы) — константы в
-  одном месте (`core/constants/scoring_constants.dart`), легко тюнить.
+- Веса осей сейчас заданы константами в `outfit_scorer.dart` (вынос в Settings —
+  возможное будущее улучшение).
+- Пороги (что считать «крупной фигурой», температурные границы) — константы рядом
+  с соответствующим правилом (`fit_rules.dart`, `weather_rules.dart`), а не в
+  выделенном `core/constants/`.
 
 ## 12. Тестирование движка
 
