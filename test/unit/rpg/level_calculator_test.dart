@@ -50,6 +50,7 @@ void main() {
         habitsCompleted: 7,
         habitsTotal: 7,
         articlesReadLast7d: 3,
+        healthXpLast7d: 30,
       );
       expect(score, closeTo(100, 1));
     });

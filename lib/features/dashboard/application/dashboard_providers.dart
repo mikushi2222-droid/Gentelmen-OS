@@ -23,10 +23,12 @@ final gentlemanScoreProvider = FutureProvider<double>((ref) async {
   int styleXp = 0;
   int fitnessXp = 0;
   int readingActions = 0;
+  int healthXp = 0;
   for (final e in recentEvents) {
     if (e.type == XpType.style.index) styleXp += e.amount;
     if (e.type == XpType.fitness.index) fitnessXp += e.amount;
     if (e.type == XpType.reading.index) readingActions++;
+    if (e.type == XpType.health.index) healthXp += e.amount;
   }
 
   final habits = await habitsDao.watchAll().first;
@@ -40,6 +42,7 @@ final gentlemanScoreProvider = FutureProvider<double>((ref) async {
     habitsCompleted: completedToday,
     habitsTotal: habits.length,
     articlesReadLast7d: readingActions,
+    healthXpLast7d: healthXp,
   );
 });
 
