@@ -113,6 +113,9 @@ class _ItemBody extends StatelessWidget {
           OutlinedButton.icon(
             onPressed: () async {
               await ref.read(wardrobeRepositoryProvider).incrementWear(item.id);
+              ref.invalidate(wardrobeItemProvider(item.id));
+              ref.invalidate(lastWornAtProvider(item.id));
+              ref.invalidate(wearForecastProvider(item.id));
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Носка отмечена')),

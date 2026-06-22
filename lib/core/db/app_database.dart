@@ -839,7 +839,7 @@ Navy, серый, чёрный, белый, бежевый, кэмэл, кори
     ];
 
     for (final t in templates) {
-      await into(habits).insertOnConflictUpdate(
+      await into(habits).insert(
         HabitsCompanion.insert(
           id: t.id,
           title: t.title,
@@ -848,6 +848,7 @@ Navy, серый, чёрный, белый, бежевый, кэмэл, кори
           active: const Value(true),
           createdAt: now,
         ),
+        mode: InsertMode.insertOrIgnore,
       );
     }
   }

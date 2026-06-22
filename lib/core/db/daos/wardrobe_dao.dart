@@ -41,19 +41,19 @@ class WardrobeDao extends DatabaseAccessor<AppDatabase>
     return count.length;
   }
 
-  Future<void> incrementWearCount(String itemId) async {
-    final count = await getWearCount(itemId);
-    final now = DateTime.now();
-    await (update(clothingItems)..where((t) => t.id.equals(itemId)))
-        .write(ClothingItemsCompanion(wearCount: Value(count + 1)));
-    await into(wearLogs).insert(
-      WearLogsCompanion.insert(
-        id: const Uuid().v4(),
-        itemId: itemId,
-        wornAt: now,
-      ),
-    );
-  }
+  Future<void> incrementWearCount(String itemId) => transaction(() async {
+        final count = await getWearCount(itemId);
+        final now = DateTime.now();
+        await (update(clothingItems)..where((t) => t.id.equals(itemId)))
+            .write(ClothingItemsCompanion(wearCount: Value(count + 1)));
+        await into(wearLogs).insert(
+          WearLogsCompanion.insert(
+            id: const Uuid().v4(),
+            itemId: itemId,
+            wornAt: now,
+          ),
+        );
+      });
 
   Future<List<ClothingItemsData>> getAvailable() =>
       (select(clothingItems)
