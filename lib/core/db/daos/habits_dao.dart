@@ -55,6 +55,22 @@ class HabitsDao extends DatabaseAccessor<AppDatabase> with _$HabitsDaoMixin {
     return logs.map((l) => l.habitId).toSet();
   }
 
+  /// Выполнена ли привычка в каждый из последних 7 дней.
+  /// Индекс 0 — сегодня, 6 — шесть дней назад. Один запрос (без N+1);
+  /// раскладку по дням считает чистая [completionByDay].
+  Future<List<bool>> getLast7DaysCompleted(String habitId) async {
+    final now = DateTime.now();
+    final rangeStart = DateTime(now.year, now.month, now.day - 6);
+    final logs = await (select(habitLogs)
+          ..where(
+            (t) =>
+                t.habitId.equals(habitId) &
+                t.date.isBiggerOrEqualValue(rangeStart),
+          ))
+        .get();
+    return completionByDay(logs.map((l) => l.date), now: now);
+  }
+
   Future<int> computeStreak(String habitId) async {
     final logs = await getLogsForHabit(habitId);
     return computeStreakDays(logs.map((l) => l.date));

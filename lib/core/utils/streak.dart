@@ -43,3 +43,28 @@ int computeStreakDays(Iterable<DateTime> logDates, {DateTime? now}) {
   }
   return streak;
 }
+
+/// Для каждого из последних [days] дней — была ли хотя бы одна отметка.
+/// Индекс 0 — сегодня, `[days-1]` — самый ранний день. Чистая функция:
+/// календарная арифметика (`DateTime(y, m, d - i)`), без БД и DST-сдвигов.
+List<bool> completionByDay(
+  Iterable<DateTime> logDates, {
+  int days = 7,
+  DateTime? now,
+}) {
+  final ref = now ?? DateTime.now();
+  final dayStarts = [
+    for (var i = 0; i < days; i++) DateTime(ref.year, ref.month, ref.day - i),
+  ];
+  final result = List<bool>.filled(days, false);
+  for (final dt in logDates) {
+    final d = DateTime(dt.year, dt.month, dt.day);
+    for (var i = 0; i < days; i++) {
+      if (d == dayStarts[i]) {
+        result[i] = true;
+        break;
+      }
+    }
+  }
+  return result;
+}
