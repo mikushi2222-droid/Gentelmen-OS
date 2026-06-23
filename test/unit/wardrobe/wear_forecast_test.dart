@@ -43,4 +43,48 @@ void main() {
       expect(f.explanation.first, contains(ClothingCategory.coat.label));
     });
   });
+
+  group('wearsPerMonthSince', () {
+    test('частота = носки / число календарных месяцев владения', () {
+      // куплено 10 месяцев назад, 30 носок → 3 носки/мес
+      final r = wearsPerMonthSince(
+        purchaseDate: DateTime(2025, 1, 15),
+        wearCount: 30,
+        now: DateTime(2025, 11, 20),
+      );
+      expect(r, closeTo(3.0, 1e-9));
+    });
+
+    test('меньше месяца владения считается как один месяц', () {
+      final r = wearsPerMonthSince(
+        purchaseDate: DateTime(2025, 6, 1),
+        wearCount: 5,
+        now: DateTime(2025, 6, 20),
+      );
+      expect(r, 5.0);
+    });
+
+    test('null при отсутствии даты, отсутствии носок или дате в будущем', () {
+      expect(
+        wearsPerMonthSince(purchaseDate: null, wearCount: 10),
+        isNull,
+      );
+      expect(
+        wearsPerMonthSince(
+          purchaseDate: DateTime(2025, 1, 1),
+          wearCount: 0,
+          now: DateTime(2025, 6, 1),
+        ),
+        isNull,
+      );
+      expect(
+        wearsPerMonthSince(
+          purchaseDate: DateTime(2026, 1, 1),
+          wearCount: 10,
+          now: DateTime(2025, 6, 1),
+        ),
+        isNull,
+      );
+    });
+  });
 }

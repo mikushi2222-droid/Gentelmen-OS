@@ -10,6 +10,7 @@ import 'package:gentleman_os/core/theme/app_colors.dart';
 import 'package:gentleman_os/core/utils/image_storage.dart';
 import 'package:gentleman_os/features/wardrobe/application/clothing_ai_providers.dart';
 import 'package:gentleman_os/features/wardrobe/application/wardrobe_providers.dart';
+import 'package:gentleman_os/features/wardrobe/domain/wear_forecast.dart';
 import 'package:gentleman_os/shared/models/clothing_item.dart';
 
 class ItemDetailScreen extends ConsumerWidget {
@@ -53,6 +54,14 @@ class _ItemBody extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
     final fmt = NumberFormat.currency(locale: 'ru', symbol: '₽', decimalDigits: 0);
+    final wearForecast = garmentWearForecast(
+      category: item.category,
+      wearCount: item.wearCount,
+      wearsPerMonth: wearsPerMonthSince(
+        purchaseDate: item.purchaseDate,
+        wearCount: item.wearCount,
+      ),
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -100,6 +109,8 @@ class _ItemBody extends StatelessWidget {
               label: 'Удобство',
               value: '${'★' * item.rating!}${'☆' * (5 - item.rating!)}',
             ),
+          const SizedBox(height: Spacing.md),
+          _WearForecastCard(forecast: wearForecast),
           if (item.notes != null) ...[
             const SizedBox(height: Spacing.md),
             Text('Заметка', style: tt.titleSmall),
@@ -261,6 +272,72 @@ class _PhotoAnalysisSheet extends ConsumerWidget {
             ),
             data: (text) => Text(text, style: tt.bodyMedium),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Карточка прогноза износа: процент, полоса прогресса и объяснение.
+/// Цвет шкалы меняется от «спокойного» к тревожному по мере износа.
+class _WearForecastCard extends StatelessWidget {
+  const _WearForecastCard({required this.forecast});
+
+  final WearForecast forecast;
+
+  @override
+  Widget build(BuildContext context) {
+    final tt = Theme.of(context).textTheme;
+    final pct = forecast.wearPercent;
+    final color = pct >= 80
+        ? AppColors.error
+        : pct >= 50
+            ? AppColors.warning
+            : AppColors.success;
+
+    return Container(
+      padding: const EdgeInsets.all(Spacing.md),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceVariant,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.timelapse, size: 18, color: color),
+              const SizedBox(width: 8),
+              Text('Прогноз износа', style: tt.titleSmall),
+              const Spacer(),
+              Text(
+                '$pct%',
+                style: tt.titleSmall?.copyWith(
+                  color: color,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: Spacing.sm),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(6),
+            child: LinearProgressIndicator(
+              value: forecast.wearFraction,
+              minHeight: 8,
+              backgroundColor: AppColors.outline,
+              valueColor: AlwaysStoppedAnimation<Color>(color),
+            ),
+          ),
+          const SizedBox(height: Spacing.sm),
+          for (final line in forecast.explanation)
+            Padding(
+              padding: const EdgeInsets.only(top: 2),
+              child: Text(
+                '• $line',
+                style: tt.bodySmall?.copyWith(color: AppColors.textSecondary),
+              ),
+            ),
         ],
       ),
     );

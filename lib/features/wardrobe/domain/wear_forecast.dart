@@ -46,6 +46,25 @@ int resourceWearsFor(ClothingCategory category) => switch (category) {
       ClothingCategory.accessory => 1000,
     };
 
+/// Средняя частота носки в месяц по дате покупки.
+/// Календарные месяцы считаем по полям (год·12 + месяц), без `Duration` —
+/// так нет сдвигов на переходах летнего времени (см. CLAUDE.md §7).
+/// Возвращает null, если дата неизвестна, в будущем или носок ещё не было.
+double? wearsPerMonthSince({
+  required DateTime? purchaseDate,
+  required int wearCount,
+  DateTime? now,
+}) {
+  if (purchaseDate == null || wearCount <= 0) return null;
+  final today = now ?? DateTime.now();
+  final months =
+      (today.year - purchaseDate.year) * 12 + (today.month - purchaseDate.month);
+  if (months < 0) return null; // дата покупки в будущем — данных нет
+  // Меньше календарного месяца владения считаем как один месяц,
+  // чтобы не делить на ноль и не завышать частоту до бесконечности.
+  return wearCount / (months == 0 ? 1 : months);
+}
+
 /// Прогноз износа вещи по числу носок и категории.
 /// [wearsPerMonth] (опц.) включает прогноз остатка ресурса в месяцах.
 WearForecast garmentWearForecast({
