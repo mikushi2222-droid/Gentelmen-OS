@@ -5,6 +5,7 @@ import 'package:gentleman_os/core/db/app_database.dart';
 import 'package:gentleman_os/core/db/database_provider.dart';
 import 'package:gentleman_os/features/health/domain/health_ai_analyzer.dart';
 import 'package:gentleman_os/features/health/domain/health_marker.dart';
+import 'package:gentleman_os/features/health/domain/lab_photo_analyzer.dart';
 
 /// Все замеры здоровья (по убыванию даты).
 final healthMarkersProvider = StreamProvider<List<HealthMarkersData>>(
@@ -65,6 +66,13 @@ final overdueMarkersProvider = FutureProvider<List<HealthMarkerType>>((ref) asyn
 final healthAiAnalyzerProvider = Provider<HealthAiAnalyzer?>((ref) {
   final client = ref.watch(routerAiClientProvider);
   return client == null ? null : HealthAiAnalyzer(client);
+});
+
+/// Распознаватель фото бланка анализов (доступен только при настроенном
+/// RouterAI). null → ИИ не подключён, используем ручной ввод.
+final labPhotoAnalyzerProvider = Provider<LabPhotoAnalyzer?>((ref) {
+  final client = ref.watch(routerAiClientProvider);
+  return client == null ? null : LabPhotoAnalyzer(client);
 });
 
 /// Результат ИИ-анализа последних показателей. Перезапускается через
