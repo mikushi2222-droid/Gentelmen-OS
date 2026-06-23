@@ -47,6 +47,20 @@ void main() {
       expect(entry.formatted, contains('boom'));
     });
 
+    test('dumpMarkdown содержит заголовок, сводку и записи', () {
+      logger.i('Nav', 'Переход: /dashboard');
+      logger.e('App', 'упало', error: StateError('boom'));
+
+      final md = logger.dumpMarkdown();
+      expect(md, contains('# Журнал отладки Gentleman OS'));
+      expect(md, contains('Всего записей: 2'));
+      expect(md, contains('INFO: 1'));
+      expect(md, contains('ERROR: 1'));
+      expect(md, contains('Переход: /dashboard'));
+      expect(md, contains('boom'));
+      expect(md, contains('```text'));
+    });
+
     test('clear очищает буфер', () {
       logger.i('Test', 'a');
       logger.clear();
