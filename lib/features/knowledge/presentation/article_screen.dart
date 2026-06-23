@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gentleman_os/core/constants/spacing.dart';
 import 'package:gentleman_os/core/services/services_provider.dart';
 import 'package:gentleman_os/features/knowledge/application/knowledge_providers.dart';
+import 'package:gentleman_os/features/knowledge/domain/reading_time.dart';
 import 'package:gentleman_os/shared/models/knowledge_article.dart';
 
 class ArticleScreen extends ConsumerWidget {
@@ -70,7 +71,10 @@ class _ArticleBodyState extends State<_ArticleBody> {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
     final repo = ref.read(knowledgeRepositoryProvider);
+
+    final minutes = readingMinutes(article.contentMarkdown);
 
     return Scaffold(
       appBar: AppBar(
@@ -99,28 +103,41 @@ class _ArticleBodyState extends State<_ArticleBody> {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (article.tags.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(
-                Spacing.screenPadding,
-                Spacing.sm,
-                Spacing.screenPadding,
-                0,
-              ),
-              child: Wrap(
-                spacing: 6,
-                children: article.tags
-                    .map(
-                      (t) => Chip(
-                        label: Text(t),
-                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        visualDensity: VisualDensity.compact,
-                        labelStyle: Theme.of(context).textTheme.bodySmall,
-                      ),
-                    )
-                    .toList(),
-              ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              Spacing.screenPadding,
+              Spacing.sm,
+              Spacing.screenPadding,
+              0,
             ),
+            child: Wrap(
+              spacing: 6,
+              runSpacing: 4,
+              children: [
+                Chip(
+                  avatar: Icon(
+                    Icons.timer_outlined,
+                    size: 14,
+                    color: cs.onSurfaceVariant,
+                  ),
+                  label: Text(
+                    '~$minutes мин',
+                    style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+                  ),
+                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  visualDensity: VisualDensity.compact,
+                ),
+                ...article.tags.map(
+                  (t) => Chip(
+                    label: Text(t),
+                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    visualDensity: VisualDensity.compact,
+                    labelStyle: tt.bodySmall,
+                  ),
+                ),
+              ],
+            ),
+          ),
           Expanded(
             child: Markdown(
               data: article.contentMarkdown,
