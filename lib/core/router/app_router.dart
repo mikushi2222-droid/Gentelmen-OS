@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gentleman_os/core/router/shell_scaffold.dart';
+import 'package:gentleman_os/core/utils/app_logger.dart';
 import 'package:gentleman_os/features/biohacking/presentation/biohacking_screen.dart';
 import 'package:gentleman_os/features/dashboard/presentation/dashboard_screen.dart';
 import 'package:gentleman_os/features/fitness/presentation/fitness_screen.dart';
@@ -25,7 +26,7 @@ import 'package:gentleman_os/features/wardrobe/presentation/item_detail_screen.d
 import 'package:gentleman_os/features/wardrobe/presentation/add_item_screen.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
-  return GoRouter(
+  final router = GoRouter(
     initialLocation: '/dashboard',
     debugLogDiagnostics: false,
     routes: [
@@ -160,4 +161,22 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
     ],
   );
+
+  // Централизованно логируем каждое перемещение по приложению, чтобы в
+  // журнале отладки была видна цепочка действий пользователя.
+  String? lastLocation;
+  void onRouteChange() {
+    final loc = router.routeInformationProvider.value.uri.toString();
+    if (loc == lastLocation) return;
+    lastLocation = loc;
+    log.d('Nav', 'Переход: $loc');
+  }
+
+  router.routeInformationProvider.addListener(onRouteChange);
+  ref.onDispose(
+    () => router.routeInformationProvider.removeListener(onRouteChange),
+  );
+  onRouteChange(); // зафиксировать стартовый экран
+
+  return router;
 });
