@@ -1,12 +1,15 @@
 import 'package:drift/drift.dart';
 import 'package:gentleman_os/core/db/app_database.dart';
 import 'package:gentleman_os/core/db/tables/outfits_table.dart';
+import 'package:gentleman_os/core/utils/app_logger.dart';
 
 part 'outfit_dao.g.dart';
 
 @DriftAccessor(tables: [Outfits, OutfitItems, WearLogs])
 class OutfitDao extends DatabaseAccessor<AppDatabase> with _$OutfitDaoMixin {
   OutfitDao(super.db);
+
+  static const String _tag = 'Outfit';
 
   Stream<List<OutfitsData>> watchAll() =>
       (select(outfits)..orderBy([(t) => OrderingTerm.desc(t.createdAt)]))
@@ -21,28 +24,35 @@ class OutfitDao extends DatabaseAccessor<AppDatabase> with _$OutfitDaoMixin {
   Future<void> saveOutfit(
     OutfitsCompanion outfit,
     List<String> itemIds,
-  ) =>
-      transaction(() async {
-        await into(outfits).insertOnConflictUpdate(outfit);
-        await (delete(outfitItems)
-              ..where((t) => t.outfitId.equals(outfit.id.value)))
-            .go();
-        for (final itemId in itemIds) {
-          await into(outfitItems).insert(
-            OutfitItemsCompanion.insert(
-              outfitId: outfit.id.value,
-              itemId: itemId,
-            ),
-          );
-        }
-      });
+  ) {
+    AppLogger.instance.i(_tag,
+        'Сохранение образа ${outfit.id.present ? outfit.id.value : '?'} (${itemIds.length} вещей)');
+    return transaction(() async {
+      await into(outfits).insertOnConflictUpdate(outfit);
+      await (delete(outfitItems)
+            ..where((t) => t.outfitId.equals(outfit.id.value)))
+          .go();
+      for (final itemId in itemIds) {
+        await into(outfitItems).insert(
+          OutfitItemsCompanion.insert(
+            outfitId: outfit.id.value,
+            itemId: itemId,
+          ),
+        );
+      }
+    });
+  }
 
-  Future<int> remove(String id) =>
-      (delete(outfits)..where((t) => t.id.equals(id))).go();
+  Future<int> remove(String id) {
+    AppLogger.instance.i(_tag, 'Удаление образа $id');
+    return (delete(outfits)..where((t) => t.id.equals(id))).go();
+  }
 
-  Future<void> updateScore(String id, double score) =>
-      (update(outfits)..where((t) => t.id.equals(id)))
-          .write(OutfitsCompanion(score: Value(score)));
+  Future<void> updateScore(String id, double score) {
+    AppLogger.instance.i(_tag, 'Оценка образа $id → $score');
+    return (update(outfits)..where((t) => t.id.equals(id)))
+        .write(OutfitsCompanion(score: Value(score)));
+  }
 
   Future<void> updateNotes(String id, String? notes) =>
       (update(outfits)..where((t) => t.id.equals(id)))

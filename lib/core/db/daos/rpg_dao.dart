@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:gentleman_os/core/db/app_database.dart';
 import 'package:gentleman_os/core/db/tables/rpg_table.dart';
+import 'package:gentleman_os/core/utils/app_logger.dart';
 
 part 'rpg_dao.g.dart';
 
@@ -8,10 +9,16 @@ part 'rpg_dao.g.dart';
 class RpgDao extends DatabaseAccessor<AppDatabase> with _$RpgDaoMixin {
   RpgDao(super.db);
 
+  static const String _tag = 'Rpg';
+
   // ── XP ──────────────────────────────────────────────────────────────────
 
-  Future<void> addXpEvent(XpEventsCompanion event) =>
-      into(xpEvents).insert(event);
+  Future<void> addXpEvent(XpEventsCompanion event) {
+    AppLogger.instance.i(_tag,
+        'XP +${event.amount.present ? event.amount.value : '?'}'
+        '${event.reason.present ? ' (${event.reason.value})' : ''}');
+    return into(xpEvents).insert(event);
+  }
 
   Future<List<XpEventsData>> getAllXpEvents() =>
       (select(xpEvents)..orderBy([(t) => OrderingTerm.asc(t.createdAt)])).get();
@@ -45,11 +52,13 @@ class RpgDao extends DatabaseAccessor<AppDatabase> with _$RpgDaoMixin {
       (select(achievements)..where((t) => t.code.equals(code)))
           .getSingleOrNull();
 
-  Future<void> unlock(String code, DateTime at) =>
-      (update(achievements)..where((t) => t.code.equals(code))).write(
-        AchievementsCompanion(
-          unlocked: const Value(true),
-          unlockedAt: Value(at),
-        ),
-      );
+  Future<void> unlock(String code, DateTime at) {
+    AppLogger.instance.i(_tag, 'Достижение разблокировано: $code');
+    return (update(achievements)..where((t) => t.code.equals(code))).write(
+      AchievementsCompanion(
+        unlocked: const Value(true),
+        unlockedAt: Value(at),
+      ),
+    );
+  }
 }

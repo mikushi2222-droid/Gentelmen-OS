@@ -1,12 +1,15 @@
 import 'package:drift/drift.dart';
 import 'package:gentleman_os/core/db/app_database.dart';
 import 'package:gentleman_os/core/db/tables/health_markers_table.dart';
+import 'package:gentleman_os/core/utils/app_logger.dart';
 
 part 'health_dao.g.dart';
 
 @DriftAccessor(tables: [HealthMarkers])
 class HealthDao extends DatabaseAccessor<AppDatabase> with _$HealthDaoMixin {
   HealthDao(super.db);
+
+  static const String _tag = 'Health';
 
   Stream<List<HealthMarkersData>> watchAll() => (select(healthMarkers)
         ..orderBy([(t) => OrderingTerm.desc(t.date)]))
@@ -40,9 +43,16 @@ class HealthDao extends DatabaseAccessor<AppDatabase> with _$HealthDaoMixin {
     return row != null;
   }
 
-  Future<void> upsert(HealthMarkersCompanion entry) =>
-      into(healthMarkers).insertOnConflictUpdate(entry);
+  Future<void> upsert(HealthMarkersCompanion entry) {
+    AppLogger.instance.i(_tag,
+        'Сохранение маркера ${entry.id.present ? entry.id.value : '?'}'
+        '${entry.type.present ? ' тип=${entry.type.value}' : ''}'
+        '${entry.value.present ? ' значение=${entry.value.value}' : ''}');
+    return into(healthMarkers).insertOnConflictUpdate(entry);
+  }
 
-  Future<void> remove(String id) =>
-      (delete(healthMarkers)..where((t) => t.id.equals(id))).go();
+  Future<void> remove(String id) {
+    AppLogger.instance.i(_tag, 'Удаление маркера $id');
+    return (delete(healthMarkers)..where((t) => t.id.equals(id))).go();
+  }
 }

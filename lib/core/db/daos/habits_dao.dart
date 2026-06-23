@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:gentleman_os/core/db/app_database.dart';
 import 'package:gentleman_os/core/db/tables/habits_table.dart';
+import 'package:gentleman_os/core/utils/app_logger.dart';
 import 'package:gentleman_os/core/utils/streak.dart';
 
 part 'habits_dao.g.dart';
@@ -9,16 +10,24 @@ part 'habits_dao.g.dart';
 class HabitsDao extends DatabaseAccessor<AppDatabase> with _$HabitsDaoMixin {
   HabitsDao(super.db);
 
+  static const String _tag = 'Habits';
+
   Stream<List<HabitsData>> watchActive() =>
       (select(habits)..where((t) => t.active.equals(true))).watch();
 
   Stream<List<HabitsData>> watchAll() => select(habits).watch();
 
-  Future<void> upsert(HabitsCompanion habit) =>
-      into(habits).insertOnConflictUpdate(habit);
+  Future<void> upsert(HabitsCompanion habit) {
+    AppLogger.instance.i(_tag,
+        'Сохранение привычки ${habit.id.present ? habit.id.value : '?'}');
+    return into(habits).insertOnConflictUpdate(habit);
+  }
 
-  Future<void> log(HabitLogsCompanion entry) =>
-      into(habitLogs).insert(entry, mode: InsertMode.insertOrIgnore);
+  Future<void> log(HabitLogsCompanion entry) {
+    AppLogger.instance.i(_tag,
+        'Отметка привычки ${entry.habitId.present ? entry.habitId.value : '?'}');
+    return into(habitLogs).insert(entry, mode: InsertMode.insertOrIgnore);
+  }
 
   Future<List<HabitLogsData>> getLogsForHabit(String habitId) =>
       (select(habitLogs)
@@ -60,9 +69,11 @@ class HabitsDao extends DatabaseAccessor<AppDatabase> with _$HabitsDaoMixin {
     return computeStreakDays(logs.map((l) => l.date));
   }
 
-  Future<void> updateStreak(String habitId, int streak) =>
-      (update(habits)..where((t) => t.id.equals(habitId)))
-          .write(HabitsCompanion(streak: Value(streak)));
+  Future<void> updateStreak(String habitId, int streak) {
+    AppLogger.instance.i(_tag, 'Стрик привычки $habitId → $streak');
+    return (update(habits)..where((t) => t.id.equals(habitId)))
+        .write(HabitsCompanion(streak: Value(streak)));
+  }
 
   /// Returns a 7-element list where index 0 = today, index 6 = 6 days ago.
   /// Each element is true if the habit was logged on that day.

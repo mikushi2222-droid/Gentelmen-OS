@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:gentleman_os/core/db/app_database.dart';
 import 'package:gentleman_os/core/db/tables/knowledge_articles_table.dart';
+import 'package:gentleman_os/core/utils/app_logger.dart';
 
 part 'knowledge_dao.g.dart';
 
@@ -8,6 +9,8 @@ part 'knowledge_dao.g.dart';
 class KnowledgeDao extends DatabaseAccessor<AppDatabase>
     with _$KnowledgeDaoMixin {
   KnowledgeDao(super.db);
+
+  static const String _tag = 'Knowledge';
 
   Stream<List<KnowledgeArticlesData>> watchAll() =>
       (select(knowledgeArticles)
@@ -45,18 +48,24 @@ class KnowledgeDao extends DatabaseAccessor<AppDatabase>
   Future<void> upsert(KnowledgeArticlesCompanion article) =>
       into(knowledgeArticles).insertOnConflictUpdate(article);
 
-  Future<void> toggleFavorite(String id, bool value) =>
-      (update(knowledgeArticles)..where((t) => t.id.equals(id)))
-          .write(KnowledgeArticlesCompanion(favorite: Value(value)));
+  Future<void> toggleFavorite(String id, bool value) {
+    AppLogger.instance.i(_tag, 'Избранное $id → $value');
+    return (update(knowledgeArticles)..where((t) => t.id.equals(id)))
+        .write(KnowledgeArticlesCompanion(favorite: Value(value)));
+  }
 
-  Future<void> toggleBookmark(String id, bool value) =>
-      (update(knowledgeArticles)..where((t) => t.id.equals(id)))
-          .write(KnowledgeArticlesCompanion(bookmarked: Value(value)));
+  Future<void> toggleBookmark(String id, bool value) {
+    AppLogger.instance.i(_tag, 'Закладка $id → $value');
+    return (update(knowledgeArticles)..where((t) => t.id.equals(id)))
+        .write(KnowledgeArticlesCompanion(bookmarked: Value(value)));
+  }
 
-  Future<void> markAsRead(String id) =>
-      (update(knowledgeArticles)..where((t) => t.id.equals(id))).write(
-        KnowledgeArticlesCompanion(readAt: Value(DateTime.now())),
-      );
+  Future<void> markAsRead(String id) {
+    AppLogger.instance.i(_tag, 'Статья прочитана: $id');
+    return (update(knowledgeArticles)..where((t) => t.id.equals(id))).write(
+      KnowledgeArticlesCompanion(readAt: Value(DateTime.now())),
+    );
+  }
 
   Future<int> countRead() async {
     final all = await select(knowledgeArticles).get();

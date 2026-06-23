@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:gentleman_os/core/db/app_database.dart';
 import 'package:gentleman_os/core/db/tables/daily_missions_table.dart';
+import 'package:gentleman_os/core/utils/app_logger.dart';
 
 part 'daily_missions_dao.g.dart';
 
@@ -8,6 +9,8 @@ part 'daily_missions_dao.g.dart';
 class DailyMissionsDao extends DatabaseAccessor<AppDatabase>
     with _$DailyMissionsDaoMixin {
   DailyMissionsDao(super.db);
+
+  static const String _tag = 'Missions';
 
   Stream<List<DailyMissionsData>> watchForDate(DateTime date) {
     final day = DateTime(date.year, date.month, date.day);
@@ -34,14 +37,19 @@ class DailyMissionsDao extends DatabaseAccessor<AppDatabase>
         .get();
   }
 
-  Future<void> upsertMission(DailyMissionsCompanion mission) =>
-      into(dailyMissions).insertOnConflictUpdate(mission);
+  Future<void> upsertMission(DailyMissionsCompanion mission) {
+    AppLogger.instance.i(_tag,
+        'Миссия дня${mission.title.present ? ' «${mission.title.value}»' : ''}');
+    return into(dailyMissions).insertOnConflictUpdate(mission);
+  }
 
-  Future<void> complete(String id) =>
-      (update(dailyMissions)..where((t) => t.id.equals(id))).write(
-        DailyMissionsCompanion(
-          completed: const Value(true),
-          completedAt: Value(DateTime.now()),
-        ),
-      );
+  Future<void> complete(String id) {
+    AppLogger.instance.i(_tag, 'Миссия выполнена: $id');
+    return (update(dailyMissions)..where((t) => t.id.equals(id))).write(
+      DailyMissionsCompanion(
+        completed: const Value(true),
+        completedAt: Value(DateTime.now()),
+      ),
+    );
+  }
 }
