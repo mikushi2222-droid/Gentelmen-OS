@@ -24,13 +24,18 @@ jobs:
     name: Analyze & Test
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    env:
+      # Codecov без токена для приватных/protected-веток отдаёт ошибку
+      # «not valid tokenless upload». Прокидываем секрет, а сам upload-шаг
+      # запускаем только если токен задан в настройках репозитория.
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: ${{ env.JAVA_VERSION }}
@@ -55,9 +60,10 @@ jobs:
         run: flutter test --coverage --reporter=expanded
 
       - name: Upload coverage
-        uses: codecov/codecov-action@v4
-        if: always()
+        uses: codecov/codecov-action@v5
+        if: ${{ !cancelled() && env.CODECOV_TOKEN != '' }}
         with:
+          token: ${{ env.CODECOV_TOKEN }}
           files: coverage/lcov.info
           fail_ci_if_error: false
 
@@ -72,10 +78,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: ${{ env.JAVA_VERSION }}
@@ -113,10 +119,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: ${{ env.JAVA_VERSION }}
