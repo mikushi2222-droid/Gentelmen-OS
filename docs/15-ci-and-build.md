@@ -86,12 +86,26 @@ flutter build apk --release
 
 ## 5. Что уже сделано в репозитории для сборки
 
-- `ci.yml`: analyze → test, **независимый** build-debug (не блокируется analyze),
-  `workflow_dispatch` для ручного запуска, least-privilege `permissions`.
+- `ci.yml` — три задачи: **Analyze & Test**, **Build APK (debug)** (на каждый
+  push/PR, независимо от analyze) и **Build APK (release)** (только на `main`/
+  `master`). Есть `workflow_dispatch` и least-privilege `permissions`.
+- Версии экшенов закреплены на актуальных (`actions/checkout@v5`,
+  `actions/setup-java@v5`, `codecov/codecov-action@v5`, `upload-artifact@v4`) —
+  чтобы не ловить предупреждения о выводе Node 20 из эксплуатации.
+- Codecov-шаг **условный**: запускается только при наличии секрета
+  `CODECOV_TOKEN` (`if: !cancelled() && env.CODECOV_TOKEN != ''`), иначе
+  пропускается — без шумной ошибки `tokenless upload` на каждом прогоне.
+- Артефакты именуются осмысленно: `gentleman-os-debug-<sha>` и
+  `gentleman-os-release-<sha>`; в `release.yml` к релизу прикладываются и APK,
+  и AAB под именем версии.
 - Android-ресурсы (`res/`: темы, splash, адаптивная иконка) — без них
   `flutter build apk` падал на этапе aapt2.
 - Версии пакетов под Flutter 3.44 (см. [13-packages-spec.md](13-packages-spec.md)).
 - Gradle wrapper подтягивается `flutter build` автоматически.
+
+> Раздел 1 (диагноз «раннер не берёт задачу») — исторический: после
+> исправления биллинга/видимости hosted-раннеры берут задачи штатно, CI
+> зелёный.
 
 ## 6. Почему нельзя «настроить раннер из кода»
 
