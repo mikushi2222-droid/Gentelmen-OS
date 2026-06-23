@@ -78,6 +78,20 @@ void main() {
       expect(actions.first.reason, isNotEmpty);
     });
 
+    test('reason отражает ранг узкого места', () {
+      final domains = [
+        const OptimizationDomain(name: 'Сон', score: 0.78),
+        const OptimizationDomain(name: 'Стресс', score: 0.65),
+        const OptimizationDomain(name: 'Вес', score: 0.54),
+      ];
+      final actions = maxImpactActions(domains, top: 3);
+      // Первое — главное узкое место; последующие помечены рангом.
+      expect(actions.first.reason, contains('главное'));
+      expect(actions[1].reason, isNot(contains('главное')));
+      expect(actions[1].reason, contains('#2'));
+      expect(actions[2].reason, contains('#3'));
+    });
+
     test('пропускает домены без разрыва (score=1)', () {
       final domains = [
         const OptimizationDomain(name: 'Идеал', score: 1.0),

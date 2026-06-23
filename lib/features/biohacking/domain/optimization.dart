@@ -84,7 +84,7 @@ List<ImpactAction> maxImpactActions(
         impactPercent: (ranked[i].gap / totalWeight * 100).round(),
         reason: 'Сейчас «${ranked[i].name}» оптимизировано на '
             '${(ranked[i].score.clamp(0.0, 1.0) * 100).round()}% — '
-            'это главное узкое место.',
+            '${i == 0 ? 'это главное узкое место.' : 'следующее по влиянию узкое место (#${i + 1}).'}',
       ),
   ];
 }
