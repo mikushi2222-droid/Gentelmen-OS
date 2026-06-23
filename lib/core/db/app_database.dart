@@ -59,7 +59,7 @@ class AppDatabase extends _$AppDatabase {
       : super(executor ?? driftDatabase(name: 'gentleman_os'));
 
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 7;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -78,12 +78,16 @@ class AppDatabase extends _$AppDatabase {
             await m.createTable(healthMarkers);
           }
           if (from < 5) {
-            // Пересев статей: правит категорию 'discipline-habits' (была 9 =
-            // reading, стало 8 = discipline). insertOnConflictUpdate идемпотентен.
-            await _seedKnowledgeArticles();
+            await _seedHealthKnowledgeArticles();
           }
           if (from < 6) {
             await _seedHealthHabits();
+          }
+          if (from < 7) {
+            // Пересев базовых статей: правит категорию 'discipline-habits'
+            // (была 9=reading, стало 8=discipline). insertOnConflictUpdate —
+            // идемпотентно обновляет существующие строки.
+            await _seedKnowledgeArticles();
           }
         },
       );
