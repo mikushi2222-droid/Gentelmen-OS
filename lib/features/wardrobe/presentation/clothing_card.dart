@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gentleman_os/core/theme/app_colors.dart';
+import 'package:gentleman_os/features/wardrobe/domain/wear_forecast.dart';
 import 'package:gentleman_os/shared/models/clothing_item.dart';
 
 class ClothingCard extends StatelessWidget {
@@ -55,6 +56,16 @@ class ClothingCard extends StatelessWidget {
                         _WearBadge(count: item.wearCount),
                     ],
                   ),
+                  if (item.wearCount > 0) ...[
+                    const SizedBox(height: 6),
+                    _WearBar(
+                      forecast: garmentWearForecast(
+                        category: item.category,
+                        wearCount: item.wearCount,
+                        material: item.material,
+                      ),
+                    ),
+                  ],
                   if (item.brand != null) ...[
                     const SizedBox(height: 2),
                     Text(
@@ -110,6 +121,33 @@ class _Placeholder extends StatelessWidget {
       color: cs.surfaceContainerLow,
       child: Center(
         child: Icon(Icons.checkroom_outlined, size: 48, color: cs.outline),
+      ),
+    );
+  }
+}
+
+/// Тонкая полоса износа на карточке вещи (тот же цветовой код, что и на
+/// экране детали): спокойный → тревожный по мере приближения к ресурсу.
+class _WearBar extends StatelessWidget {
+  const _WearBar({required this.forecast});
+
+  final WearForecast forecast;
+
+  @override
+  Widget build(BuildContext context) {
+    final pct = forecast.wearPercent;
+    final color = pct >= 80
+        ? AppColors.error
+        : pct >= 50
+            ? AppColors.warning
+            : AppColors.success;
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(3),
+      child: LinearProgressIndicator(
+        value: forecast.wearFraction,
+        minHeight: 3,
+        backgroundColor: AppColors.outline,
+        valueColor: AlwaysStoppedAnimation<Color>(color),
       ),
     );
   }
