@@ -312,8 +312,8 @@ class _WearForecastCard extends StatelessWidget {
               Text('Прогноз износа', style: tt.titleSmall),
               const Spacer(),
               Text(
-                '$pct%',
-                style: tt.titleSmall?.copyWith(
+                '${forecast.statusLabel} · $pct%',
+                style: tt.bodySmall?.copyWith(
                   color: color,
                   fontWeight: FontWeight.w700,
                 ),

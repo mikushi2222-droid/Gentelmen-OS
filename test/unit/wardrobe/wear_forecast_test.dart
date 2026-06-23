@@ -44,6 +44,21 @@ void main() {
     });
   });
 
+  group('statusLabel', () {
+    WearForecast forecastFor(int wearCount) => garmentWearForecast(
+          category: ClothingCategory.shirt, // ресурс 80
+          wearCount: wearCount,
+        );
+
+    test('пороги статуса по доле износа', () {
+      expect(forecastFor(0).statusLabel, 'Как новая'); // 0%
+      expect(forecastFor(28).statusLabel, 'Рабочее состояние'); // 35%
+      expect(forecastFor(56).statusLabel, 'Заметный износ'); // 70%
+      expect(forecastFor(76).statusLabel, 'Пора задуматься о замене'); // 95%
+      expect(forecastFor(1000).statusLabel, 'Пора задуматься о замене'); // 100%
+    });
+  });
+
   group('fabricDurabilityFactor', () {
     test('плотные ткани продлевают ресурс (×1.3)', () {
       expect(fabricDurabilityFactor('Деним'), 1.3);

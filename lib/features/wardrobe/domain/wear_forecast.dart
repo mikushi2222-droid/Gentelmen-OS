@@ -30,6 +30,14 @@ class WearForecast {
 
   /// Процент износа целым числом для UI.
   int get wearPercent => (wearFraction * 100).round();
+
+  /// Краткий человекочитаемый статус износа для UI.
+  String get statusLabel {
+    if (wearFraction >= 0.85) return 'Пора задуматься о замене';
+    if (wearFraction >= 0.6) return 'Заметный износ';
+    if (wearFraction >= 0.3) return 'Рабочее состояние';
+    return 'Как новая';
+  }
 }
 
 /// Множитель ресурса по ткани: плотные/прочные ткани (деним, кожа, шерсть,
