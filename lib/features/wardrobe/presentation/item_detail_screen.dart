@@ -57,6 +57,7 @@ class _ItemBody extends StatelessWidget {
     final wearForecast = garmentWearForecast(
       category: item.category,
       wearCount: item.wearCount,
+      material: item.material,
       wearsPerMonth: wearsPerMonthSince(
         purchaseDate: item.purchaseDate,
         wearCount: item.wearCount,

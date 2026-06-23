@@ -44,6 +44,48 @@ void main() {
     });
   });
 
+  group('fabricDurabilityFactor', () {
+    test('плотные ткани продлевают ресурс (×1.3)', () {
+      expect(fabricDurabilityFactor('Деним'), 1.3);
+      expect(fabricDurabilityFactor('100% шерсть'), 1.3);
+      expect(fabricDurabilityFactor('Genuine leather'), 1.3);
+    });
+
+    test('деликатные ткани сокращают ресурс (×0.75)', () {
+      expect(fabricDurabilityFactor('Шёлк'), 0.75);
+      expect(fabricDurabilityFactor('Viscose blend'), 0.75);
+    });
+
+    test('неизвестная/пустая ткань нейтральна (1.0)', () {
+      expect(fabricDurabilityFactor(null), 1.0);
+      expect(fabricDurabilityFactor(''), 1.0);
+      expect(fabricDurabilityFactor('хлопок'), 1.0);
+    });
+  });
+
+  group('garmentWearForecast с поправкой на ткань', () {
+    test('деним поднимает ресурс рубашки 80 → 104, доля падает', () {
+      // 40 носок: без ткани 50%, с денимом 40/104 ≈ 38%
+      final f = garmentWearForecast(
+        category: ClothingCategory.shirt,
+        wearCount: 40,
+        material: 'деним',
+      );
+      expect(f.wearPercent, 38);
+      expect(f.remainingWears, 64);
+      expect(f.explanation.any((l) => l.contains('Поправка на ткань')), isTrue);
+    });
+
+    test('без материала поведение неизменно (обратная совместимость)', () {
+      final f = garmentWearForecast(
+        category: ClothingCategory.shirt,
+        wearCount: 40,
+      );
+      expect(f.wearPercent, 50);
+      expect(f.explanation.any((l) => l.contains('Поправка')), isFalse);
+    });
+  });
+
   group('wearsPerMonthSince', () {
     test('частота = носки / число календарных месяцев владения', () {
       // куплено 10 месяцев назад, 30 носок → 3 носки/мес
