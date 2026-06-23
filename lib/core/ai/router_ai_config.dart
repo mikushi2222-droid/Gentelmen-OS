@@ -9,12 +9,13 @@ class RouterAiConfig {
   /// Базовый endpoint (OpenAI-совместимый).
   static const String baseUrl = 'https://routerai.ru/api/v1';
 
-  /// Основная текстовая модель для анализа (по умолчанию).
-  static const String defaultModel = 'google/gemini-3-flash-preview';
+  /// Основная текстовая модель для анализа (по умолчанию). Реальный slug
+  /// RouterAI (см. /api/v1/models): Gemini 3.5 Flash — мультимодальная.
+  static const String defaultModel = 'google/gemini-3.5-flash';
 
   /// Мультимодальная модель для считывания анализов со скринов/фото бланков.
   /// Распознавание — только через API (своего оффлайн-движка нет).
-  static const String visionModel = 'google/gemini-3-flash-preview';
+  static const String visionModel = 'google/gemini-3.5-flash';
 
   /// Модель для транскрипции аудио (Voice UX, V3.5).
   static const String transcriptionModel = 'openai/whisper-large-v3';
@@ -22,17 +23,12 @@ class RouterAiConfig {
   /// Модель для синтеза речи (Voice UX, V3.5).
   static const String synthesisModel = 'x-ai/grok-voice-tts-1.0';
 
-  /// Доступные модели для выбора в настройках. Основные для анализа —
-  /// Gemini 3 Flash Preview и Claude Haiku 5.
+  /// Доступные модели для выбора в настройках (только реальные slug RouterAI).
+  /// Основная — Gemini 3.5 Flash; Haiku/Sonnet на RouterAI отсутствуют.
   static const List<String> availableModels = [
-    'google/gemini-3-flash-preview',
-    'anthropic/claude-haiku-5',
+    'google/gemini-3.5-flash',
     'google/gemini-2.5-flash',
     'google/gemini-2.5-pro',
-    'anthropic/claude-sonnet-4.5',
-    'openai/gpt-4o',
-    'deepseek/deepseek-r1',
-    'openai/gpt-oss-120b',
   ];
 
   final String? apiKey;
