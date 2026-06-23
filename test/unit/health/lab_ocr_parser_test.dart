@@ -110,4 +110,62 @@ void main() {
       expect(draft.unitMatches, isFalse);
     });
   });
+
+  group('keepLatestPerType', () {
+    test('оставляет по одному актуальному значению на тип (по дате)', () {
+      final drafts = [
+        LabResultDraft(
+          type: HealthMarkerType.testosteroneTotal,
+          value: 16.1,
+          takenAt: DateTime(2024, 5, 1),
+        ),
+        LabResultDraft(
+          type: HealthMarkerType.testosteroneTotal,
+          value: 18.7,
+          takenAt: DateTime(2026, 1, 15),
+        ),
+        const LabResultDraft(
+          type: HealthMarkerType.glucose,
+          value: 5.2,
+        ),
+      ];
+      final kept = keepLatestPerType(drafts);
+      expect(kept, hasLength(2));
+      final t = kept.firstWhere(
+          (d) => d.type == HealthMarkerType.testosteroneTotal);
+      expect(t.value, 18.7); // позднее по дате
+    });
+
+    test('черновик с датой важнее черновика без даты', () {
+      final drafts = [
+        const LabResultDraft(
+          type: HealthMarkerType.glucose,
+          value: 9.9,
+        ),
+        LabResultDraft(
+          type: HealthMarkerType.glucose,
+          value: 5.0,
+          takenAt: DateTime(2026, 1, 1),
+        ),
+      ];
+      final kept = keepLatestPerType(drafts);
+      expect(kept.single.value, 5.0);
+    });
+
+    test('без дат — по уверенности', () {
+      final drafts = [
+        const LabResultDraft(
+          type: HealthMarkerType.ferritin,
+          value: 100,
+          confidence: 0.4,
+        ),
+        const LabResultDraft(
+          type: HealthMarkerType.ferritin,
+          value: 120,
+          confidence: 0.9,
+        ),
+      ];
+      expect(keepLatestPerType(drafts).single.value, 120);
+    });
+  });
 }

@@ -112,7 +112,7 @@
 
 #### A. Text + Photo Food Logging
 - Текст: «Стейк и картошка» → AI → approximate nutrition
-- Фото: camera → base64 → RouterAI (gemini-2.5-flash vision) → results
+- Фото: camera → base64 → RouterAI (gemini-3-flash-preview vision) → results
 - UX: < 5 секунд от фото до результата
 - Approximate values: ~620 kcal, «Protein: likely adequate»
 

@@ -71,6 +71,28 @@ List<LabResultDraft> parseLabResults(String aiContent) {
   return result;
 }
 
+/// Оставляет по одному — самому актуальному — черновику на каждый тип маркера.
+/// «Актуальность»: позднее по дате забора; черновик с датой важнее без даты;
+/// при равенстве — по уверенности распознавания. Так при нескольких значениях
+/// одного показателя в бланке (история по годам) сохраняем текущее.
+List<LabResultDraft> keepLatestPerType(List<LabResultDraft> drafts) {
+  final byType = <HealthMarkerType, LabResultDraft>{};
+  for (final d in drafts) {
+    final cur = byType[d.type];
+    if (cur == null || _isMoreActual(d, cur)) byType[d.type] = d;
+  }
+  return byType.values.toList();
+}
+
+bool _isMoreActual(LabResultDraft a, LabResultDraft b) {
+  final ad = a.takenAt;
+  final bd = b.takenAt;
+  if (ad != null && bd != null) return ad.isAfter(bd);
+  if (ad != null && bd == null) return true;
+  if (ad == null && bd != null) return false;
+  return (a.confidence ?? 0) > (b.confidence ?? 0);
+}
+
 LabResultDraft? _draftFromMap(Map<dynamic, dynamic> m) {
   final name = _firstString(m, const ['markerName', 'name', 'marker', 'показатель']);
   if (name == null) return null;

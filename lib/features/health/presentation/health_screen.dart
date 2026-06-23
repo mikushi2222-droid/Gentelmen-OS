@@ -1,7 +1,10 @@
+import 'dart:convert';
+
 import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
 import 'package:gentleman_os/core/ai/router_ai_client.dart';
 import 'package:gentleman_os/core/constants/spacing.dart';
@@ -11,6 +14,7 @@ import 'package:gentleman_os/core/services/services_provider.dart';
 import 'package:gentleman_os/core/theme/app_colors.dart';
 import 'package:gentleman_os/core/widgets/score_ring.dart';
 import 'package:gentleman_os/features/health/application/health_providers.dart';
+import 'package:gentleman_os/features/health/application/lab_importer.dart';
 import 'package:gentleman_os/features/health/domain/health_marker.dart';
 
 class HealthScreen extends ConsumerWidget {
@@ -26,6 +30,11 @@ class HealthScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('Мужское здоровье'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.document_scanner_outlined),
+            tooltip: 'Распознать анализ с фото',
+            onPressed: () => _importFromPhoto(context, ref),
+          ),
           IconButton(
             icon: const Icon(Icons.auto_awesome),
             tooltip: 'ИИ-анализ показателей',
@@ -89,6 +98,55 @@ class HealthScreen extends ConsumerWidget {
       isScrollControlled: true,
       showDragHandle: true,
       builder: (ctx) => const _AiAnalysisSheet(),
+    );
+  }
+
+  /// Распознаёт анализ с фото бланка через Router AI (только API) и СРАЗУ
+  /// сохраняет показатели; при нескольких значениях одного маркера остаётся
+  /// актуальное. ИИ недоступен → подсказка подключить RouterAI.
+  Future<void> _importFromPhoto(BuildContext context, WidgetRef ref) async {
+    final importer = ref.read(labImporterProvider);
+    final messenger = ScaffoldMessenger.of(context);
+    if (importer == null) {
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Подключите RouterAI в Настройках, чтобы распознавать анализы с фото.',
+          ),
+        ),
+      );
+      return;
+    }
+
+    final xfile = await ImagePicker().pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 1600,
+      imageQuality: 90,
+    );
+    if (xfile == null) return;
+
+    messenger.showSnackBar(
+      const SnackBar(content: Text('Распознаю анализ…')),
+    );
+
+    final bytes = await xfile.readAsBytes();
+    final b64 = base64Encode(bytes);
+    final mime =
+        xfile.path.toLowerCase().endsWith('.png') ? 'image/png' : 'image/jpeg';
+
+    final drafts =
+        await importer.importFromPhoto(imageBase64: b64, mime: mime);
+
+    messenger.hideCurrentSnackBar();
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(
+          drafts.isEmpty
+              ? 'Не удалось распознать показатели. Попробуйте ручной ввод.'
+              : 'Добавлено показателей: ${drafts.length} '
+                  '(${drafts.map((d) => d.type.label).join(', ')})',
+        ),
+      ),
     );
   }
 }
