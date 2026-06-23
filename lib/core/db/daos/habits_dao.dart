@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:gentleman_os/core/db/app_database.dart';
 import 'package:gentleman_os/core/db/tables/habits_table.dart';
+import 'package:gentleman_os/core/utils/streak.dart';
 
 part 'habits_dao.g.dart';
 
@@ -56,31 +57,7 @@ class HabitsDao extends DatabaseAccessor<AppDatabase> with _$HabitsDaoMixin {
 
   Future<int> computeStreak(String habitId) async {
     final logs = await getLogsForHabit(habitId);
-    if (logs.isEmpty) return 0;
-
-    final dates = logs
-        .map((l) => DateTime(l.date.year, l.date.month, l.date.day))
-        .toSet()
-        .toList()
-      ..sort((a, b) => b.compareTo(a));
-
-    // Календарный предыдущий день: DateTime(...-1) корректно переносит месяц/год
-    // и не страдает от переходов на летнее время (в отличие от subtract(days:1)).
-    DateTime prevDay(DateTime d) => DateTime(d.year, d.month, d.day - 1);
-
-    var streak = 0;
-    final now = DateTime.now();
-    var expected = DateTime(now.year, now.month, now.day);
-
-    for (final date in dates) {
-      if (date == expected || date == prevDay(expected)) {
-        streak++;
-        expected = prevDay(date);
-      } else {
-        break;
-      }
-    }
-    return streak;
+    return computeStreakDays(logs.map((l) => l.date));
   }
 
   Future<void> updateStreak(String habitId, int streak) =>
