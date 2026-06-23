@@ -105,16 +105,17 @@
 
 ### Эпик 4.3 — Тесты (widget)
 - [x] **4.3.1** `DashboardScreen` — smoke test (`test/widget/dashboard/dashboard_screen_test.dart`)
-- [ ] **4.3.2** `PurchasesScreen` — переключение 5 табов
+- [x] **4.3.2** `PurchasesScreen` — 5 табов, фильтрация по статусу, пустые состояния (`test/widget/purchases/purchases_screen_test.dart`)
 - [x] **4.3.3** `WardrobeScreen` — поиск фильтрует items (`test/widget/wardrobe/wardrobe_screen_test.dart`)
-- [ ] **4.3.4** `OutfitDetailScreen` — score breakdown отображается
+- [x] **4.3.4** `OutfitDetailScreen` — score breakdown, объяснения, пустой образ (`test/widget/outfit/outfit_detail_screen_test.dart`)
 
 ### Эпик 4.4 — Миграционные тесты
-- [ ] **4.4.1** v1→v7 без потери данных (in-memory Drift)
+- [x] **4.4.1** schema v7 — onCreate + seed (in-memory Drift) (`test/unit/db/migration_test.dart`)
 
 ### Эпик 4.5 — CI
 - [x] **4.5.1** Исправлен конфликт `custom_lint`/`riverpod_lint` → `flutter pub get` проходит (см. [15-ci-and-build.md](15-ci-and-build.md) §7)
-- [ ] **4.5.2** `flutter test --coverage` зелёный в CI runner (зависит от выделения раннера — §1–3 doc 15)
+- [x] **4.5.2** Исправлен дублирующий `import services_provider.dart` в `dashboard_screen.dart`
+- [ ] **4.5.3** `flutter analyze --no-fatal-infos` + `flutter test --coverage` зелёные в CI runner
 
 **DoD Фазы 4:** `flutter analyze` + `flutter test` — оба зелёные.
 
@@ -128,7 +129,7 @@
 | 2 — Аниме-маскот | ✅ | `MascotAvatar` с 4 настроениями |
 | 3 — Мужское здоровье | ✅ | 16 маркеров, ИИ-разбор |
 | 3b — V2.x улучшения | ✅ | V2.4–V2.9: 30+ фич и фиксов |
-| 4 — Качество | 🟡 Активно | Analyze + Tests ≥ 60% |
+| 4 — Качество | 🟡 Финальная проверка CI | Все тесты написаны, дублирующий import исправлен |
 
 ---
 

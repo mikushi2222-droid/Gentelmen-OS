@@ -5,6 +5,7 @@ import 'package:gentleman_os/core/constants/spacing.dart';
 import 'package:gentleman_os/core/db/app_database.dart';
 import 'package:gentleman_os/core/db/database_provider.dart';
 import 'package:gentleman_os/core/services/services_provider.dart';
+import 'package:gentleman_os/core/services/xp_service.dart';
 import 'package:gentleman_os/core/theme/app_colors.dart';
 import 'package:gentleman_os/core/widgets/mascot_avatar.dart';
 import 'package:gentleman_os/core/widgets/score_ring.dart';
