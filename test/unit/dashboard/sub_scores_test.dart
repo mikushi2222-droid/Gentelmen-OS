@@ -31,5 +31,14 @@ void main() {
       const s = SubScores(style: 50, health: 50, biohacking: 50, discipline: 50);
       expect(dailyTip(s), isNotEmpty);
     });
+
+    test('когда даже слабейшее звено сильное (≥80) — поддерживающий совет', () {
+      const strong =
+          SubScores(style: 85, health: 90, biohacking: 82, discipline: 88);
+      final tip = dailyTip(strong);
+      expect(tip, contains('темп'));
+      // Не должно быть «чините слабое звено», когда всё хорошо.
+      expect(tip, isNot(contains('Отметьте привычку')));
+    });
   });
 }

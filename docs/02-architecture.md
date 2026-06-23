@@ -125,15 +125,27 @@ appDatabaseProvider (Drift)
 | `core/router/` | конфигурация go_router |
 | `core/db/` | AppDatabase, миграции, конвертеры |
 | `core/widgets/` | общие виджеты (карточки, чипы, пустые состояния) |
-| `core/utils/` | форматтеры, расширения, хелперы |
+| `core/utils/` | форматтеры, расширения, хелперы, `app_logger.dart` (`AppLogger`/`log`) |
 | `core/constants/` | константы, ключи, enum-словари |
 | `core/result/` | типобезопасный `Result`/`Either` для ошибок |
 
-## 13. Обработка ошибок
+## 13. Обработка ошибок и логирование
 
 - Доменные операции возвращают `Result<T, Failure>` (или throw → ловится в
   контроллере), без утечки исключений Drift в UI.
 - UI отображает дружелюбные состояния (loading / empty / error / data).
+- **Глобальный перехват.** `main.dart` запускается в `runZonedGuarded`; заданы
+  `FlutterError.onError` и `PlatformDispatcher.instance.onError` — любое
+  необработанное исключение (синхронное, асинхронное, ошибка фреймворка)
+  попадает в `AppLogger`, а не теряется в консоли.
+- **Логгер.** `core/utils/app_logger.dart` (`AppLogger`/`log`): кольцевой буфер
+  на 500 записей, уровни DEBUG/INFO/WARN/ERROR, дублирование в
+  `dart:developer.log`. В release минимальный уровень поднимается до INFO.
+  Секреты/ключи в логах маскируются (см. RouterAI).
+- **Журнал отладки** (`/settings/logs`) показывает буфер в реальном времени с
+  фильтром по уровню, копированием и выгрузкой в `.md`
+  (`AppLogger.dumpMarkdown()`) через системный «Поделиться». Навигация
+  логируется централизованно в `app_router.dart`.
 
 ## 14. Экспорт / импорт
 

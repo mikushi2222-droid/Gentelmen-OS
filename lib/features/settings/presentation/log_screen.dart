@@ -1,8 +1,12 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gentleman_os/core/constants/spacing.dart';
 import 'package:gentleman_os/core/theme/app_colors.dart';
 import 'package:gentleman_os/core/utils/app_logger.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 
 /// Экран журнала отладки: показывает последние записи [AppLogger],
 /// обновляется в реальном времени, позволяет скопировать/очистить лог.
@@ -32,6 +36,28 @@ class _LogScreenState extends State<LogScreen> {
     if (mounted) setState(() {});
   }
 
+  /// Пишет весь журнал в .md-файл и открывает системный «Поделиться».
+  Future<void> _exportMarkdown() async {
+    try {
+      final dir = await getApplicationDocumentsDirectory();
+      final ts =
+          DateTime.now().toIso8601String().replaceAll(RegExp(r'[:.]'), '-');
+      final file = File('${dir.path}/gentleman-os-log-$ts.md');
+      await file.writeAsString(log.dumpMarkdown());
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [XFile(file.path)],
+          text: 'Gentleman OS — журнал отладки',
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Ошибка экспорта: $e')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
@@ -43,6 +69,11 @@ class _LogScreenState extends State<LogScreen> {
       appBar: AppBar(
         title: const Text('Журнал отладки'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.ios_share),
+            tooltip: 'Выгрузить в .md',
+            onPressed: _exportMarkdown,
+          ),
           IconButton(
             icon: const Icon(Icons.copy_all),
             tooltip: 'Скопировать',

@@ -134,6 +134,41 @@ class AppLogger {
 
   /// Весь буфер в виде текста — для копирования/экспорта.
   String dumpText() => _buffer.map((e) => e.formatted).join('\n');
+
+  /// Весь буфер как Markdown-документ — для выгрузки в `.md`/багрепорта.
+  /// Включает сводку по уровням и stack trace для записей с ошибкой.
+  String dumpMarkdown() {
+    final now = DateTime.now();
+    final byLevel = <LogLevel, int>{};
+    for (final e in _buffer) {
+      byLevel[e.level] = (byLevel[e.level] ?? 0) + 1;
+    }
+
+    final buf = StringBuffer()
+      ..writeln('# Журнал отладки Gentleman OS')
+      ..writeln()
+      ..writeln('- Сформирован: ${now.toIso8601String()}')
+      ..writeln('- Всего записей: ${_buffer.length}');
+    for (final level in LogLevel.values) {
+      final c = byLevel[level] ?? 0;
+      if (c > 0) buf.writeln('- ${level.label}: $c');
+    }
+
+    buf
+      ..writeln()
+      ..writeln('## Записи')
+      ..writeln()
+      ..writeln('```text');
+    for (final e in _buffer) {
+      buf.writeln(e.formatted);
+      final st = e.stackTrace;
+      if (st != null) {
+        buf.writeln('    ${st.toString().trimRight().replaceAll('\n', '\n    ')}');
+      }
+    }
+    buf.writeln('```');
+    return buf.toString();
+  }
 }
 
 /// Короткий алиас для использования по всему приложению.
