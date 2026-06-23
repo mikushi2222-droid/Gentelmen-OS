@@ -15,12 +15,20 @@ class RouterAiConfig {
   /// Мультимодальная модель для анализа фото вещей.
   static const String visionModel = 'google/gemini-2.5-flash';
 
+  /// Модель для транскрипции аудио (Voice UX, V3.5).
+  static const String transcriptionModel = 'openai/whisper-large-v3';
+
+  /// Модель для синтеза речи (Voice UX, V3.5).
+  static const String synthesisModel = 'x-ai/grok-voice-tts-1.0';
+
   /// Доступные модели для выбора в настройках.
   static const List<String> availableModels = [
     'openai/gpt-4o',
     'openai/gpt-4o-mini',
     'anthropic/claude-sonnet-4.5',
     'google/gemini-2.5-flash',
+    'google/gemini-2.5-pro',
+    'deepseek/deepseek-r1',
     'openai/gpt-oss-120b',
   ];
 

@@ -26,6 +26,7 @@ class RouterAiClient {
 
   /// Текстовый/мультимодальный chat-completion. Возвращает content ответа.
   /// [messages] — массив сообщений в формате OpenAI (role/content).
+  /// [provider] — маршрутизация: `{"order": ["deepseek"], "allow_fallbacks": true}`.
   Future<String> chat({
     required List<Map<String, dynamic>> messages,
     String? model,
@@ -33,6 +34,7 @@ class RouterAiClient {
     double temperature = 0.4,
     bool webSearch = false,
     int webMaxResults = 5,
+    Map<String, dynamic>? provider,
     Duration timeout = const Duration(seconds: 90),
   }) async {
     if (!config.isConfigured) {
@@ -52,6 +54,7 @@ class RouterAiClient {
         'plugins': [
           {'id': 'web', 'max_results': webMaxResults},
         ],
+      if (provider != null) 'provider': provider,
     };
 
     final stopwatch = Stopwatch()..start();
@@ -138,6 +141,135 @@ class RouterAiClient {
     );
   }
 
+  /// Транскрипция аудио через Whisper (V3.5 Voice UX).
+  /// [audioBase64] — чистый base64 аудиофайла, [format] — ogg/mp3/wav/flac/m4a.
+  /// [language] — ISO-639-1 код языка (null = авто-определение).
+  Future<String> transcribeAudio({
+    required String audioBase64,
+    String format = 'ogg',
+    String? language,
+    Duration timeout = const Duration(seconds: 60),
+  }) async {
+    if (!config.isConfigured) {
+      log.w(_tag, 'Запрос отклонён: API-ключ не задан');
+      throw RouterAiException('API-ключ RouterAI не задан. Настройки → ИИ-советник.');
+    }
+
+    final uri = Uri.parse('${RouterAiConfig.baseUrl}/audio/transcriptions');
+    final payload = <String, dynamic>{
+      'model': RouterAiConfig.transcriptionModel,
+      'input_audio': {'data': audioBase64, 'format': format},
+      if (language != null) 'language': language,
+    };
+
+    final stopwatch = Stopwatch()..start();
+    log.i(_tag, 'POST /audio/transcriptions format=$format');
+    log.d(_tag, 'Auth key=${_maskKey(config.apiKey!)}');
+
+    http.Response resp;
+    try {
+      resp = await _http
+          .post(
+            uri,
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer ${config.apiKey}',
+            },
+            body: jsonEncode(payload),
+          )
+          .timeout(timeout);
+    } on Exception catch (err, st) {
+      stopwatch.stop();
+      log.e(_tag, 'Сетевая ошибка транскрипции', error: err, stackTrace: st);
+      throw RouterAiException('Сеть недоступна: $err');
+    }
+
+    stopwatch.stop();
+    log.i(_tag, 'Транскрипция: ${resp.statusCode} за ${stopwatch.elapsedMilliseconds}мс');
+
+    if (resp.statusCode != 200) {
+      final bodyText =
+          _truncate(utf8.decode(resp.bodyBytes, allowMalformed: true), 1000);
+      log.e(_tag, 'Ошибка транскрипции ${resp.statusCode}: $bodyText');
+      throw RouterAiException(_humanError(resp.statusCode, bodyText),
+          statusCode: resp.statusCode);
+    }
+
+    final Map<String, dynamic> json;
+    try {
+      json = jsonDecode(utf8.decode(resp.bodyBytes)) as Map<String, dynamic>;
+    } on Exception catch (err, st) {
+      log.e(_tag, 'Ошибка парсинга ответа транскрипции', error: err, stackTrace: st);
+      throw RouterAiException('Некорректный ответ сервера');
+    }
+
+    final text = json['text'] as String? ?? '';
+    log.d(_tag, 'transcription usage=${json['usage']} text.len=${text.length}');
+    return text.trim();
+  }
+
+  /// Синтез речи (TTS) через RouterAI (V3.5 Voice UX).
+  /// Возвращает сырые байты аудио (mp3 или pcm).
+  /// [voice] — идентификатор голоса (зависит от модели).
+  Future<List<int>> synthesizeSpeech({
+    required String text,
+    String? model,
+    String voice = 'nova',
+    String responseFormat = 'mp3',
+    Duration timeout = const Duration(seconds: 30),
+  }) async {
+    if (!config.isConfigured) {
+      log.w(_tag, 'Запрос отклонён: API-ключ не задан');
+      throw RouterAiException('API-ключ RouterAI не задан. Настройки → ИИ-советник.');
+    }
+
+    final usedModel = model ?? RouterAiConfig.synthesisModel;
+    final uri = Uri.parse('${RouterAiConfig.baseUrl}/audio/speech');
+    final payload = <String, dynamic>{
+      'model': usedModel,
+      'input': text,
+      'voice': voice,
+      'response_format': responseFormat,
+    };
+
+    final stopwatch = Stopwatch()..start();
+    log.i(_tag,
+        'POST /audio/speech model=$usedModel voice=$voice len=${text.length}');
+    log.d(_tag, 'Auth key=${_maskKey(config.apiKey!)}');
+
+    http.Response resp;
+    try {
+      resp = await _http
+          .post(
+            uri,
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer ${config.apiKey}',
+            },
+            body: jsonEncode(payload),
+          )
+          .timeout(timeout);
+    } on Exception catch (err, st) {
+      stopwatch.stop();
+      log.e(_tag, 'Сетевая ошибка синтеза речи', error: err, stackTrace: st);
+      throw RouterAiException('Сеть недоступна: $err');
+    }
+
+    stopwatch.stop();
+    log.i(_tag,
+        'TTS: ${resp.statusCode} за ${stopwatch.elapsedMilliseconds}мс (${resp.bodyBytes.length} байт)');
+
+    if (resp.statusCode != 200) {
+      final bodyText =
+          _truncate(utf8.decode(resp.bodyBytes, allowMalformed: true), 1000);
+      log.e(_tag, 'Ошибка TTS ${resp.statusCode}: $bodyText');
+      throw RouterAiException(_humanError(resp.statusCode, bodyText),
+          statusCode: resp.statusCode);
+    }
+
+    return resp.bodyBytes;
+  }
+
   void close() => _http.close();
 
   // ── helpers ───────────────────────────────────────────────────────────
@@ -151,6 +283,7 @@ class RouterAiClient {
         401 => 'Неверный API-ключ RouterAI',
         402 => 'Недостаточно средств на балансе RouterAI',
         429 => 'Слишком много запросов, попробуйте позже',
+        500 || 502 => 'Ошибка провайдера, попробуйте другую модель',
         503 => 'Нет доступного провайдера для модели',
         _ => 'Ошибка RouterAI ($code)',
       };

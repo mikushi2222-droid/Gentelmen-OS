@@ -38,7 +38,8 @@
 - Ключ вводится в **Настройки → ИИ-советник → RouterAI**.
 - Хранится в `flutter_secure_storage` (Keystore на Android) — не в коде, не в БД.
 - Выбор модели: `openai/gpt-4o` (по умолч.), `gpt-4o-mini`,
-  `anthropic/claude-sonnet-4.5`, `google/gemini-2.5-flash`, `openai/gpt-oss-120b`.
+  `anthropic/claude-sonnet-4.5`, `google/gemini-2.5-flash`, `google/gemini-2.5-pro`,
+  `deepseek/deepseek-r1`, `openai/gpt-oss-120b`.
 
 ```dart
 final cfg = await ref.watch(routerAiConfigProvider.future); // RouterAiConfig
@@ -47,6 +48,8 @@ final aiEnabled = ref.watch(aiCloudEnabledProvider);        // bool
 ```
 
 ## 4. Клиент
+
+### Текст и мультимодальность
 
 ```dart
 final answer = await client.chat(
@@ -57,6 +60,8 @@ final answer = await client.chat(
   jsonMode: true,        // response_format: json_object
   webSearch: true,       // plugins: [{id: web}] — грундинг в исследованиях
   temperature: 0.4,
+  // Маршрутизация провайдера (опционально):
+  provider: {'order': ['deepseek', 'openai'], 'allow_fallbacks': true},
 );
 
 // Мультимодальный анализ фото вещи:
@@ -67,8 +72,40 @@ final verdict = await client.analyzeImage(
 );
 ```
 
-Ошибки нормализуются в `RouterAiException` с человекочитаемым сообщением
-(401 — неверный ключ, 402 — нет средств, 429 — лимит, 503 — нет провайдера).
+### Аудио (Voice UX, V3.5)
+
+```dart
+// Транскрипция голоса → текст (Whisper):
+final text = await client.transcribeAudio(
+  audioBase64: base64Audio,          // ogg/mp3/wav/flac/m4a
+  format: 'ogg',
+  language: 'ru',                    // null = авто-определение
+);
+
+// Синтез речи (TTS):
+final audioBytes = await client.synthesizeSpeech(
+  text: 'Добрый день, джентльмен.',
+  voice: 'nova',
+  responseFormat: 'mp3',
+);
+```
+
+### Маршрутизация провайдеров
+
+```dart
+// Приоритет провайдеров:
+provider: {'order': ['deepseek', 'yandex'], 'allow_fallbacks': true}
+
+// Только один провайдер:
+provider: {'only': ['anthropic'], 'allow_fallbacks': false}
+
+// Гео-фильтр (данные обрабатываются в РФ):
+provider: {'country': 'ru'}
+```
+
+Ошибки нормализуются в `RouterAiException` с человекочитаемым сообщением:
+`401` — неверный ключ, `402` — нет средств, `429` — лимит запросов,
+`500/502` — ошибка провайдера, `503` — нет доступного провайдера.
 
 ## 4a. Философская база советов по стилю
 
@@ -131,7 +168,17 @@ usage-токены, обрезанные тело запроса и ошибки
 final async = ref.watch(clothingPhotoAnalysisProvider(item)); // AsyncValue<String>
 ```
 
-## 9. Дальнейшее развитие
+## 9. Константы моделей (`RouterAiConfig`)
+
+| Константа | Значение | Использование |
+|-----------|---------|---------------|
+| `defaultModel` | `openai/gpt-4o` | Текстовые советы |
+| `visionModel` | `google/gemini-2.5-flash` | Анализ фото вещей |
+| `transcriptionModel` | `openai/whisper-large-v3` | STT, Voice UX (V3.5) |
+| `synthesisModel` | `x-ai/grok-voice-tts-1.0` | TTS, Voice UX (V3.5) |
+
+## 10. Дальнейшее развитие
 
 - Кэширование ИИ-ответов, чтобы не платить за повторные запросы.
 - Стриминг ответов (SSE) для длинных разборов.
+- V3.5: интеграция голосового ввода/вывода через `transcribeAudio` / `synthesizeSpeech`.

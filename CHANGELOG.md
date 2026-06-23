@@ -7,6 +7,18 @@ All notable changes are documented here in reverse chronological order.
 ## [Unreleased] — V3.x Planning
 
 ### Added
+- `RouterAiClient.transcribeAudio()` — Whisper STT endpoint (`/audio/transcriptions`),
+  foundation for V3.5 Voice UX
+- `RouterAiClient.synthesizeSpeech()` — TTS endpoint (`/audio/speech`),
+  foundation for V3.5 Voice UX
+- `RouterAiClient.chat()` — `provider` parameter for explicit provider routing
+  (order, only, ignore, allow_fallbacks, country)
+- `RouterAiConfig.transcriptionModel` / `synthesisModel` constants
+- `RouterAiConfig.availableModels` — added `gemini-2.5-pro`, `deepseek-r1`
+- `_humanError` — handles 500/502 (provider error) in addition to existing codes
+- `docs/14-ai-integration.md` — audio API, provider routing, model constants table
+
+### Added (previous)
 - `docs/16-weight-health-ai-spec.md` — full V3.x feature specification:
   safe weight loss rate system, Compliance Score, AI food analysis (text/photo/voice),
   behavioral intelligence engine (drift, relapse, plateau), recovery layer,
