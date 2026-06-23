@@ -55,14 +55,15 @@ class _ArticleBodyState extends State<_ArticleBody> {
   @override
   void initState() {
     super.initState();
-    // Award XP once when article is opened
+    // XP начисляется только за ПЕРВОЕ прочтение. Флаг `_xpAwarded` защищал
+    // лишь в пределах жизни экрана — повторный заход в статью каждый раз давал
+    // +15 XP и фармил ачивку «Читатель». Источник истины — `readAt`.
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      if (!_xpAwarded) {
-        _xpAwarded = true;
-        await ref.read(xpServiceProvider).articleRead();
-        await ref.read(knowledgeRepositoryProvider).markAsRead(article.id);
-        await ref.read(achievementServiceProvider).checkAfterArticleRead();
-      }
+      if (_xpAwarded || article.readAt != null) return;
+      _xpAwarded = true;
+      await ref.read(knowledgeRepositoryProvider).markAsRead(article.id);
+      await ref.read(xpServiceProvider).articleRead();
+      await ref.read(achievementServiceProvider).checkAfterArticleRead();
     });
   }
 
