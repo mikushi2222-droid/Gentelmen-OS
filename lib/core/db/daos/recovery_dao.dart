@@ -24,6 +24,17 @@ class RecoveryDao extends DatabaseAccessor<AppDatabase>
         .getSingleOrNull();
   }
 
+  Stream<RecoveryLogsData?> watchToday() {
+    final today = DateTime.now();
+    final d = DateTime(today.year, today.month, today.day);
+    return (select(recoveryLogs)
+          ..where(
+            (t) => t.date.isBetweenValues(d, d.add(const Duration(days: 1))),
+          )
+          ..limit(1))
+        .watchSingleOrNull();
+  }
+
   Future<List<RecoveryLogsData>> getRecent(int days) {
     final cutoff = DateTime.now().subtract(Duration(days: days));
     return (select(recoveryLogs)

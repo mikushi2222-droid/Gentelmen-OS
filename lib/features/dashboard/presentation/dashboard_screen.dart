@@ -13,6 +13,7 @@ import 'package:gentleman_os/features/dashboard/application/dashboard_providers.
 import 'package:gentleman_os/features/dashboard/domain/sub_scores.dart';
 import 'package:gentleman_os/features/dashboard/presentation/widgets/mission_tile.dart';
 import 'package:gentleman_os/features/dashboard/presentation/widgets/quick_action_button.dart';
+import 'package:gentleman_os/features/recovery/presentation/recovery_status_card.dart';
 import 'package:gentleman_os/features/weight_loss/presentation/weight_compliance_card.dart';
 import 'package:gentleman_os/shared/enums/xp_type.dart';
 
@@ -80,6 +81,8 @@ class DashboardScreen extends ConsumerWidget {
                 _GentlemanScoreCard(),
                 const SizedBox(height: Spacing.md),
                 const WeightComplianceCard(),
+                const SizedBox(height: Spacing.md),
+                const RecoveryStatusCard(),
                 const SizedBox(height: Spacing.md),
                 _SubScoresBlock(),
                 const SizedBox(height: Spacing.md),

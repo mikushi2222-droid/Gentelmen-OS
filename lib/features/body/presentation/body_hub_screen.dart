@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gentleman_os/core/constants/spacing.dart';
 import 'package:gentleman_os/core/theme/app_colors.dart';
 import 'package:gentleman_os/core/widgets/module_card.dart';
+import 'package:gentleman_os/features/recovery/presentation/recovery_status_card.dart';
 
-class BodyHubScreen extends StatelessWidget {
+class BodyHubScreen extends ConsumerWidget {
   const BodyHubScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final tt = Theme.of(context).textTheme;
     return Scaffold(
       body: CustomScrollView(
@@ -36,6 +38,10 @@ class BodyHubScreen extends StatelessWidget {
             padding: const EdgeInsets.all(Spacing.screenPadding),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
+                // Operational status card
+                const RecoveryStatusCard(),
+                const SizedBox(height: Spacing.md),
+
                 ModuleCard(
                   icon: Icons.favorite_border,
                   title: 'Здоровье',
