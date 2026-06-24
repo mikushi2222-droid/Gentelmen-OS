@@ -1,7 +1,7 @@
 # 07. Дорожная карта — актуальное состояние и план V2.x / V3.x
 
 > Последнее обновление: **2026-06-24**  
-> Ветка: `claude/code-docs-review-x4vztn` (= main, `9668c6b`)  
+> Ветка: `claude/code-docs-review-x4vztn` (+7 над main `9668c6b`, HEAD = `8e2effd`)  
 > Схема БД: **v7** (v8 запланирована под V3.0)  
 > RouterAI: `google/gemini-3.5-flash` (default + vision), audio endpoints (`transcribeAudio` / `synthesizeSpeech`) — фундамент V3.5
 
@@ -71,16 +71,19 @@
 
 ### Что уже реализовано в V3.0
 
-| Компонент | Файл | Тесты |
-|-----------|------|-------|
-| `analyzeWeightTrend()` | `weight_loss/domain/weight_trend.dart` | `test/unit/weight_loss/weight_trend_test.dart` (18 случаев) |
-| `computeComplianceScore()` | `weight_loss/domain/compliance_score.dart` | `test/unit/weight_loss/compliance_score_test.dart` (22 случая) |
+| Компонент | Файл | Тесты | Коммит |
+|-----------|------|-------|--------|
+| `analyzeWeightTrend()` | `weight_loss/domain/weight_trend.dart` | `weight_trend_test.dart` (18 случаев) | `c112ecc` |
+| `computeComplianceScore()` | `weight_loss/domain/compliance_score.dart` | `compliance_score_test.dart` (22 случая) | `c112ecc` |
+| `analyzeWaistTrend()`, `buildProgressSnapshot()` | `weight_loss/domain/advanced_metrics.dart` | `advanced_metrics_test.dart` (29 случаев) | `07fcdcf` |
+| Riverpod провайдеры | `weight_loss/application/weight_loss_providers.dart` | — | `b79368d` |
+| **`WeightComplianceCard`** (Dashboard UI) | `weight_loss/presentation/weight_compliance_card.dart` | — | `8e2effd` |
 
 ### Что осталось реализовать в V3.0
 
-- [ ] **A** Safe Weight Loss Rate System — UI компонент на Dashboard
-- [ ] **B** Compliance Score — отображение на Dashboard рядом с Gentleman Score
-- [ ] **C** Advanced Metrics — moving average, waist trend, estimated fat-loss
+- [x] **A** Safe Weight Loss Rate System — UI компонент на Dashboard ✅ `8e2effd`
+- [x] **B** Compliance Score — отображение на Dashboard рядом с Gentleman Score ✅ `8e2effd`
+- [x] **C** Advanced Metrics — moving average, waist trend, estimated fat-loss ✅ `07fcdcf`
 - [ ] **D** DB Migration v7 → v8 (FoodLog, DailyCompliance, RecoveryLog)
 
 
