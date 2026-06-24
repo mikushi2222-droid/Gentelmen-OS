@@ -13,7 +13,6 @@ import 'package:gentleman_os/shared/enums/dress_code.dart';
 import 'package:gentleman_os/shared/enums/occasion.dart';
 import 'package:gentleman_os/shared/enums/season.dart';
 import 'package:gentleman_os/shared/enums/weather_condition.dart';
-import 'package:gentleman_os/shared/models/outfit.dart';
 import 'package:gentleman_os/shared/models/user_profile.dart';
 import 'package:uuid/uuid.dart';
 

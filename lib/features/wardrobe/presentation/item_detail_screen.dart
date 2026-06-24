@@ -10,6 +10,7 @@ import 'package:gentleman_os/core/theme/app_colors.dart';
 import 'package:gentleman_os/core/utils/image_storage.dart';
 import 'package:gentleman_os/features/wardrobe/application/clothing_ai_providers.dart';
 import 'package:gentleman_os/features/wardrobe/application/wardrobe_providers.dart';
+import 'package:gentleman_os/features/wardrobe/application/wear_forecast_providers.dart';
 import 'package:gentleman_os/features/wardrobe/domain/wear_forecast.dart';
 import 'package:gentleman_os/shared/models/clothing_item.dart';
 

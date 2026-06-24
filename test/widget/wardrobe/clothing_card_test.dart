@@ -47,6 +47,7 @@ ClothingItem _item({
     ClothingItem(
       id: 'test-id',
       name: name,
+      brand: brand,
       category: ClothingCategory.shirt,
       season: season,
       condition: condition,

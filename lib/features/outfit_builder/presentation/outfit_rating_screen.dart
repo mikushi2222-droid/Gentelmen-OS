@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gentleman_os/core/constants/spacing.dart';
 import 'package:gentleman_os/core/db/database_provider.dart';
 import 'package:gentleman_os/core/theme/app_colors.dart';
-import 'package:gentleman_os/features/outfit_builder/application/outfit_providers.dart';
 
 class OutfitRatingScreen extends ConsumerStatefulWidget {
   const OutfitRatingScreen({required this.outfitId, super.key});

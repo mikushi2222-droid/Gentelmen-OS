@@ -69,10 +69,6 @@ final dailyMissionsProvider =
     final hasMeasurementToday =
         latest != null && !latest.date.isBefore(startOfDay);
 
-    final outfits = await outfitDao.watchAll().first;
-    final hasOutfitToday =
-        outfits.any((o) => !o.createdAt.isBefore(startOfDay));
-
     final outfitDao = ref.read(outfitDaoProvider);
     final healthDao = ref.read(healthDaoProvider);
     final threshold = today.subtract(
