@@ -71,7 +71,7 @@ Future<NutritionAiResult> analyzeFood({
           [],
     );
   } catch (e, st) {
-    log.e(_tag, 'AI food analysis error: $e', st);
+    log.e(_tag, 'AI food analysis error: $e', error: e, stackTrace: st);
     return NutritionAiResult.empty;
   }
 }

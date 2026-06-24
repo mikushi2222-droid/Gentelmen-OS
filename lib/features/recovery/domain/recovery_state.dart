@@ -1,4 +1,10 @@
-import 'package:gentleman_os/core/db/app_database.dart';
+/// Минимальный контракт для [computeRecoveryState].
+/// Реализуется адаптером в application-слое — domain не зависит от drift.
+abstract class RecoverySnapshot {
+  int? get energyLevel;
+  int? get stressLevel;
+  double? get sleepHours;
+}
 
 /// Операционный статус восстановления на сегодня.
 enum RecoveryState {
@@ -15,7 +21,7 @@ enum RecoveryState {
 
 /// Вычисляет статус восстановления из записи дневника.
 /// Если данных нет — возвращает [RecoveryState.stable].
-RecoveryState computeRecoveryState(RecoveryLogsData? data) {
+RecoveryState computeRecoveryState(RecoverySnapshot? data) {
   if (data == null) return RecoveryState.stable;
 
   final e = data.energyLevel ?? 3;

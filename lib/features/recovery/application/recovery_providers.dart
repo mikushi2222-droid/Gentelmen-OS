@@ -15,10 +15,21 @@ final todayRecoveryProvider = StreamProvider<RecoveryLogsData?>((ref) {
   return ref.watch(recoveryDaoProvider).watchToday();
 });
 
+class _RecoverySnapshotImpl implements RecoverySnapshot {
+  const _RecoverySnapshotImpl(this._row);
+  final RecoveryLogsData _row;
+  @override
+  int? get energyLevel => _row.energyLevel;
+  @override
+  int? get stressLevel => _row.stressLevel;
+  @override
+  double? get sleepHours => _row.sleepHours;
+}
+
 /// Статус восстановления на сегодня.
 final recoveryStateProvider = Provider<RecoveryState>((ref) {
   final data = ref.watch(todayRecoveryProvider).asData?.value;
-  return computeRecoveryState(data);
+  return computeRecoveryState(data != null ? _RecoverySnapshotImpl(data) : null);
 });
 
 /// Сохраняет (upsert) дневник самочувствия за сегодня.

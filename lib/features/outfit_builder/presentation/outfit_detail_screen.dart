@@ -72,9 +72,7 @@ class _OutfitBody extends StatelessWidget {
 
     Map<String, dynamic>? breakdown;
     try {
-      if (outfit.scoreBreakdown != null) {
-        breakdown = jsonDecode(outfit.scoreBreakdown!) as Map<String, dynamic>;
-      }
+      breakdown = jsonDecode(outfit.scoreBreakdown) as Map<String, dynamic>;
     } catch (_) {}
 
     final hasBreakdown = breakdown != null && breakdown.containsKey('fitScore');
@@ -120,7 +118,7 @@ class _OutfitBody extends StatelessWidget {
           if (hasBreakdown) ...[
             _ScoreRow(
               label: 'Посадка (×0.30)',
-              value: (breakdown!['fitScore'] as num?)?.toDouble() ?? 0,
+              value: (breakdown['fitScore'] as num?)?.toDouble() ?? 0,
             ),
             _ScoreRow(
               label: 'Повод (×0.25)',

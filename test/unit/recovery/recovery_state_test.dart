@@ -1,9 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gentleman_os/features/recovery/domain/recovery_state.dart';
-import 'package:gentleman_os/core/db/app_database.dart';
 
-// Minimal stub: only the fields used by computeRecoveryState.
-class _MockRecovery implements RecoveryLogsData {
+class _MockRecovery implements RecoverySnapshot {
   _MockRecovery({this.energyLevel, this.stressLevel, this.sleepHours});
 
   @override
@@ -12,19 +10,6 @@ class _MockRecovery implements RecoveryLogsData {
   final int? stressLevel;
   @override
   final double? sleepHours;
-
-  @override
-  String get id => 'mock';
-  @override
-  DateTime get date => DateTime(2026, 1, 1);
-  @override
-  int? get hungerLevel => null;
-  @override
-  int? get waterMl => null;
-  @override
-  int? get steps => null;
-  @override
-  String? get notes => null;
 }
 
 void main() {

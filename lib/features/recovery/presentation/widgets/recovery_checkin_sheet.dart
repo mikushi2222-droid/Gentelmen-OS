@@ -360,7 +360,7 @@ class _StatePreview extends StatelessWidget {
 }
 
 // Temporary holder for preview computation — avoids creating a DB row.
-class _FakeRecovery implements RecoveryLogsData {
+class _FakeRecovery implements RecoverySnapshot {
   _FakeRecovery({
     required int? energy,
     required int? stress,
@@ -375,17 +375,4 @@ class _FakeRecovery implements RecoveryLogsData {
   final int? stressLevel;
   @override
   final double? sleepHours;
-
-  @override
-  String get id => '';
-  @override
-  DateTime get date => DateTime.now();
-  @override
-  int? get hungerLevel => null;
-  @override
-  int? get waterMl => null;
-  @override
-  int? get steps => null;
-  @override
-  String? get notes => null;
 }
