@@ -30,6 +30,9 @@ abstract final class Achv {
   static const measureLogged = 'measure_logged';
   static const budgetMaster = 'budget_master';
 
+  // Recovery
+  static const firstCheckIn = 'first_check_in';
+
   /// Полный список для сидинга: (код, заголовок, описание).
   /// В каталог входят только реально достижимые ачивки — у каждой есть
   /// триггер в [AchievementService].
@@ -46,5 +49,6 @@ abstract final class Achv {
     (level10, 'Уровень 10', 'Достиг 10-го уровня'),
     (measureLogged, 'Первый замер', 'Записал первые параметры'),
     (budgetMaster, 'Бюджет под контролем', 'Закрыл 5 покупок'),
+    (firstCheckIn, 'Первый чек-ин', 'Заполнил первый ежедневный чек-ин самочувствия'),
   ];
 }

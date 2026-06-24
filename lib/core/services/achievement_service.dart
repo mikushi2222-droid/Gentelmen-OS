@@ -79,6 +79,11 @@ class AchievementService {
     await _checkLevel();
   }
 
+  Future<void> checkAfterRecoveryCheckIn() async {
+    await _unlock(Achv.firstCheckIn);
+    await _checkLevel();
+  }
+
   /// Уровневые ачивки. Уровень вычисляется из суммарного XP, поэтому проверка
   /// выполняется после любого начисления XP (в конце остальных проверок).
   Future<void> _checkLevel() async {

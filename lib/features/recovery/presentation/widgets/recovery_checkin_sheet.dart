@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gentleman_os/core/constants/spacing.dart';
 import 'package:gentleman_os/core/db/database_provider.dart';
+import 'package:gentleman_os/core/services/services_provider.dart';
 import 'package:gentleman_os/core/theme/app_colors.dart';
 import 'package:gentleman_os/features/recovery/application/recovery_providers.dart';
 import 'package:gentleman_os/features/recovery/domain/recovery_state.dart';
@@ -68,6 +69,7 @@ class _RecoveryCheckInSheetState
       stressLevel: _stress,
       waterMl: _water,
     );
+    await ref.read(achievementServiceProvider).checkAfterRecoveryCheckIn();
     if (mounted) Navigator.of(context).pop();
   }
 

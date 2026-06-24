@@ -181,7 +181,7 @@ class _WishCard extends StatelessWidget {
   };
 
   static const _statusLabels = {
-    0: 'Хочу',
+    0: 'Желаемое',
     1: 'Планирую',
     2: 'Куплено',
     3: 'Отклонено',

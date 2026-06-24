@@ -690,10 +690,9 @@ class _ItemsGrid extends StatelessWidget {
         : filtered;
 
     return SliverGrid(
-      delegate: SliverChildBuilderDelegate(
-        (ctx, i) => ClothingCard(item: sorted[i]),
-        childCount: sorted.length,
-      ),
+      delegate: SliverChildListDelegate([
+        for (final item in sorted) ClothingCard(item: item),
+      ]),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         crossAxisSpacing: 12,

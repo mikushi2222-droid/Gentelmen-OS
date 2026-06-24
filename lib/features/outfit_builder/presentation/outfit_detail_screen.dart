@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -69,6 +70,17 @@ class _OutfitBody extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
 
+    Map<String, dynamic>? breakdown;
+    try {
+      if (outfit.scoreBreakdown != null) {
+        breakdown = jsonDecode(outfit.scoreBreakdown!) as Map<String, dynamic>;
+      }
+    } catch (_) {}
+
+    final hasBreakdown = breakdown != null && breakdown.containsKey('fitScore');
+    final explanation =
+        (breakdown?['explanation'] as List<dynamic>?)?.cast<String>() ?? [];
+
     return Scaffold(
       appBar: AppBar(
         title: Text(outfit.name),
@@ -105,6 +117,32 @@ class _OutfitBody extends StatelessWidget {
           Text('Score breakdown', style: tt.titleMedium),
           const SizedBox(height: Spacing.sm),
           _ScoreRow(label: 'Итого', value: outfit.score / 100),
+          if (hasBreakdown) ...[
+            _ScoreRow(
+              label: 'Посадка (×0.30)',
+              value: (breakdown!['fitScore'] as num?)?.toDouble() ?? 0,
+            ),
+            _ScoreRow(
+              label: 'Повод (×0.25)',
+              value: (breakdown['occasionScore'] as num?)?.toDouble() ?? 0,
+            ),
+            _ScoreRow(
+              label: 'Погода/сезон (×0.20)',
+              value: (breakdown['weatherScore'] as num?)?.toDouble() ?? 0,
+            ),
+            _ScoreRow(
+              label: 'Цветовая гармония (×0.15)',
+              value: (breakdown['colorScore'] as num?)?.toDouble() ?? 0,
+            ),
+            _ScoreRow(
+              label: 'Комфорт (×0.10)',
+              value: (breakdown['comfortScore'] as num?)?.toDouble() ?? 0,
+            ),
+          ],
+          if (explanation.isNotEmpty) ...[
+            const SizedBox(height: Spacing.sm),
+            ...explanation.map((e) => Text(e, style: tt.bodySmall)),
+          ],
         ],
       ),
     );
