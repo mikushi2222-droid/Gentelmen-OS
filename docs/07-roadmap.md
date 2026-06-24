@@ -64,11 +64,25 @@
 
 ---
 
-## 2. Следующие шаги — V3.0
+## 2. V3.0 — в работе (текущая ветка)
 
 > Все фазы V2.x (V2.1–V2.12) **завершены** и смёрджены в `main`.
-> Текущее состояние: schema v7, RouterAI Gemini 3.5 Flash, lab photo import, analyze clean.
-> Ближайший шаг — старт V3.0 в новой feature-ветке.
+> V3.0 начат в ветке `claude/code-docs-review-x4vztn`.
+
+### Что уже реализовано в V3.0
+
+| Компонент | Файл | Тесты |
+|-----------|------|-------|
+| `analyzeWeightTrend()` | `weight_loss/domain/weight_trend.dart` | `test/unit/weight_loss/weight_trend_test.dart` (18 случаев) |
+| `computeComplianceScore()` | `weight_loss/domain/compliance_score.dart` | `test/unit/weight_loss/compliance_score_test.dart` (22 случая) |
+
+### Что осталось реализовать в V3.0
+
+- [ ] **A** Safe Weight Loss Rate System — UI компонент на Dashboard
+- [ ] **B** Compliance Score — отображение на Dashboard рядом с Gentleman Score
+- [ ] **C** Advanced Metrics — moving average, waist trend, estimated fat-loss
+- [ ] **D** DB Migration v7 → v8 (FoodLog, DailyCompliance, RecoveryLog)
+
 
 ---
 
