@@ -39,7 +39,7 @@ class FoodLogDao extends DatabaseAccessor<AppDatabase>
   Future<void> insert(FoodLogsCompanion entry) =>
       into(foodLogs).insert(entry);
 
-  Future<void> update(FoodLogsCompanion entry) =>
+  Future<void> upsert(FoodLogsCompanion entry) =>
       into(foodLogs).insertOnConflictUpdate(entry);
 
   Future<void> remove(String id) =>
