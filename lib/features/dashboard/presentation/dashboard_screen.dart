@@ -354,6 +354,11 @@ class _QuickActionsSection extends StatelessWidget {
               label: 'Привычки',
               route: '/progress/habits',
             ),
+            QuickActionButton(
+              icon: Icons.restaurant_outlined,
+              label: 'Питание',
+              route: '/food-log',
+            ),
           ],
         ),
       ],

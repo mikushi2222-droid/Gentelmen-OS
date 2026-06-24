@@ -26,7 +26,7 @@ class ShellScaffold extends StatelessWidget {
       icon: Icons.favorite_border,
       active: Icons.favorite,
       path: '/body',
-      aliases: ['/health', '/progress'],
+      aliases: ['/health', '/progress', '/food-log'],
     ),
     _Tab(
       label: 'Разум',

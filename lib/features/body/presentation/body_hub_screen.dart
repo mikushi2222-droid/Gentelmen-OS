@@ -48,6 +48,12 @@ class BodyHubScreen extends StatelessWidget {
                   subtitle: 'Вес, замеры и тренировки',
                   onTap: () => context.go('/progress'),
                 ),
+                ModuleCard(
+                  icon: Icons.restaurant_outlined,
+                  title: 'Питание',
+                  subtitle: 'Дневник еды и AI-анализ',
+                  onTap: () => context.go('/food-log'),
+                ),
               ]),
             ),
           ),

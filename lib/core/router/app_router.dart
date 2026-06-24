@@ -4,6 +4,7 @@ import 'package:gentleman_os/core/router/shell_scaffold.dart';
 import 'package:gentleman_os/core/utils/app_logger.dart';
 import 'package:gentleman_os/features/biohacking/presentation/biohacking_screen.dart';
 import 'package:gentleman_os/features/body/presentation/body_hub_screen.dart';
+import 'package:gentleman_os/features/food_log/presentation/food_log_screen.dart';
 import 'package:gentleman_os/features/dashboard/presentation/dashboard_screen.dart';
 import 'package:gentleman_os/features/fitness/presentation/fitness_screen.dart';
 import 'package:gentleman_os/features/fitness/presentation/add_measurement_screen.dart';
@@ -132,6 +133,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                 ),
               ),
             ],
+          ),
+          GoRoute(
+            path: '/food-log',
+            pageBuilder: (c, s) =>
+                const NoTransitionPage(child: FoodLogScreen()),
           ),
           GoRoute(
             path: '/progress',
