@@ -9,7 +9,6 @@ import 'package:gentleman_os/core/utils/app_logger.dart';
 import 'package:gentleman_os/features/knowledge/application/knowledge_providers.dart';
 import 'package:gentleman_os/features/wardrobe/application/wardrobe_providers.dart';
 import 'package:gentleman_os/features/wardrobe/domain/wear_forecast.dart';
-import 'package:gentleman_os/shared/models/clothing_item.dart';
 import 'package:gentleman_os/shared/models/knowledge_article.dart';
 
 /// HTTP-клиент RouterAI — есть только если задан API-ключ.

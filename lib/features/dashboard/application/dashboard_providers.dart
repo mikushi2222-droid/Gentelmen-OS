@@ -56,7 +56,6 @@ final dailyMissionsProvider =
   final dao = ref.watch(dailyMissionsDaoProvider);
   final measurementDao = ref.watch(measurementDaoProvider);
   final knowledgeDao = ref.watch(knowledgeDaoProvider);
-  final outfitDao = ref.watch(outfitDaoProvider);
   final wardrobeCount = ref.watch(wardrobeCountProvider).value ?? 0;
 
   final today = DateTime.now();
