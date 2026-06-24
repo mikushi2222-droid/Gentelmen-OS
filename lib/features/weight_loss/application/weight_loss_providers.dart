@@ -1,4 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gentleman_os/core/db/app_database.dart';
+import 'package:gentleman_os/core/db/database_provider.dart';
 import 'package:gentleman_os/features/fitness/application/fitness_providers.dart';
 import 'package:gentleman_os/features/weight_loss/domain/advanced_metrics.dart';
 import 'package:gentleman_os/features/weight_loss/domain/compliance_score.dart';
@@ -81,28 +83,48 @@ final progressSnapshotProvider = Provider<ProgressSnapshot?>((ref) {
   );
 });
 
-/// Compliance Score за сегодня (заглушка для UI-демонстрации).
-/// В V3.0 D будет заменён реальными данными из `DailyCompliance` таблицы.
+/// Сохранённая запись `DailyCompliances` за сегодня (реактивный стрим).
+/// null = запись ещё не создана на сегодня.
+final todayComplianceRecordProvider =
+    StreamProvider<DailyCompliancesData?>((ref) {
+  return ref.watch(dailyComplianceDaoProvider).watchToday();
+});
+
+/// Compliance Score за сегодня.
 ///
-/// Пока использует данные о замерах (есть ли замер сегодня) и выполненных
-/// привычках из Dashboard.
+/// Если в `DailyCompliances` уже есть запись — возвращает её score напрямую
+/// (check-in был сделан). Иначе считает динамически: замер веса + гидратация
+/// из `MeasurementLogs`.
 final todayComplianceProvider = Provider<double>((ref) {
-  final latestAsync = ref.watch(measurementListProvider);
+  final saved = ref.watch(todayComplianceRecordProvider).valueOrNull;
+  if (saved != null) return saved.score;
+
   final today = DateTime.now();
   final todayStart = DateTime(today.year, today.month, today.day);
 
-  final rows = latestAsync.valueOrNull ?? [];
+  final rows = ref.watch(measurementListProvider).valueOrNull ?? [];
+
   final hasWeightToday = rows.any((r) {
     final d = r.date;
     return DateTime(d.year, d.month, d.day) == todayStart &&
         r.weight != null;
   });
 
-  final result = computeComplianceScore(
+  final todayRow = rows
+      .where((r) {
+        final d = r.date;
+        return DateTime(d.year, d.month, d.day) == todayStart;
+      })
+      .toList();
+
+  final waterMl = todayRow.isNotEmpty
+      ? todayRow.first.hydrationMl?.toDouble()
+      : null;
+
+  return computeComplianceScore(
     input: DailyComplianceInput(
       weightLogged: hasWeightToday,
-      // Остальные компоненты будут заполнены из DailyCompliance таблицы (V3.0 D).
+      waterMl: waterMl,
     ),
-  );
-  return result.score;
+  ).score;
 });

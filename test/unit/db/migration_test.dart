@@ -12,7 +12,7 @@ import 'package:gentleman_os/core/db/app_database.dart';
 AppDatabase _openMemory() => AppDatabase(NativeDatabase.memory());
 
 void main() {
-  group('AppDatabase migration — schemaVersion 7', () {
+  group('AppDatabase migration — schemaVersion 8', () {
     late AppDatabase db;
 
     setUp(() {
@@ -23,7 +23,7 @@ void main() {
       await db.close();
     });
 
-    test('onCreate создаёт схему версии 7', () async {
+    test('onCreate создаёт схему версии 8', () async {
       // Accessing any table forces onCreate to run.
       final rows = await db.select(db.userProfile).get();
       expect(rows.length, 1); // seedUserProfile inserts exactly one row
@@ -70,6 +70,35 @@ void main() {
     test('таблица outfits пуста после create', () async {
       final rows = await db.select(db.outfits).get();
       expect(rows, isEmpty);
+    });
+
+    test('таблица recoveryLogs существует и пуста', () async {
+      final rows = await db.select(db.recoveryLogs).get();
+      expect(rows, isEmpty);
+    });
+
+    test('таблица dailyCompliances существует и пуста', () async {
+      final rows = await db.select(db.dailyCompliances).get();
+      expect(rows, isEmpty);
+    });
+
+    test('таблица foodLogs существует и пуста', () async {
+      final rows = await db.select(db.foodLogs).get();
+      expect(rows, isEmpty);
+    });
+
+    test('MeasurementLogs имеет поля proteinGrams и hydrationMl', () async {
+      await db.into(db.measurementLogs).insert(
+            MeasurementLogsCompanion.insert(
+              id: '1',
+              date: DateTime(2026, 1, 1),
+              proteinGrams: const Value(120.5),
+              hydrationMl: const Value(2000),
+            ),
+          );
+      final rows = await db.select(db.measurementLogs).get();
+      expect(rows.first.proteinGrams, closeTo(120.5, 0.01));
+      expect(rows.first.hydrationMl, 2000);
     });
   });
 }

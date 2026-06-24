@@ -1,6 +1,8 @@
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
+import 'package:gentleman_os/core/db/daos/daily_compliance_dao.dart';
 import 'package:gentleman_os/core/db/daos/daily_missions_dao.dart';
+import 'package:gentleman_os/core/db/daos/food_log_dao.dart';
 import 'package:gentleman_os/core/db/daos/habits_dao.dart';
 import 'package:gentleman_os/core/db/daos/health_dao.dart';
 import 'package:gentleman_os/core/db/daos/knowledge_dao.dart';
@@ -8,16 +10,20 @@ import 'package:gentleman_os/core/db/daos/measurement_dao.dart';
 import 'package:gentleman_os/core/db/daos/outfit_dao.dart';
 import 'package:gentleman_os/core/db/daos/profile_dao.dart';
 import 'package:gentleman_os/core/db/daos/purchases_dao.dart';
+import 'package:gentleman_os/core/db/daos/recovery_dao.dart';
 import 'package:gentleman_os/core/db/daos/rpg_dao.dart';
 import 'package:gentleman_os/core/db/daos/wardrobe_dao.dart';
 import 'package:gentleman_os/core/db/tables/clothing_items_table.dart';
+import 'package:gentleman_os/core/db/tables/daily_compliances_table.dart';
 import 'package:gentleman_os/core/db/tables/daily_missions_table.dart';
+import 'package:gentleman_os/core/db/tables/food_logs_table.dart';
 import 'package:gentleman_os/core/db/tables/habits_table.dart';
 import 'package:gentleman_os/core/db/tables/health_markers_table.dart';
 import 'package:gentleman_os/core/db/tables/knowledge_articles_table.dart';
 import 'package:gentleman_os/core/db/tables/measurement_logs_table.dart';
 import 'package:gentleman_os/core/db/tables/outfits_table.dart';
 import 'package:gentleman_os/core/db/tables/purchase_wishes_table.dart';
+import 'package:gentleman_os/core/db/tables/recovery_logs_table.dart';
 import 'package:gentleman_os/core/db/tables/rpg_table.dart';
 import 'package:gentleman_os/core/db/tables/user_profile_table.dart';
 import 'package:gentleman_os/core/services/achievement_catalog.dart';
@@ -40,6 +46,9 @@ part 'app_database.g.dart';
     PurchaseWishes,
     DailyMissions,
     HealthMarkers,
+    RecoveryLogs,
+    DailyCompliances,
+    FoodLogs,
   ],
   daos: [
     ProfileDao,
@@ -52,6 +61,9 @@ part 'app_database.g.dart';
     PurchasesDao,
     DailyMissionsDao,
     HealthDao,
+    RecoveryDao,
+    DailyComplianceDao,
+    FoodLogDao,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -59,7 +71,7 @@ class AppDatabase extends _$AppDatabase {
       : super(executor ?? driftDatabase(name: 'gentleman_os'));
 
   @override
-  int get schemaVersion => 7;
+  int get schemaVersion => 8;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -88,6 +100,17 @@ class AppDatabase extends _$AppDatabase {
             // (была 9=reading, стало 8=discipline). insertOnConflictUpdate —
             // идемпотентно обновляет существующие строки.
             await _seedKnowledgeArticles();
+          }
+          if (from < 8) {
+            // V3.0 D: новые таблицы Weight Loss Intelligence Layer +
+            // расширение замеров (белок, гидратация).
+            await m.addColumn(
+                measurementLogs, measurementLogs.proteinGrams);
+            await m.addColumn(
+                measurementLogs, measurementLogs.hydrationMl);
+            await m.createTable(recoveryLogs);
+            await m.createTable(dailyCompliances);
+            await m.createTable(foodLogs);
           }
         },
       );

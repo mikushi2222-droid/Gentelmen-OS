@@ -9,6 +9,8 @@ class MeasurementLogs extends Table {
   RealColumn get chest => real().nullable()();
   RealColumn get hips => real().nullable()();
   IntColumn get steps => integer().nullable()();
+  RealColumn get proteinGrams => real().nullable()();
+  IntColumn get hydrationMl => integer().nullable()();
   TextColumn get notes => text().nullable()();
 
   @override

@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gentleman_os/core/db/app_database.dart';
+import 'package:gentleman_os/core/db/daos/daily_compliance_dao.dart';
 import 'package:gentleman_os/core/db/daos/daily_missions_dao.dart';
+import 'package:gentleman_os/core/db/daos/food_log_dao.dart';
 import 'package:gentleman_os/core/db/daos/habits_dao.dart';
 import 'package:gentleman_os/core/db/daos/health_dao.dart';
 import 'package:gentleman_os/core/db/daos/knowledge_dao.dart';
@@ -8,6 +10,7 @@ import 'package:gentleman_os/core/db/daos/measurement_dao.dart';
 import 'package:gentleman_os/core/db/daos/outfit_dao.dart';
 import 'package:gentleman_os/core/db/daos/profile_dao.dart';
 import 'package:gentleman_os/core/db/daos/purchases_dao.dart';
+import 'package:gentleman_os/core/db/daos/recovery_dao.dart';
 import 'package:gentleman_os/core/db/daos/rpg_dao.dart';
 import 'package:gentleman_os/core/db/daos/wardrobe_dao.dart';
 
@@ -53,4 +56,16 @@ final dailyMissionsDaoProvider = Provider<DailyMissionsDao>(
 
 final healthDaoProvider = Provider<HealthDao>(
   (ref) => ref.watch(appDatabaseProvider).healthDao,
+);
+
+final recoveryDaoProvider = Provider<RecoveryDao>(
+  (ref) => ref.watch(appDatabaseProvider).recoveryDao,
+);
+
+final dailyComplianceDaoProvider = Provider<DailyComplianceDao>(
+  (ref) => ref.watch(appDatabaseProvider).dailyComplianceDao,
+);
+
+final foodLogDaoProvider = Provider<FoodLogDao>(
+  (ref) => ref.watch(appDatabaseProvider).foodLogDao,
 );
