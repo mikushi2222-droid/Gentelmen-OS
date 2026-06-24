@@ -8,11 +8,39 @@ class ShellScaffold extends StatelessWidget {
   final Widget child;
 
   static const _tabs = [
-    _Tab(label: 'Главная', icon: Icons.home_outlined, active: Icons.home, path: '/dashboard'),
-    _Tab(label: 'Гардероб', icon: Icons.checkroom_outlined, active: Icons.checkroom, path: '/wardrobe'),
-    _Tab(label: 'Здоровье', icon: Icons.favorite_outline, active: Icons.favorite, path: '/health'),
-    _Tab(label: 'Биохакинг', icon: Icons.bolt_outlined, active: Icons.bolt, path: '/biohacking'),
-    _Tab(label: 'Профиль', icon: Icons.person_outline, active: Icons.person, path: '/profile'),
+    _Tab(
+      label: 'Штаб',
+      icon: Icons.home_outlined,
+      active: Icons.home,
+      path: '/dashboard',
+    ),
+    _Tab(
+      label: 'Стиль',
+      icon: Icons.checkroom_outlined,
+      active: Icons.checkroom,
+      path: '/style',
+      aliases: ['/wardrobe', '/outfits', '/style-advisor', '/purchases'],
+    ),
+    _Tab(
+      label: 'Тело',
+      icon: Icons.favorite_border,
+      active: Icons.favorite,
+      path: '/body',
+      aliases: ['/health', '/progress'],
+    ),
+    _Tab(
+      label: 'Разум',
+      icon: Icons.psychology_outlined,
+      active: Icons.psychology,
+      path: '/mind',
+      aliases: ['/biohacking', '/knowledge', '/habits'],
+    ),
+    _Tab(
+      label: 'Система',
+      icon: Icons.person_outline,
+      active: Icons.person,
+      path: '/profile',
+    ),
   ];
 
   @override
@@ -43,9 +71,17 @@ class ShellScaffold extends StatelessWidget {
 
   int _currentIndex(String location) {
     for (var i = _tabs.length - 1; i >= 0; i--) {
-      if (location.startsWith(_tabs[i].path)) return i;
+      if (_matchesPath(location, _tabs[i].path)) return i;
+      for (final alias in _tabs[i].aliases) {
+        if (_matchesPath(location, alias)) return i;
+      }
     }
     return 0;
+  }
+
+  // Matches exact path or any sub-path (avoids /style matching /style-advisor).
+  static bool _matchesPath(String location, String path) {
+    return location == path || location.startsWith('$path/');
   }
 }
 
@@ -55,10 +91,12 @@ class _Tab {
     required this.icon,
     required this.active,
     required this.path,
+    this.aliases = const [],
   });
 
   final String label;
   final IconData icon;
   final IconData active;
   final String path;
+  final List<String> aliases;
 }

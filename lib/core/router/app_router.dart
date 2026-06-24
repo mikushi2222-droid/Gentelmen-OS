@@ -3,11 +3,16 @@ import 'package:go_router/go_router.dart';
 import 'package:gentleman_os/core/router/shell_scaffold.dart';
 import 'package:gentleman_os/core/utils/app_logger.dart';
 import 'package:gentleman_os/features/biohacking/presentation/biohacking_screen.dart';
+import 'package:gentleman_os/features/body/presentation/body_hub_screen.dart';
 import 'package:gentleman_os/features/dashboard/presentation/dashboard_screen.dart';
 import 'package:gentleman_os/features/fitness/presentation/fitness_screen.dart';
 import 'package:gentleman_os/features/fitness/presentation/add_measurement_screen.dart';
+import 'package:gentleman_os/features/habits/presentation/habits_screen.dart';
+import 'package:gentleman_os/features/health/presentation/health_screen.dart';
+import 'package:gentleman_os/features/health/presentation/health_marker_detail_screen.dart';
 import 'package:gentleman_os/features/knowledge/presentation/knowledge_screen.dart';
 import 'package:gentleman_os/features/knowledge/presentation/article_screen.dart';
+import 'package:gentleman_os/features/mind/presentation/mind_hub_screen.dart';
 import 'package:gentleman_os/features/outfit_builder/presentation/outfits_screen.dart';
 import 'package:gentleman_os/features/outfit_builder/presentation/outfit_builder_screen.dart';
 import 'package:gentleman_os/features/outfit_builder/presentation/outfit_detail_screen.dart';
@@ -15,12 +20,10 @@ import 'package:gentleman_os/features/outfit_builder/presentation/outfit_rating_
 import 'package:gentleman_os/features/profile/presentation/profile_screen.dart';
 import 'package:gentleman_os/features/profile/presentation/edit_profile_screen.dart';
 import 'package:gentleman_os/features/purchases/presentation/purchases_screen.dart';
-import 'package:gentleman_os/features/habits/presentation/habits_screen.dart';
-import 'package:gentleman_os/features/health/presentation/health_screen.dart';
-import 'package:gentleman_os/features/health/presentation/health_marker_detail_screen.dart';
 import 'package:gentleman_os/features/rpg/presentation/rpg_screen.dart';
 import 'package:gentleman_os/features/settings/presentation/settings_screen.dart';
 import 'package:gentleman_os/features/settings/presentation/log_screen.dart';
+import 'package:gentleman_os/features/style/presentation/style_hub_screen.dart';
 import 'package:gentleman_os/features/style_advisor/presentation/style_advisor_screen.dart';
 import 'package:gentleman_os/features/wardrobe/presentation/wardrobe_screen.dart';
 import 'package:gentleman_os/features/wardrobe/presentation/item_detail_screen.dart';
@@ -34,10 +37,18 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ShellRoute(
         builder: (context, state, child) => ShellScaffold(child: child),
         routes: [
+          // ── Штаб ──────────────────────────────────────────────────────
           GoRoute(
             path: '/dashboard',
             pageBuilder: (c, s) =>
                 const NoTransitionPage(child: DashboardScreen()),
+          ),
+
+          // ── Стиль ─────────────────────────────────────────────────────
+          GoRoute(
+            path: '/style',
+            pageBuilder: (c, s) =>
+                const NoTransitionPage(child: StyleHubScreen()),
           ),
           GoRoute(
             path: '/wardrobe',
@@ -92,14 +103,33 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             ],
           ),
           GoRoute(
-            path: '/knowledge',
+            path: '/style-advisor',
             pageBuilder: (c, s) =>
-                const NoTransitionPage(child: KnowledgeScreen()),
+                const NoTransitionPage(child: StyleAdvisorScreen()),
+          ),
+          GoRoute(
+            path: '/purchases',
+            pageBuilder: (c, s) =>
+                const NoTransitionPage(child: PurchasesScreen()),
+          ),
+
+          // ── Тело ──────────────────────────────────────────────────────
+          GoRoute(
+            path: '/body',
+            pageBuilder: (c, s) =>
+                const NoTransitionPage(child: BodyHubScreen()),
+          ),
+          GoRoute(
+            path: '/health',
+            pageBuilder: (c, s) =>
+                const NoTransitionPage(child: HealthScreen()),
             routes: [
               GoRoute(
-                path: ':articleId',
-                builder: (c, s) =>
-                    ArticleScreen(articleId: s.pathParameters['articleId']!),
+                path: 'marker/:typeIndex',
+                builder: (c, s) => HealthMarkerDetailScreen(
+                  typeIndex:
+                      int.tryParse(s.pathParameters['typeIndex'] ?? '') ?? -1,
+                ),
               ),
             ],
           ),
@@ -122,25 +152,37 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               ),
             ],
           ),
+
+          // ── Разум ─────────────────────────────────────────────────────
           GoRoute(
-            path: '/health',
+            path: '/mind',
             pageBuilder: (c, s) =>
-                const NoTransitionPage(child: HealthScreen()),
-            routes: [
-              GoRoute(
-                path: 'marker/:typeIndex',
-                builder: (c, s) => HealthMarkerDetailScreen(
-                  typeIndex:
-                      int.tryParse(s.pathParameters['typeIndex'] ?? '') ?? -1,
-                ),
-              ),
-            ],
+                const NoTransitionPage(child: MindHubScreen()),
           ),
           GoRoute(
             path: '/biohacking',
             pageBuilder: (c, s) =>
                 const NoTransitionPage(child: BiohackingScreen()),
           ),
+          GoRoute(
+            path: '/knowledge',
+            pageBuilder: (c, s) =>
+                const NoTransitionPage(child: KnowledgeScreen()),
+            routes: [
+              GoRoute(
+                path: ':articleId',
+                builder: (c, s) =>
+                    ArticleScreen(articleId: s.pathParameters['articleId']!),
+              ),
+            ],
+          ),
+          GoRoute(
+            path: '/habits',
+            pageBuilder: (c, s) =>
+                const NoTransitionPage(child: HabitsScreen()),
+          ),
+
+          // ── Система ───────────────────────────────────────────────────
           GoRoute(
             path: '/profile',
             pageBuilder: (c, s) =>
@@ -154,15 +196,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           ),
         ],
       ),
-      // Вне shell
-      GoRoute(
-        path: '/purchases',
-        builder: (c, s) => const PurchasesScreen(),
-      ),
-      GoRoute(
-        path: '/style-advisor',
-        builder: (c, s) => const StyleAdvisorScreen(),
-      ),
+
+      // Вне shell — только настройки (полноэкранный режим)
       GoRoute(
         path: '/settings',
         builder: (c, s) => const SettingsScreen(),
