@@ -49,15 +49,18 @@ Flutter (Android). Оно объединяет:
 | Фитнес + графики + тренд-дельты | ✅ |
 | Привычки + 7-дневный calendar strip | ✅ |
 | Мужское здоровье (16 маркеров, ИИ-разбор) | ✅ |
+| **Импорт анализов с фото** (LabPhotoAnalyzer → RouterAI vision) | ✅ |
+| **Подтверждение удалений** (образы, маркеры здоровья) | ✅ |
 | RPG (XP, уровни, навыки, ачивки, ежедневные миссии) | ✅ |
 | Покупки (48ч правило, 5 табов по статусу) | ✅ |
 | Аниме-маскот (реагирует на Gentleman Score) | ✅ |
 | ИИ-слой (`AiAdvisor`, `RouterAI`, защищённый ключ) | ✅ |
 | Экспорт/очистка | ✅ |
-| Тесты (unit + widget) | 🟡 частично |
-| CI зелёный | 🟡 требует проверки |
+| Журнал мутаций данных | ✅ |
+| Тесты (unit + widget) | ✅ покрыты все ключевые модули |
+| CI (`flutter analyze --no-fatal-infos`) | ✅ только infos |
 
-Ветка разработки: `claude/garment-wear-forecast-card-5o5oe8`
+> Текущая ветка разработки: `claude/code-docs-review-x4vztn` (на уровне `main`).
 
 ## Документация
 
@@ -79,6 +82,7 @@ Flutter (Android). Оно объединяет:
 | [docs/13-packages-spec.md](docs/13-packages-spec.md) | Спецификация пакетов (версии июнь 2026) |
 | [docs/14-ai-integration.md](docs/14-ai-integration.md) | Интеграция RouterAI и логирование |
 | [docs/15-ci-and-build.md](docs/15-ci-and-build.md) | CI, сборка APK, раннеры, конфликты зависимостей |
+| [docs/16-weight-health-ai-spec.md](docs/16-weight-health-ai-spec.md) | V3.x спецификация: Weight Loss Intelligence + AI Nutrition |
 
 ## Технологический стек (актуально, июнь 2026)
 

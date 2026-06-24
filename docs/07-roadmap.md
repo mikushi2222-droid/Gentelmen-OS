@@ -1,9 +1,9 @@
 # 07. Дорожная карта — актуальное состояние и план V2.x / V3.x
 
 > Последнее обновление: **2026-06-24**  
-> Ветка разработки: `claude/claude-md-project-memory-2ouxu6` (24 коммита поверх main)  
+> Ветка: `claude/code-docs-review-x4vztn` (= main, `9668c6b`)  
 > Схема БД: **v7** (v8 запланирована под V3.0)  
-> RouterAI: audio endpoints готовы (`transcribeAudio` / `synthesizeSpeech`) — фундамент V3.5
+> RouterAI: `google/gemini-3.5-flash` (default + vision), audio endpoints (`transcribeAudio` / `synthesizeSpeech`) — фундамент V3.5
 
 ---
 
@@ -56,14 +56,19 @@
 | V2.12 | Фикс CI (`custom_lint`/`riverpod_lint`) + фикс `XpType.habits` + widget-тесты | `d46398d` |
 | — | Фикс `discipline-habits` категории + schema **v7** миграция | `3b235f7` |
 | — | RouterAI: audio STT/TTS + provider routing | `febe0f0` |
+| — | Расшифровка фото бланка анализов через RouterAI (V2 здоровье) | `18bd8e8` |
+| — | Авто-импорт анализов с фото (`LabImporter`) + модели Gemini 3 Flash | `a14df71` |
+| — | Фиксы slug моделей RouterAI → `google/gemini-3.5-flash` | `c5a5fc7` |
+| — | Confirm destructive deletes (образы, маркеры здоровья) | `8ae04bb` |
+| — | `flutter analyze --no-fatal-infos` — 0 errors, 0 warnings | `9668c6b` |
 
 ---
 
 ## 2. Следующие шаги — V3.0
 
-> Все фазы V2.x (V2.1–V2.12) **завершены**. Текущее состояние ветки:
-> 24 коммита поверх `main`, schema v7, RouterAI audio-endpoints готовы.
-> Ближайший шаг — PR ветки в `main`, затем старт V3.0.
+> Все фазы V2.x (V2.1–V2.12) **завершены** и смёрджены в `main`.
+> Текущее состояние: schema v7, RouterAI Gemini 3.5 Flash, lab photo import, analyze clean.
+> Ближайший шаг — старт V3.0 в новой feature-ветке.
 
 ---
 
@@ -315,7 +320,7 @@
 
 | # | Идея | Обоснование |
 |---|------|-------------|
-| B1 | Импорт анализов из PDF/фото (OCR) | Снизит трение при вводе |
+| ~~B1~~ | ~~Импорт анализов из PDF/фото (OCR)~~ | **✅ Реализован** (`LabPhotoAnalyzer`, `a14df71`) |
 | B2 | Виджет домашнего экрана (Score, задача дня) | Быстрый доступ без открытия |
 | B3 | Health Connect: шаги, пульс, сон | Автозаполнение фитнес-данных |
 | B4 | Облачный шифрованный бэкап | Защита при потере устройства |

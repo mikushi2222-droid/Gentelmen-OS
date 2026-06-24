@@ -37,9 +37,8 @@
 
 - Ключ вводится в **Настройки → ИИ-советник → RouterAI**.
 - Хранится в `flutter_secure_storage` (Keystore на Android) — не в коде, не в БД.
-- Выбор модели: `openai/gpt-4o` (по умолч.), `gpt-4o-mini`,
-  `anthropic/claude-sonnet-4.5`, `google/gemini-2.5-flash`, `google/gemini-2.5-pro`,
-  `deepseek/deepseek-r1`, `openai/gpt-oss-120b`.
+- Выбор модели (реальные slug RouterAI): `google/gemini-3.5-flash` (по умолч.),
+  `google/gemini-2.5-flash`, `google/gemini-2.5-pro`.
 
 ```dart
 final cfg = await ref.watch(routerAiConfigProvider.future); // RouterAiConfig
@@ -172,13 +171,39 @@ final async = ref.watch(clothingPhotoAnalysisProvider(item)); // AsyncValue<Stri
 
 | Константа | Значение | Использование |
 |-----------|---------|---------------|
-| `defaultModel` | `openai/gpt-4o` | Текстовые советы |
-| `visionModel` | `google/gemini-2.5-flash` | Анализ фото вещей |
+| `defaultModel` | `google/gemini-3.5-flash` | Текстовые советы, анализ фото |
+| `visionModel` | `google/gemini-3.5-flash` | Анализ фото вещей + распознавание бланков анализов |
 | `transcriptionModel` | `openai/whisper-large-v3` | STT, Voice UX (V3.5) |
 | `synthesisModel` | `x-ai/grok-voice-tts-1.0` | TTS, Voice UX (V3.5) |
 
-## 10. Дальнейшее развитие
+> Модели `openai/gpt-4o`, `anthropic/claude-*`, `deepseek/*` отсутствуют в
+> реальном API RouterAI (RU). Используются только Gemini-модели, доступные через `/api/v1/models`.
+
+## 10. Импорт анализов крови с фото (`LabPhotoAnalyzer`)
+
+Экран «Мужское здоровье» → кнопка «Распознать из фото»: пользователь выбирает
+снимок бланка анализов, изображение кодируется в base64 и отправляется через
+`visionModel` (`google/gemini-3.5-flash`) в RouterAI.
+
+```dart
+// domain
+final drafts = await analyzer.decode(imageBase64: b64, mime: 'image/jpeg');
+// → List<LabResultDraft> (markerName, value, unit, takenAt, confidence)
+
+// application: LabImporter дедуплицирует и сохраняет в HealthMarkers
+final saved = await labImporter.importFromPhoto(imageBase64: b64);
+```
+
+Приватность: фото уходит в облако **только по явному действию** пользователя.
+При ошибке API или недоступном ключе — пустой список, UI деградирует на
+ручной ввод. Инструмент обучения, **не медицинская диагностика**.
+
+Файлы: `health/domain/lab_photo_analyzer.dart`, `health/domain/lab_ocr_parser.dart`,
+`health/application/lab_importer.dart`.
+
+## 11. Дальнейшее развитие
 
 - Кэширование ИИ-ответов, чтобы не платить за повторные запросы.
 - Стриминг ответов (SSE) для длинных разборов.
 - V3.5: интеграция голосового ввода/вывода через `transcribeAudio` / `synthesizeSpeech`.
+- V3.1: текстовый + визуальный ввод питания (AI Food Analysis).
