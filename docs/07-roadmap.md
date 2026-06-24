@@ -1,7 +1,7 @@
 # 07. Дорожная карта — актуальное состояние и план V2.x / V3.x
 
 > Последнее обновление: **2026-06-24**  
-> Ветка: `claude/code-docs-review-x4vztn` (+7 над main `9668c6b`, HEAD = `8e2effd`)  
+> Ветка: `claude/code-docs-review-x4vztn` (+9 над main `9668c6b`, HEAD = `d6bb109`)  
 > Схема БД: **v7** (v8 запланирована под V3.0)  
 > RouterAI: `google/gemini-3.5-flash` (default + vision), audio endpoints (`transcribeAudio` / `synthesizeSpeech`) — фундамент V3.5
 
@@ -78,13 +78,16 @@
 | `analyzeWaistTrend()`, `buildProgressSnapshot()` | `weight_loss/domain/advanced_metrics.dart` | `advanced_metrics_test.dart` (29 случаев) | `07fcdcf` |
 | Riverpod провайдеры | `weight_loss/application/weight_loss_providers.dart` | — | `b79368d` |
 | **`WeightComplianceCard`** (Dashboard UI) | `weight_loss/presentation/weight_compliance_card.dart` | — | `8e2effd` |
+| **DB Migration v8** — `RecoveryLogs`, `DailyCompliances`, `FoodLogs` | таблицы + DAOs + провайдеры | `migration_test.dart` (обновлён) | `d6bb109` |
 
 ### Что осталось реализовать в V3.0
 
 - [x] **A** Safe Weight Loss Rate System — UI компонент на Dashboard ✅ `8e2effd`
 - [x] **B** Compliance Score — отображение на Dashboard рядом с Gentleman Score ✅ `8e2effd`
 - [x] **C** Advanced Metrics — moving average, waist trend, estimated fat-loss ✅ `07fcdcf`
-- [ ] **D** DB Migration v7 → v8 (FoodLog, DailyCompliance, RecoveryLog)
+- [x] **D** DB Migration v7 → v8 (RecoveryLogs, DailyCompliances, FoodLogs + MeasurementLogs расширение) ✅ `d6bb109`
+
+> **V3.0 завершён.**
 
 
 ---
