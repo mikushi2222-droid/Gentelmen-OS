@@ -1,8 +1,9 @@
 # 07. Дорожная карта — актуальное состояние и план V2.x / V3.x
 
-> Последнее обновление: **2026-06-23**  
-> Ветка разработки: `claude/claude-md-project-memory-2ouxu6`  
-> Схема БД: **v7** (v8 запланирована под V3.0)
+> Последнее обновление: **2026-06-24**  
+> Ветка разработки: `claude/claude-md-project-memory-2ouxu6` (24 коммита поверх main)  
+> Схема БД: **v7** (v8 запланирована под V3.0)  
+> RouterAI: audio endpoints готовы (`transcribeAudio` / `synthesizeSpeech`) — фундамент V3.5
 
 ---
 
@@ -36,123 +37,33 @@
 | M9 | Покупки (48ч правило, приоритеты, статусы) | ✅ |
 | M10 | Экспорт/очистка, настройки, журнал отладки | ✅ |
 
-### V2.x — Итеративные улучшения (все завершены)
+### V2.x — Итеративные улучшения (все завершены ✅)
 
-| Версия | Фича | Коммит |
+| Версия | Фича | Ветка/коммит |
 |--------|------|--------|
-| V2.1 | Аниме-маскот (`MascotAvatar`, `moodFromScore`) | `74946ff` |
-| V2.2 | Модуль «Мужское здоровье» (16 маркеров, индекс, ИИ-разбор) | `74946ff` |
-| V2.3 | ИИ-советник по гардеробу (`styleAdviceProvider`), ИИ-анализ фото вещи | `fb53492` |
-| V2.4 | `WearForecast` / `WearUrgency` — прогноз носки на карточке вещи | `74946ff` |
-| — | **Исправления 6 bugs** (code-review: транзакция, `insertOrIgnore`, `hasRecentMarker`, `invalidate`, test clock, mission cap) | `a8bdcdf` |
-| V2.5 | Тренд-дельты в фитнесе (↑↓ стрелки) + 7-дневный calendar strip в привычках | `578cf77` |
-| V2.6 | Urgency-сортировка гардероба + outfit-today fix в миссиях + 5 табов в покупках | `593641e` |
-| V2.7 | Dashboard urgency strip «Надеть сегодня» + knowledge bookmarks/favorites filter + время чтения статьи | `39e31a0` |
-| V2.8 | Сохранение score breakdown в outfit + разбивка по осям в детали + «Надеть весь образ» + поиск в гардеробе | `f3270cb` |
-| V2.9 | Habits мини-блок на Dashboard + outfit occasion filter + rating screen + purchase→wardrobe | — |
-| V2.11–12 | Расширение unit-тестов + widget-тесты (Dashboard, Wardrobe) + фикс CI (`custom_lint`/`riverpod_lint`) | — |
-
-> Прогресс по тестам и оставшимся эпикам качества отслеживается в
-> [12-production-plan.md](12-production-plan.md) §6 (Фаза 4).
-
----
-
-## 2. Следующие шаги — V2.10–V2.12
-
-### V2.9 — Quick wins: привычки, покупки→гардероб, outfit rating ✅ Завершено
-
-**Приоритет: Высокий.** Замыкают незакрытые UX-петли. (Детали ниже — для истории.)
-
-#### A. Стрик-счётчик привычек на Dashboard
-- Добавить мини-блок «Привычки сегодня» между urgency strip и разделом миссий
-- Показывает N/total выполненных сегодня + текущий стрик (дней подряд)
-- Тап → `/progress/habits`
-
-#### B. «Купил → добавить в гардероб»
-- При переводе покупки в статус `bought` в `_showOptions` → `AlertDialog`
-  с предложением «Добавить в гардероб?»
-- Если «Да» → `context.push('/wardrobe/add')` с предзаполненными полями
-  (название, категория из `PurchaseWish`)
-
-#### C. Оценка образа после носки (`/outfits/:id/rate`)
-- Простой экран (уже есть в роутинге, но не реализован): ползунок 1–5 + поле заметки
-- Сохранять `OutfitRating` в `outfit.notes` или отдельной таблице
-- Обновлять `outfit.score` с учётом пользовательской оценки
-
-#### D. Фильтр образов по поводу
-- В `OutfitsScreen` добавить горизонтальные чипы `Occasion.values` (как категории в гардеробе)
+| V2.1 | Аниме-маскот (`MascotAvatar`, `moodFromScore`) | main |
+| V2.2 | Модуль «Мужское здоровье» (16 маркеров, индекс, ИИ-разбор) | main |
+| V2.3 | ИИ-советник по гардеробу (`styleAdviceProvider`), ИИ-анализ фото вещи | main |
+| V2.4 | `WearForecast` / `WearUrgency` — прогноз носки на карточке вещи + ткань | main |
+| — | **Исправления 6 bugs** post-code-review | main |
+| V2.5 | Тренд-дельты в фитнесе (↑↓) + 7-дневный calendar strip в привычках | main |
+| V2.6 | Urgency-сортировка гардероба + outfit-today fix + 5 табов в покупках | main |
+| V2.7 | Dashboard urgency strip + knowledge bookmarks/favorites + время чтения | main |
+| V2.8 | Score breakdown в outfit + «Надеть весь образ» + поиск в гардеробе | `9ad33cb` |
+| V2.9 | Habits-блок на Dashboard + outfit occasion filter + rating + purchase→wardrobe | `1a1ca21` |
+| V2.10 | Мультифильтр гардероба + быстрое выполнение привычки + style advisor context | `be4ff83` |
+| V2.11 | Расширение unit-тестов + widget smoke tests (Dashboard, Wardrobe, Purchases) | `b0cde2b` |
+| V2.12 | Фикс CI (`custom_lint`/`riverpod_lint`) + фикс `XpType.habits` + widget-тесты | `d46398d` |
+| — | Фикс `discipline-habits` категории + schema **v7** миграция | `3b235f7` |
+| — | RouterAI: audio STT/TTS + provider routing | `febe0f0` |
 
 ---
 
-### V2.10 — Глубина: мультифильтр гардероба, дашборд привычек, style advisor
+## 2. Следующие шаги — V3.0
 
-**Приоритет: Средний.**
-
-#### A. Расширенный фильтр гардероба
-- PRD требует фильтр по сезону, цвету, бренду — сейчас только категория
-- Добавить `BottomSheet`-фильтр с чипами сезона + текстовыми полями цвета/бренда
-- `wardrobeByFiltersProvider` = `wardrobeListProvider` + клиентская фильтрация
-
-#### B. Быстрое выполнение привычки с Dashboard
-- В секции привычек Dashboard добавить чекбоксы для каждой активной привычки
-- Тап → `habitsDao.complete(habitId, today)` без перехода в раздел
-
-#### C. Style Advisor — улучшение промпта
-- Передавать в ИИ-советник больше контекста: топ-5 вещей по urgency, сезон
-- Добавить раздел «Образ дня» с рекомендацией конкретного сочетания
-
-#### D. Health: напоминание о сдаче анализов
-- `HealthMarkerType` имеет рекомендованный интервал (3/6/12 мес)
-- Плитка «Давно не проверяли» на health screen если last date > interval
-
----
-
-### V2.11 — Качество: тесты, CI, анализ
-
-**Приоритет: Высокий перед релизом.**
-
-#### A. Flutter Analyze — зелёный
-- Прогнать `flutter analyze --no-fatal-infos`
-- Исправить все warnings (deprecated API, unused imports, nullable)
-
-#### B. Тесты
-- Unit: `computeWearForecast` — все ветки (retired, offSeason, neverWorn, > 30d, > 14d)
-- Unit: `generateDailyMissions` — все комбинации флагов
-- Unit: `computeGentlemanScore` — 5 компонентов
-- Widget: `ClothingCard` с разными urgency (уже частично есть)
-- Widget: `DashboardScreen` — smoke test (рендерится без ошибок)
-- Widget: `PurchasesScreen` — переключение табов
-- Migration: v1→v2→v3→v4→v5→v6→v7 без потери данных
-
-#### C. CI
-- Убедиться что `flutter test --coverage` проходит в CI runner
-- Порог покрытия 60% (информативно, без fail)
-
----
-
-### V2.12 — Качество: тесты и CI
-
-**Приоритет: Высокий.**
-
-#### A. Flutter Analyze — зелёный
-- `flutter analyze --no-fatal-infos` без единого warning
-- Deprecated API (Dart 3.9+), unused imports, nullable-проблемы
-
-#### B. Unit тесты
-- `computeWearForecast` — все 5 ветвей urgency + граничные случаи
-- `generateDailyMissions` — все комбинации флагов
-- `computeGentlemanScore` — 5 компонентов
-- `scoreOutfit` — fit/color/occasion/weather/comfort
-- `markerStatus(type, value)` — норма/внимание/риск
-
-#### C. Widget тесты
-- `DashboardScreen` — smoke test (рендерится без ошибок)
-- `PurchasesScreen` — переключение 5 табов
-- `WardrobeScreen` — поиск фильтрует items
-- `OutfitDetailScreen` — score breakdown отображается
-
-#### D. CI
-- `flutter test --coverage` зелёный
+> Все фазы V2.x (V2.1–V2.12) **завершены**. Текущее состояние ветки:
+> 24 коммита поверх `main`, schema v7, RouterAI audio-endpoints готовы.
+> Ближайший шаг — PR ветки в `main`, затем старт V3.0.
 
 ---
 

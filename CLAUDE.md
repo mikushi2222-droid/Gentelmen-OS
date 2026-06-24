@@ -9,17 +9,18 @@
 ## 0. Что это за проект
 
 **Gentleman OS** — офлайн-first, local-only, однопользовательское приложение
-на Flutter (Android) — система принятия бытовых решений: что надеть, что купить,
-что улучшить. Главная ценность — **быстрый ответ на вопрос «что делать сегодня»**,
-а не «знание ради знания».
+на Flutter (Android). Продуктовая ниша (V3.x): **Masculine health OS для мужчин
+с высоким ИМТ, особенно на GLP-1/тирзепатиде** — система принятия решений «что
+делать сегодня», а не «знание ради знания».
 
-Продуктовое направление (v2) — **три уровня** «личного штаба джентльмена»:
+Продуктовое направление — **три уровня** «личного штаба джентльмена»:
 1) **Внешность** (гардероб, образы, груминг), 2) **Мужское здоровье** (вес, талия,
-сон, давление, анализы, гормоны), 3) **Биохакинг** (протоколы, добавки, сон,
-стресс, энергия, фокус, долголетие). Биохакинг — **система принятия решений**, а
-не склад БАДов: отвечает на вопрос «что ограничивает прогресс и что даст максимум
-эффекта». Подробно — `docs/16-vision-three-levels-and-biohacking.md`. Это **не
-медицинское и не фитнес-приложение**; диагнозов не ставим, везде дисклеймер.
+сон, давление, анализы, гормоны — трекинг и просвещение, не диагностика),
+3) **Биохакинг/Compliance** (протоколы, добавки, Recovery Layer, Behavioral
+Intelligence, AI-разбор питания). Подробная V3.x-спецификация —
+`docs/16-weight-health-ai-spec.md`; обзор архитектуры трёх уровней —
+`docs/16-vision-three-levels-and-biohacking.md`. **Не медицинское и не
+фитнес-приложение**; диагнозов не ставим, везде дисклеймер.
 
 Стек: Flutter 3.44 / Dart 3.9+ · Riverpod 3 · go_router · **drift** (SQLite) ·
 freezed · build_runner · fl_chart · flutter_secure_storage.
@@ -168,6 +169,15 @@ dart run build_runner build --delete-conflicting-outputs
 - Запросы/ответы логируй через `core/utils/app_logger.dart` (`log`), ключ —
   маскируй. Не логируй полные секреты.
 - Ключ и модель — в secure storage (`RouterAiConfig`/`RouterAiSettings`).
+- `RouterAiClient` предоставляет три вида запросов:
+  - `chat()` — текст/мультимодальный (параметр `provider` для маршрутизации);
+    флаг `webSearch: true` → plugins `web`;
+  - `analyzeImage()` — vision (base64 фото);
+  - `transcribeAudio()` — Whisper STT (для V3.5 Voice UX);
+  - `synthesizeSpeech()` — TTS (для V3.5 Voice UX).
+- Константы моделей — только через `RouterAiConfig` (никаких строк-литералов
+  в вызывающем коде): `defaultModel`, `visionModel`, `transcriptionModel`,
+  `synthesisModel`.
 
 ---
 
@@ -237,7 +247,9 @@ flutter test               # все зелёные
 
 Полезное в `docs/`: `02-architecture.md`, `03-data-model.md`,
 `05-recommendation-engine.md`, `14-ai-integration.md`, `15-ci-and-build.md`,
-`16-vision-three-levels-and-biohacking.md` (видение v2: уровни + биохакинг).
+`16-vision-three-levels-and-biohacking.md` (архитектура: три уровня),
+`16-weight-health-ai-spec.md` (V3.x: Weight Loss AI, Food Analysis, Recovery),
+`07-roadmap.md` (что реализовано и V3.x план).
 
 ---
 
