@@ -113,7 +113,33 @@ class _HistoryRow extends StatelessWidget {
       ),
       trailing: IconButton(
         icon: const Icon(Icons.delete_outline, size: 18),
-        onPressed: () => ref.read(healthDaoProvider).remove(row.id),
+        onPressed: () async {
+          final ok = await showDialog<bool>(
+            context: context,
+            builder: (ctx) => AlertDialog(
+              title: const Text('Удалить замер?'),
+              content: const Text(
+                'Запись показателя будет удалена безвозвратно.',
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx, false),
+                  child: const Text('Отмена'),
+                ),
+                FilledButton(
+                  style: FilledButton.styleFrom(
+                    backgroundColor: Theme.of(ctx).colorScheme.error,
+                  ),
+                  onPressed: () => Navigator.pop(ctx, true),
+                  child: const Text('Удалить'),
+                ),
+              ],
+            ),
+          );
+          if (ok == true) {
+            await ref.read(healthDaoProvider).remove(row.id);
+          }
+        },
       ),
     );
   }

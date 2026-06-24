@@ -174,7 +174,31 @@ class _OutfitCard extends ConsumerWidget {
         trailing: PopupMenuButton<String>(
           onSelected: (v) async {
             if (v == 'delete') {
-              await ref.read(outfitDaoProvider).remove(outfit.id);
+              final ok = await showDialog<bool>(
+                context: context,
+                builder: (ctx) => AlertDialog(
+                  title: const Text('Удалить образ?'),
+                  content: const Text(
+                    'Образ будет удалён без возможности восстановления.',
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(ctx, false),
+                      child: const Text('Отмена'),
+                    ),
+                    FilledButton(
+                      style: FilledButton.styleFrom(
+                        backgroundColor: Theme.of(ctx).colorScheme.error,
+                      ),
+                      onPressed: () => Navigator.pop(ctx, true),
+                      child: const Text('Удалить'),
+                    ),
+                  ],
+                ),
+              );
+              if (ok == true) {
+                await ref.read(outfitDaoProvider).remove(outfit.id);
+              }
             }
           },
           itemBuilder: (ctx) => [
