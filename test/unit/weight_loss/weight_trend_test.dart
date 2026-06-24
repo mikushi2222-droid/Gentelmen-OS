@@ -19,7 +19,7 @@ void main() {
 
     test('один замер → insufficient', () {
       final r = analyzeWeightTrend(
-        points: [const WeightPoint(date: DateTime.utc(2026, 1, 1), kg: 100)],
+        points: [WeightPoint(date: DateTime.utc(2026, 1, 1), kg: 100)],
       );
       expect(r.status, WeightTrendStatus.insufficient);
     });
@@ -27,8 +27,8 @@ void main() {
     test('два замера в один день → insufficient', () {
       final r = analyzeWeightTrend(
         points: [
-          const WeightPoint(date: DateTime.utc(2026, 1, 1), kg: 100),
-          const WeightPoint(date: DateTime.utc(2026, 1, 1), kg: 99),
+          WeightPoint(date: DateTime.utc(2026, 1, 1), kg: 100),
+          WeightPoint(date: DateTime.utc(2026, 1, 1), kg: 99),
         ],
       );
       expect(r.status, WeightTrendStatus.insufficient);

@@ -32,18 +32,14 @@ final waistPointsProvider = Provider<AsyncValue<List<WaistPoint>>>((ref) {
 /// Результат анализа тренда веса (7-дневная скользящая средняя, скорость,
 /// plateau detection). `null` — нет данных (провайдер ещё грузится).
 final weightTrendProvider = Provider<WeightTrendResult?>((ref) {
-  final async = ref.watch(weightPointsProvider);
-  return async.valueOrNull != null
-      ? analyzeWeightTrend(points: async.valueOrNull!)
-      : null;
+  final pts = ref.watch(weightPointsProvider).asData?.value;
+  return pts != null ? analyzeWeightTrend(points: pts) : null;
 });
 
 /// Результат анализа тренда талии (см/нед, belt notches).
 final waistTrendProvider = Provider<WaistTrendResult?>((ref) {
-  final async = ref.watch(waistPointsProvider);
-  return async.valueOrNull != null
-      ? analyzeWaistTrend(points: async.valueOrNull!)
-      : null;
+  final pts = ref.watch(waistPointsProvider).asData?.value;
+  return pts != null ? analyzeWaistTrend(points: pts) : null;
 });
 
 /// Сводный прогресс-снимок (тренд + талия + adherence + insights).
@@ -51,11 +47,8 @@ final waistTrendProvider = Provider<WaistTrendResult?>((ref) {
 /// Для расчёта adherence считаем дни с хоть каким-то замером.
 /// [totalDays] = 30 дней для rolling monthly view.
 final progressSnapshotProvider = Provider<ProgressSnapshot?>((ref) {
-  final wAsync = ref.watch(weightPointsProvider);
-  final waistAsync = ref.watch(waistPointsProvider);
-
-  final wPts = wAsync.valueOrNull;
-  final waistPts = waistAsync.valueOrNull;
+  final wPts = ref.watch(weightPointsProvider).asData?.value;
+  final waistPts = ref.watch(waistPointsProvider).asData?.value;
 
   if (wPts == null || waistPts == null) return null;
 
@@ -68,7 +61,7 @@ final progressSnapshotProvider = Provider<ProgressSnapshot?>((ref) {
       waistPts.where((p) => p.date.isAfter(cutoff)).toList();
 
   // Считаем залогированные дни по объединённому набору дат замеров.
-  final loggedDates = {
+  final loggedDates = <DateTime>{
     ...recentWPts.map((p) =>
         DateTime(p.date.year, p.date.month, p.date.day)),
     ...recentWaistPts.map((p) =>
@@ -96,13 +89,14 @@ final todayComplianceRecordProvider =
 /// (check-in был сделан). Иначе считает динамически: замер веса + гидратация
 /// из `MeasurementLogs`.
 final todayComplianceProvider = Provider<double>((ref) {
-  final saved = ref.watch(todayComplianceRecordProvider).valueOrNull;
+  final saved = ref.watch(todayComplianceRecordProvider).asData?.value;
   if (saved != null) return saved.score;
 
   final today = DateTime.now();
   final todayStart = DateTime(today.year, today.month, today.day);
 
-  final rows = ref.watch(measurementListProvider).valueOrNull ?? [];
+  final rows =
+      ref.watch(measurementListProvider).asData?.value ?? [];
 
   final hasWeightToday = rows.any((r) {
     final d = r.date;

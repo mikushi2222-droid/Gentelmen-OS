@@ -27,7 +27,7 @@ void main() {
 
     test('один замер → нулевые значения', () {
       final r = analyzeWaistTrend(
-        points: [const WaistPoint(date: DateTime.utc(2026, 1, 1), cm: 110)],
+        points: [WaistPoint(date: DateTime.utc(2026, 1, 1), cm: 110)],
       );
       expect(r.totalDeltaCm, 0);
     });
